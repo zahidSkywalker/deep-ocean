@@ -4,7 +4,6 @@ import { Suspense } from 'react';
 import { Canvas } from '@react-three/fiber';
 import { Preload, AdaptiveDpr, AdaptiveEvents } from '@react-three/drei';
 import dynamic from 'next/dynamic';
-import { HUD, HUDKeyboardHandler } from '@/components/world/HUD';
 
 // Dynamic import to avoid SSR issues with Three.js
 const City = dynamic(() => import('@/components/world/City'), { ssr: false });
@@ -12,6 +11,8 @@ const PlayerController = dynamic(() => import('@/components/world/PlayerControll
 const DynamicSky = dynamic(() => import('@/components/world/Sky'), { ssr: false });
 const Weather = dynamic(() => import('@/components/world/Weather'), { ssr: false });
 const Effects = dynamic(() => import('@/components/world/Effects'), { ssr: false });
+const HUD = dynamic(() => import('@/components/world/HUD'), { ssr: false });
+const HUDKeyboardHandler = dynamic(() => import('@/components/world/HUD').then(m => ({ default: m.HUDKeyboardHandler })), { ssr: false });
 
 function LoadingScreen() {
   return (
