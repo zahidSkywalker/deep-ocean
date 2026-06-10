@@ -8,18 +8,25 @@ interface WorldState {
   timeSpeed: number; // Full cycle in 5 minutes = 300 seconds
   weather: WeatherType;
   isPaused: boolean;
+  isPlaying: boolean; // true = game is active (moving/looking)
   playerPosition: [number, number, number];
+  playerRotation: { x: number; y: number }; // euler angles for camera
   walkSpeed: number;
   sprintSpeed: number;
   isPointerLocked: boolean;
-  showControls: boolean;
+  isMobile: boolean;
+  // Touch joystick input
+  joystickInput: { x: number; y: number };
   // Actions
   setTime: (t: number) => void;
   setWeather: (w: WeatherType) => void;
   togglePause: () => void;
   setPlayerPosition: (p: [number, number, number]) => void;
+  setPlayerRotation: (r: { x: number; y: number }) => void;
   setIsPointerLocked: (v: boolean) => void;
-  setShowControls: (v: boolean) => void;
+  setIsPlaying: (v: boolean) => void;
+  setIsMobile: (v: boolean) => void;
+  setJoystickInput: (input: { x: number; y: number }) => void;
   cycleWeather: () => void;
 }
 
@@ -28,18 +35,24 @@ export const useWorldStore = create<WorldState>((set, get) => ({
   timeSpeed: 1 / 300, // Full cycle in 300 seconds (5 minutes)
   weather: 'clear',
   isPaused: false,
-  playerPosition: [0, 1.7, 0],
+  isPlaying: false,
+  playerPosition: [0, 1.7, 20],
+  playerRotation: { x: 0, y: 0 },
   walkSpeed: 5,
   sprintSpeed: 10,
   isPointerLocked: false,
-  showControls: true,
+  isMobile: false,
+  joystickInput: { x: 0, y: 0 },
 
   setTime: (t) => set({ timeOfDay: t % 1 }),
   setWeather: (w) => set({ weather: w }),
   togglePause: () => set((s) => ({ isPaused: !s.isPaused })),
   setPlayerPosition: (p) => set({ playerPosition: p }),
+  setPlayerRotation: (r) => set({ playerRotation: r }),
   setIsPointerLocked: (v) => set({ isPointerLocked: v }),
-  setShowControls: (v) => set({ showControls: v }),
+  setIsPlaying: (v) => set({ isPlaying: v }),
+  setIsMobile: (v) => set({ isMobile: v }),
+  setJoystickInput: (input) => set({ joystickInput: input }),
   cycleWeather: () => {
     const order: WeatherType[] = ['clear', 'rain', 'fog', 'storm'];
     const current = get().weather;

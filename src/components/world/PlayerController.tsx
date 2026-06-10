@@ -2,13 +2,11 @@
 
 import { useRef, useCallback, useEffect } from 'react';
 import { useThree, useFrame } from '@react-three/fiber';
-import { PointerLockControls as DreiPointerLockControls } from '@react-three/drei';
 import * as THREE from 'three';
 import { useWorldStore } from '@/store/useWorldStore';
 
-/* ─── First Person Controller ─── */
+/* ─── First Person Controller (Desktop + Mobile) ─── */
 export default function PlayerController() {
-  const controlsRef = useRef<any>(null);
   const velocity = useRef(new THREE.Vector3());
   const direction = useRef(new THREE.Vector3());
   const { camera, gl } = useThree();
@@ -16,10 +14,14 @@ export default function PlayerController() {
   const walkSpeed = useWorldStore((s) => s.walkSpeed);
   const sprintSpeed = useWorldStore((s) => s.sprintSpeed);
   const isPaused = useWorldStore((s) => s.isPaused);
+  const isPlaying = useWorldStore((s) => s.isPlaying);
+  const isPointerLocked = useWorldStore((s) => s.isPointerLocked);
+  const isMobile = useWorldStore((s) => s.isMobile);
+  const joystickInput = useWorldStore((s) => s.joystickInput);
+  const playerRotation = useWorldStore((s) => s.playerRotation);
   const setPlayerPosition = useWorldStore((s) => s.setPlayerPosition);
-  const setIsPointerLocked = useWorldStore((s) => s.setIsPointerLocked);
-  const setShowControls = useWorldStore((s) => s.setShowControls);
 
+  // Keyboard state
   const keys = useRef({
     forward: false,
     backward: false,
@@ -28,6 +30,7 @@ export default function PlayerController() {
     sprint: false,
   });
 
+  // Handle keyboard input on window (not canvas)
   const handleKeyDown = useCallback((e: KeyboardEvent) => {
     switch (e.code) {
       case 'KeyW': case 'ArrowUp': keys.current.forward = true; break;
@@ -48,21 +51,54 @@ export default function PlayerController() {
     }
   }, []);
 
+  // Mouse look handler (for pointer lock mode)
+  const handleMouseMove = useCallback((e: MouseEvent) => {
+    const store = useWorldStore.getState();
+    if (!store.isPointerLocked || store.isPaused) return;
+
+    const sensitivity = 0.002;
+    store.setPlayerRotation({
+      x: Math.max(-Math.PI / 2.1, Math.min(Math.PI / 2.1, store.playerRotation.x - e.movementY * sensitivity)),
+      y: store.playerRotation.y - e.movementX * sensitivity,
+    });
+  }, []);
+
   useEffect(() => {
-    const canvas = gl.domElement;
-    canvas.addEventListener('keydown', handleKeyDown);
-    canvas.addEventListener('keyup', handleKeyUp);
-    canvas.setAttribute('tabindex', '0');
-    return () => {
-      canvas.removeEventListener('keydown', handleKeyDown);
-      canvas.removeEventListener('keyup', handleKeyUp);
+    window.addEventListener('keydown', handleKeyDown);
+    window.addEventListener('keyup', handleKeyUp);
+    window.addEventListener('mousemove', handleMouseMove);
+
+    // Detect mobile
+    const checkMobile = () => {
+      const mobile = 'ontouchstart' in window || navigator.maxTouchPoints > 0;
+      useWorldStore.getState().setIsMobile(mobile);
     };
-  }, [gl, handleKeyDown, handleKeyUp]);
+    checkMobile();
+    window.addEventListener('resize', checkMobile);
+
+    return () => {
+      window.removeEventListener('keydown', handleKeyDown);
+      window.removeEventListener('keyup', handleKeyUp);
+      window.removeEventListener('mousemove', handleMouseMove);
+      window.removeEventListener('resize', checkMobile);
+    };
+  }, [handleKeyDown, handleKeyUp, handleMouseMove]);
 
   useFrame((_, delta) => {
-    if (!controlsRef.current?.isLocked || isPaused) return;
+    // Only move if playing (locked on desktop, or mobile)
+    const canMove = isMobile ? isPlaying : (isPointerLocked && !isPaused);
+    if (!canMove) return;
 
+    // Apply camera rotation from store
+    const rot = useWorldStore.getState().playerRotation;
+    camera.rotation.set(rot.x, rot.y, 0, 'YXZ');
+
+    // Determine movement input
     const speed = keys.current.sprint ? sprintSpeed : walkSpeed;
+    const forward = keys.current.forward || (isMobile && joystickInput.y < -0.2);
+    const backward = keys.current.backward || (isMobile && joystickInput.y > 0.2);
+    const left = keys.current.left || (isMobile && joystickInput.x < -0.2);
+    const right = keys.current.right || (isMobile && joystickInput.x > 0.2);
 
     // Get camera direction (flat, no vertical)
     const cameraDirection = new THREE.Vector3();
@@ -75,22 +111,35 @@ export default function PlayerController() {
 
     // Calculate movement direction
     direction.current.set(0, 0, 0);
-    if (keys.current.forward) direction.current.add(cameraDirection);
-    if (keys.current.backward) direction.current.sub(cameraDirection);
-    if (keys.current.left) direction.current.add(sideDirection);
-    if (keys.current.right) direction.current.sub(sideDirection);
+    if (forward) direction.current.add(cameraDirection);
+    if (backward) direction.current.sub(cameraDirection);
+    if (left) direction.current.add(sideDirection);
+    if (right) direction.current.sub(sideDirection);
 
-    if (direction.current.length() > 0) {
-      direction.current.normalize();
-      velocity.current.x = direction.current.x * speed;
-      velocity.current.z = direction.current.z * speed;
+    // On mobile, use joystick magnitude for speed
+    if (isMobile) {
+      const joyMag = Math.sqrt(joystickInput.x ** 2 + joystickInput.y ** 2);
+      const mobileSpeed = speed * Math.min(joyMag, 1);
+      if (direction.current.length() > 0) {
+        direction.current.normalize();
+        velocity.current.x = direction.current.x * mobileSpeed;
+        velocity.current.z = direction.current.z * mobileSpeed;
+      } else {
+        velocity.current.x *= 0.85;
+        velocity.current.z *= 0.85;
+      }
     } else {
-      // Friction/deceleration
-      velocity.current.x *= 0.85;
-      velocity.current.z *= 0.85;
+      if (direction.current.length() > 0) {
+        direction.current.normalize();
+        velocity.current.x = direction.current.x * speed;
+        velocity.current.z = direction.current.z * speed;
+      } else {
+        velocity.current.x *= 0.85;
+        velocity.current.z *= 0.85;
+      }
     }
 
-    // Apply movement with collision check (simple bounds)
+    // Apply movement
     const cam = camera.position;
     const newX = cam.x + velocity.current.x * delta;
     const newZ = cam.z + velocity.current.z * delta;
@@ -107,17 +156,5 @@ export default function PlayerController() {
     setPlayerPosition([camera.position.x, camera.position.y, camera.position.z]);
   });
 
-  return (
-    <DreiPointerLockControls
-      ref={controlsRef}
-      onLock={() => {
-        setIsPointerLocked(true);
-        setShowControls(false);
-      }}
-      onUnlock={() => {
-        setIsPointerLocked(false);
-        setShowControls(true);
-      }}
-    />
-  );
+  return null;
 }
