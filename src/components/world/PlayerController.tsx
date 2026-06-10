@@ -17,6 +17,7 @@ export default function PlayerController() {
   const isPlaying = useWorldStore((s) => s.isPlaying);
   const isPointerLocked = useWorldStore((s) => s.isPointerLocked);
   const isMobile = useWorldStore((s) => s.isMobile);
+  const isSprintActive = useWorldStore((s) => s.isSprintActive);
   const joystickInput = useWorldStore((s) => s.joystickInput);
   const playerRotation = useWorldStore((s) => s.playerRotation);
   const setPlayerPosition = useWorldStore((s) => s.setPlayerPosition);
@@ -94,7 +95,8 @@ export default function PlayerController() {
     camera.rotation.set(rot.x, rot.y, 0, 'YXZ');
 
     // Determine movement input
-    const speed = keys.current.sprint ? sprintSpeed : walkSpeed;
+    const isSprinting = keys.current.sprint || (isMobile && isSprintActive);
+    const speed = isSprinting ? sprintSpeed : walkSpeed;
     const forward = keys.current.forward || (isMobile && joystickInput.y < -0.2);
     const backward = keys.current.backward || (isMobile && joystickInput.y > 0.2);
     const left = keys.current.left || (isMobile && joystickInput.x < -0.2);

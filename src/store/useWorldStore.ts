@@ -15,6 +15,7 @@ interface WorldState {
   sprintSpeed: number;
   isPointerLocked: boolean;
   isMobile: boolean;
+  isSprintActive: boolean; // Mobile sprint button
   // Touch joystick input
   joystickInput: { x: number; y: number };
   // Actions
@@ -26,6 +27,7 @@ interface WorldState {
   setIsPointerLocked: (v: boolean) => void;
   setIsPlaying: (v: boolean) => void;
   setIsMobile: (v: boolean) => void;
+  setSprintActive: (v: boolean) => void;
   setJoystickInput: (input: { x: number; y: number }) => void;
   cycleWeather: () => void;
 }
@@ -42,6 +44,7 @@ export const useWorldStore = create<WorldState>((set, get) => ({
   sprintSpeed: 10,
   isPointerLocked: false,
   isMobile: false,
+  isSprintActive: false,
   joystickInput: { x: 0, y: 0 },
 
   setTime: (t) => set({ timeOfDay: t % 1 }),
@@ -52,6 +55,7 @@ export const useWorldStore = create<WorldState>((set, get) => ({
   setIsPointerLocked: (v) => set({ isPointerLocked: v }),
   setIsPlaying: (v) => set({ isPlaying: v }),
   setIsMobile: (v) => set({ isMobile: v }),
+  setSprintActive: (v) => set({ isSprintActive: v }),
   setJoystickInput: (input) => set({ joystickInput: input }),
   cycleWeather: () => {
     const order: WeatherType[] = ['clear', 'rain', 'fog', 'storm'];

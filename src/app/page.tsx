@@ -11,6 +11,9 @@ const PlayerController = dynamic(() => import('@/components/world/PlayerControll
 const DynamicSky = dynamic(() => import('@/components/world/Sky'), { ssr: false });
 const Weather = dynamic(() => import('@/components/world/Weather'), { ssr: false });
 const Effects = dynamic(() => import('@/components/world/Effects'), { ssr: false });
+const NPCs = dynamic(() => import('@/components/world/NPCs'), { ssr: false });
+const Cars = dynamic(() => import('@/components/world/Cars'), { ssr: false });
+const UrbanDetails = dynamic(() => import('@/components/world/UrbanDetails'), { ssr: false });
 const HUD = dynamic(() => import('@/components/world/HUD'), { ssr: false });
 const HUDKeyboardHandler = dynamic(() => import('@/components/world/HUD').then(m => ({ default: m.HUDKeyboardHandler })), { ssr: false });
 
@@ -58,6 +61,15 @@ export default function WorldPage() {
 
           {/* City */}
           <City />
+
+          {/* NPCs */}
+          <NPCs />
+
+          {/* Cars */}
+          <Cars />
+
+          {/* Urban Details */}
+          <UrbanDetails />
 
           {/* Player */}
           <PlayerController />

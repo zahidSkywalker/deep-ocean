@@ -1,6 +1,6 @@
 'use client';
 
-import { useEffect, useCallback, useRef } from 'react';
+import { useEffect, useCallback, useRef, useState } from 'react';
 import { useWorldStore, WeatherType } from '@/store/useWorldStore';
 
 const weatherIcons: Record<WeatherType, string> = {
@@ -34,16 +34,19 @@ function getTimePeriod(t: number): string {
   return 'Dusk';
 }
 
-/* ─── Virtual Joystick Component ─── */
+/* ═══════════════════════════════════════════════
+   IMPROVED VIRTUAL JOYSTICK — big, responsive, 
+   with directional feedback and glow effects
+   ═══════════════════════════════════════════════ */
 function VirtualJoystick({ side }: { side: 'left' | 'right' }) {
   const joystickRef = useRef<HTMLDivElement>(null);
   const knobRef = useRef<HTMLDivElement>(null);
   const activeTouchId = useRef<number | null>(null);
   const centerRef = useRef({ x: 0, y: 0 });
-
   const isMoveJoystick = side === 'left';
-  const radius = 50;
-  const knobRadius = 30;
+
+  const baseRadius = 60;
+  const knobSize = 52;
 
   const handleStart = useCallback((e: React.TouchEvent) => {
     e.preventDefault();
@@ -70,24 +73,28 @@ function VirtualJoystick({ side }: { side: 'left' | 'right' }) {
         const dx = touch.clientX - centerRef.current.x;
         const dy = touch.clientY - centerRef.current.y;
         const dist = Math.sqrt(dx * dx + dy * dy);
-        const clampedDist = Math.min(dist, radius - knobRadius / 2);
+        const maxDist = baseRadius - knobSize / 4;
+        const clampedDist = Math.min(dist, maxDist);
         const angle = Math.atan2(dy, dx);
         const clampX = Math.cos(angle) * clampedDist;
         const clampY = Math.sin(angle) * clampedDist;
 
         if (knobRef.current) {
-          knobRef.current.style.transform = `translate(${clampX}px, ${clampY}px)`;
+          knobRef.current.style.transform = `translate(calc(-50% + ${clampX}px), calc(-50% + ${clampY}px))`;
+          // Dynamic feedback: glow more when pushed further
+          const intensity = Math.min(clampedDist / maxDist, 1);
+          knobRef.current.style.boxShadow = `0 0 ${12 + intensity * 20}px rgba(255, 180, 60, ${0.15 + intensity * 0.35}), inset 0 1px 1px rgba(255,255,255,0.15)`;
         }
 
-        const normX = clampX / radius;
-        const normY = clampY / radius;
+        const normX = clampX / baseRadius;
+        const normY = clampY / baseRadius;
 
         if (isMoveJoystick) {
           useWorldStore.getState().setJoystickInput({ x: normX, y: normY });
         } else {
-          // Look joystick: rotate camera
+          // Look joystick: accumulate rotation
           const store = useWorldStore.getState();
-          const sensitivity = 0.03;
+          const sensitivity = 0.035;
           store.setPlayerRotation({
             x: Math.max(-Math.PI / 2.1, Math.min(Math.PI / 2.1, store.playerRotation.x - normY * sensitivity)),
             y: store.playerRotation.y - normX * sensitivity,
@@ -104,7 +111,8 @@ function VirtualJoystick({ side }: { side: 'left' | 'right' }) {
       if (e.changedTouches[i].identifier === activeTouchId.current) {
         activeTouchId.current = null;
         if (knobRef.current) {
-          knobRef.current.style.transform = 'translate(0px, 0px)';
+          knobRef.current.style.transform = 'translate(-50%, -50%)';
+          knobRef.current.style.boxShadow = '0 0 12px rgba(255, 180, 60, 0.15), inset 0 1px 1px rgba(255,255,255,0.15)';
         }
         if (isMoveJoystick) {
           useWorldStore.getState().setJoystickInput({ x: 0, y: 0 });
@@ -116,36 +124,136 @@ function VirtualJoystick({ side }: { side: 'left' | 'right' }) {
   return (
     <div
       ref={joystickRef}
-      className="fixed z-[100] h-32 w-32 touch-none select-none"
-      style={side === 'left' ? { bottom: '2rem', left: '2rem' } : { bottom: '2rem', right: '2rem' }}
+      className="fixed z-[100] touch-none select-none"
+      style={{
+        width: baseRadius * 2 + 20,
+        height: baseRadius * 2 + 20,
+        bottom: '1.5rem',
+        ...(side === 'left' ? { left: '1.5rem' } : { right: '1.5rem' }),
+      }}
     >
-      {/* Base ring */}
-      <div className="absolute inset-0 rounded-full border-2 border-white/20 bg-black/30 backdrop-blur-sm" />
-      {/* Knob */}
+      {/* Outer glow ring */}
+      <div
+        className="absolute rounded-full"
+        style={{
+          inset: 0,
+          background: 'radial-gradient(circle, rgba(255,255,255,0.02) 0%, rgba(255,255,255,0.06) 60%, transparent 100%)',
+          border: '1.5px solid rgba(255,255,255,0.08)',
+        }}
+      />
+
+      {/* Direction indicator lines */}
+      {isMoveJoystick && (
+        <>
+          {/* Up arrow */}
+          <div className="absolute left-1/2 top-2 -translate-x-1/2" style={{ color: 'rgba(255,255,255,0.12)' }}>
+            <svg width="12" height="12" viewBox="0 0 24 24" fill="currentColor"><path d="M12 4l-8 8h5v8h6v-8h5z"/></svg>
+          </div>
+          {/* Down arrow */}
+          <div className="absolute bottom-2 left-1/2 -translate-x-1/2 rotate-180" style={{ color: 'rgba(255,255,255,0.12)' }}>
+            <svg width="12" height="12" viewBox="0 0 24 24" fill="currentColor"><path d="M12 4l-8 8h5v8h6v-8h5z"/></svg>
+          </div>
+          {/* Left arrow */}
+          <div className="absolute left-2 top-1/2 -translate-y-1/2 -rotate-90" style={{ color: 'rgba(255,255,255,0.12)' }}>
+            <svg width="12" height="12" viewBox="0 0 24 24" fill="currentColor"><path d="M12 4l-8 8h5v8h6v-8h5z"/></svg>
+          </div>
+          {/* Right arrow */}
+          <div className="absolute right-2 top-1/2 -translate-y-1/2 rotate-90" style={{ color: 'rgba(255,255,255,0.12)' }}>
+            <svg width="12" height="12" viewBox="0 0 24 24" fill="currentColor"><path d="M12 4l-8 8h5v8h6v-8h5z"/></svg>
+          </div>
+        </>
+      )}
+
+      {/* Center dot */}
+      <div
+        className="absolute left-1/2 top-1/2 -translate-x-1/2 -translate-y-1/2 rounded-full"
+        style={{ width: 6, height: 6, background: 'rgba(255,255,255,0.06)' }}
+      />
+
+      {/* Active knob */}
       <div
         ref={knobRef}
-        className="absolute left-1/2 top-1/2 flex h-14 w-14 -translate-x-1/2 -translate-y-1/2 items-center justify-center rounded-full border border-white/30 bg-white/15 backdrop-blur-md transition-shadow active:bg-white/25"
+        className="absolute left-1/2 top-1/2 rounded-full transition-shadow duration-100"
+        style={{
+          width: knobSize,
+          height: knobSize,
+          transform: 'translate(-50%, -50%)',
+          background: 'radial-gradient(circle at 35% 35%, rgba(255,255,255,0.22), rgba(255,255,255,0.06) 70%, rgba(255,255,255,0.02))',
+          border: '1.5px solid rgba(255,255,255,0.18)',
+          boxShadow: '0 0 12px rgba(255, 180, 60, 0.15), inset 0 1px 1px rgba(255,255,255,0.15)',
+          backdropFilter: 'blur(8px)',
+          WebkitBackdropFilter: 'blur(8px)',
+        }}
         onTouchStart={handleStart}
         onTouchMove={handleMove}
         onTouchEnd={handleEnd}
         onTouchCancel={handleEnd}
       >
         {isMoveJoystick ? (
-          <svg className="h-5 w-5 text-white/60" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
-            <path d="M12 19V5M5 12l7-7 7 7" />
-          </svg>
+          <div className="flex h-full w-full items-center justify-center">
+            <svg className="h-5 w-5 opacity-40" viewBox="0 0 24 24" fill="none" stroke="white" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round">
+              <path d="M12 19V5M5 12l7-7 7 7" />
+            </svg>
+          </div>
         ) : (
-          <svg className="h-5 w-5 text-white/60" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
-            <path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z" />
-            <circle cx="12" cy="12" r="3" />
-          </svg>
+          <div className="flex h-full w-full items-center justify-center">
+            <svg className="h-5 w-5 opacity-40" viewBox="0 0 24 24" fill="none" stroke="white" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round">
+              <path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z" />
+              <circle cx="12" cy="12" r="3" />
+            </svg>
+          </div>
         )}
       </div>
     </div>
   );
 }
 
-/* ─── Touch Look Area (when no right joystick active) ─── */
+/* ─── Sprint Button (mobile) ─── */
+function SprintButton() {
+  const [isSprinting, setIsSprinting] = useState(false);
+
+  const handleStart = useCallback((e: React.TouchEvent) => {
+    e.preventDefault();
+    e.stopPropagation();
+    setIsSprinting(true);
+    useWorldStore.getState().setSprintActive(true);
+  }, []);
+
+  const handleEnd = useCallback((e: React.TouchEvent) => {
+    e.preventDefault();
+    e.stopPropagation();
+    setIsSprinting(false);
+    useWorldStore.getState().setSprintActive(false);
+  }, []);
+
+  return (
+    <div
+      className="pointer-events-auto fixed z-[100] touch-none select-none"
+      style={{ bottom: '8rem', right: '2rem' }}
+    >
+      <div
+        className="flex h-16 w-16 items-center justify-center rounded-2xl border transition-all duration-150 active:scale-90"
+        style={{
+          borderColor: isSprinting ? 'rgba(255, 180, 60, 0.5)' : 'rgba(255,255,255,0.12)',
+          background: isSprinting
+            ? 'radial-gradient(circle, rgba(255,180,60,0.25), rgba(255,180,60,0.08))'
+            : 'rgba(255,255,255,0.04)',
+          boxShadow: isSprinting ? '0 0 20px rgba(255,180,60,0.2)' : 'none',
+          backdropFilter: 'blur(6px)',
+        }}
+        onTouchStart={handleStart}
+        onTouchEnd={handleEnd}
+        onTouchCancel={handleEnd}
+      >
+        <svg className="h-6 w-6" viewBox="0 0 24 24" fill="none" stroke="white" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" style={{ opacity: isSprinting ? 0.8 : 0.35 }}>
+          <path d="M13 2L3 14h9l-1 8 10-12h-9l1-8z" />
+        </svg>
+      </div>
+    </div>
+  );
+}
+
+/* ─── Touch Look Area (fallback, hidden when right joystick is shown) ─── */
 function TouchLookArea() {
   const handleTouchStart = useCallback((e: React.TouchEvent) => {
     const store = useWorldStore.getState();
@@ -186,7 +294,9 @@ function TouchLookArea() {
   );
 }
 
-/* ─── Main HUD ─── */
+/* ═══════════════════════════════════════════════
+   MAIN HUD
+   ═══════════════════════════════════════════════ */
 export default function HUD() {
   const timeOfDay = useWorldStore((s) => s.timeOfDay);
   const weather = useWorldStore((s) => s.weather);
@@ -196,7 +306,6 @@ export default function HUD() {
   const isPaused = useWorldStore((s) => s.isPaused);
   const playerPosition = useWorldStore((s) => s.playerPosition);
   const setIsPlaying = useWorldStore((s) => s.setIsPlaying);
-  const setIsPointerLocked = useWorldStore((s) => s.setIsPointerLocked);
   const cycleWeather = useWorldStore((s) => s.cycleWeather);
   const togglePause = useWorldStore((s) => s.togglePause);
 
@@ -213,8 +322,10 @@ export default function HUD() {
         }
       };
 
-      // Also add a document-level click handler as fallback
       const handleDocClick = (e: MouseEvent) => {
+        const target = e.target as HTMLElement;
+        // Don't hijack clicks on UI buttons
+        if (target.tagName === 'BUTTON' || target.closest('button')) return;
         if (!useWorldStore.getState().isPointerLocked) {
           const canvas = document.querySelector('canvas');
           if (canvas) {
@@ -225,8 +336,8 @@ export default function HUD() {
 
       const canvas = document.querySelector('canvas');
       canvas?.addEventListener('click', handleCanvasClick);
+      document.addEventListener('click', handleDocClick);
 
-      // Listen for pointer lock changes
       const handleLockChange = () => {
         const locked = document.pointerLockElement !== null;
         useWorldStore.getState().setIsPointerLocked(locked);
@@ -236,6 +347,7 @@ export default function HUD() {
 
       return () => {
         canvas?.removeEventListener('click', handleCanvasClick);
+        document.removeEventListener('click', handleDocClick);
         document.removeEventListener('pointerlockchange', handleLockChange);
       };
     }
@@ -246,10 +358,10 @@ export default function HUD() {
       {/* Crosshair (desktop only, when locked) */}
       {isPointerLocked && !isMobile && (
         <div className="absolute left-1/2 top-1/2 -translate-x-1/2 -translate-y-1/2">
-          <div className="flex h-6 w-6 items-center justify-center">
-            <div className="absolute h-px w-3 bg-white/40" />
-            <div className="absolute h-3 w-px bg-white/40" />
-            <div className="h-1 w-1 rounded-full bg-white/60" />
+          <div className="flex h-8 w-8 items-center justify-center">
+            <div className="absolute h-[1px] w-4 rounded-full bg-white/50" />
+            <div className="absolute h-4 w-[1px] rounded-full bg-white/50" />
+            <div className="h-[3px] w-[3px] rounded-full bg-white/70" />
           </div>
         </div>
       )}
@@ -276,13 +388,15 @@ export default function HUD() {
         <div className="pointer-events-auto absolute right-3 top-3 flex gap-2 sm:right-4 sm:top-4">
           <button
             onClick={(e) => { e.stopPropagation(); cycleWeather(); }}
-            className="rounded-lg border border-white/10 bg-black/40 px-2.5 py-1.5 text-xs text-white/50 backdrop-blur-md transition-colors hover:bg-black/60 hover:text-white/80 sm:px-3 sm:py-2"
+            className="rounded-lg border border-white/10 bg-black/40 px-3 py-2 text-xs text-white/50 backdrop-blur-md transition-colors hover:bg-black/60 hover:text-white/80 sm:px-4 sm:py-2.5"
+            style={isMobile ? { minWidth: 44, minHeight: 44 } : {}}
           >
             {weatherIcons[weather]} {weatherLabels[weather]}
           </button>
           <button
             onClick={(e) => { e.stopPropagation(); togglePause(); }}
-            className="rounded-lg border border-white/10 bg-black/40 px-2.5 py-1.5 text-xs text-white/50 backdrop-blur-md transition-colors hover:bg-black/60 hover:text-white/80 sm:px-3 sm:py-2"
+            className="rounded-lg border border-white/10 bg-black/40 px-3 py-2 text-xs text-white/50 backdrop-blur-md transition-colors hover:bg-black/60 hover:text-white/80 sm:px-4 sm:py-2.5"
+            style={isMobile ? { minWidth: 44, minHeight: 44 } : {}}
           >
             {isPaused ? '▶' : '⏸'}
           </button>
@@ -305,7 +419,7 @@ export default function HUD() {
         <div className="absolute left-1/2 top-16 -translate-x-1/2 sm:hidden">
           <div className="rounded-lg border border-white/10 bg-black/30 px-3 py-1 backdrop-blur-md">
             <span className="text-[10px] text-white/30">
-              Tap top area to pause
+              Swipe top area to pause
             </span>
           </div>
         </div>
@@ -345,6 +459,7 @@ export default function HUD() {
                 }
               }}
               className="group relative mb-5 overflow-hidden rounded-xl bg-gradient-to-r from-amber-500 to-orange-500 px-8 py-3 font-semibold text-black transition-all duration-300 hover:shadow-lg hover:shadow-amber-500/25 active:scale-95 sm:mb-6"
+              style={isMobile ? { minHeight: 52 } : {}}
             >
               <span className="relative z-10">
                 {isMobile ? 'Tap to Explore' : 'Click to Explore'}
@@ -354,15 +469,32 @@ export default function HUD() {
 
             {/* Controls info */}
             {isMobile ? (
-              <div className="space-y-2 text-xs text-white/40">
-                <div className="flex items-center justify-center gap-3">
-                  <div className="flex items-center gap-1.5 rounded-lg border border-white/5 bg-white/5 px-3 py-2">
-                    <div className="h-6 w-6 rounded-full border border-white/30 bg-white/10" />
-                    <span>Left: Move</span>
+              <div className="space-y-3 text-xs text-white/40">
+                <div className="flex items-center justify-center gap-4">
+                  <div className="flex flex-col items-center gap-1.5 rounded-lg border border-white/5 bg-white/5 px-4 py-3">
+                    <div className="flex h-10 w-10 items-center justify-center rounded-full border border-white/30 bg-white/10">
+                      <svg className="h-4 w-4 text-white/50" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
+                        <path d="M12 19V5M5 12l7-7 7 7" />
+                      </svg>
+                    </div>
+                    <span>Move</span>
                   </div>
-                  <div className="flex items-center gap-1.5 rounded-lg border border-white/5 bg-white/5 px-3 py-2">
-                    <div className="h-6 w-6 rounded-full border border-white/30 bg-white/10" />
-                    <span>Right: Look</span>
+                  <div className="flex flex-col items-center gap-1.5 rounded-lg border border-white/5 bg-white/5 px-4 py-3">
+                    <div className="flex h-10 w-10 items-center justify-center rounded-full border border-white/30 bg-white/10">
+                      <svg className="h-4 w-4 text-white/50" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
+                        <path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z" />
+                        <circle cx="12" cy="12" r="3" />
+                      </svg>
+                    </div>
+                    <span>Look</span>
+                  </div>
+                  <div className="flex flex-col items-center gap-1.5 rounded-lg border border-white/5 bg-white/5 px-4 py-3">
+                    <div className="flex h-10 w-10 items-center justify-center rounded-xl border border-white/30 bg-white/10">
+                      <svg className="h-4 w-4 text-white/50" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
+                        <path d="M13 2L3 14h9l-1 8 10-12h-9l1-8z" />
+                      </svg>
+                    </div>
+                    <span>Sprint</span>
                   </div>
                 </div>
               </div>
@@ -406,6 +538,7 @@ export default function HUD() {
             <button
               onClick={() => togglePause()}
               className="mt-4 rounded-xl bg-gradient-to-r from-amber-500 to-orange-500 px-6 py-2 font-semibold text-black transition-all hover:scale-105 active:scale-95"
+              style={isMobile ? { minHeight: 48, minWidth: 160 } : {}}
             >
               Resume
             </button>
@@ -422,13 +555,16 @@ export default function HUD() {
           <div className="pointer-events-auto">
             <VirtualJoystick side="right" />
           </div>
+          <div className="pointer-events-auto">
+            <SprintButton />
+          </div>
         </>
       )}
 
-      {/* Mobile: Tap upper screen to pause */}
+      {/* Mobile: Swipe upper screen to pause */}
       {isMobile && isPlaying && !isPaused && (
         <div
-          className="pointer-events-auto fixed left-1/2 top-0 z-[95] h-16 w-full -translate-x-1/2"
+          className="pointer-events-auto fixed left-1/2 top-0 z-[95] h-14 w-full -translate-x-1/2"
           onClick={() => togglePause()}
         />
       )}
@@ -450,9 +586,6 @@ export function HUDKeyboardHandler() {
       if (e.code === 'KeyP') {
         e.preventDefault();
         togglePause();
-      }
-      if (e.code === 'Escape') {
-        // Pointer lock will handle this naturally
       }
     };
     window.addEventListener('keydown', handler);
