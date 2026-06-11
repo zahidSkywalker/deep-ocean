@@ -3,29 +3,17 @@
 import { useEffect, useRef, useCallback } from 'react';
 
 // ─── Asset Map ───────────────────────────────────────────────────────
-const FISH = [
-  { src: '/assets/fish_blue.png', w: 48, h: 32 },
-  { src: '/assets/fish_brown.png', w: 52, h: 34 },
-  { src: '/assets/fish_green.png', w: 46, h: 30 },
-  { src: '/assets/fish_grey.png', w: 50, h: 32 },
-  { src: '/assets/fish_orange.png', w: 54, h: 34 },
-  { src: '/assets/fish_pink.png', w: 44, h: 28 },
-  { src: '/assets/fish_red.png', w: 56, h: 36 },
-  { src: '/assets/fish_grey_long_a.png', w: 72, h: 26 },
-  { src: '/assets/fish_grey_long_b.png', w: 68, h: 28 },
-];
-
-const SKELETON_FISH = [
-  { src: '/assets/fish_blue_skeleton.png', w: 48, h: 32 },
-  { src: '/assets/fish_green_skeleton.png', w: 46, h: 30 },
-  { src: '/assets/fish_orange_skeleton.png', w: 54, h: 34 },
-  { src: '/assets/fish_pink_skeleton.png', w: 44, h: 28 },
-  { src: '/assets/fish_red_skeleton.png', w: 56, h: 36 },
-  { src: '/assets/fish_blue_skeleton_outline.png', w: 48, h: 32 },
-  { src: '/assets/fish_green_skeleton_outline.png', w: 46, h: 30 },
-  { src: '/assets/fish_orange_skeleton_outline.png', w: 54, h: 34 },
-  { src: '/assets/fish_pink_skeleton_outline.png', w: 44, h: 28 },
-  { src: '/assets/fish_red_skeleton_outline.png', w: 56, h: 36 },
+// Fish with their matching skeleton — skin overlays on top of skeleton base
+const FISH_WITH_SKELETON = [
+  { skin: '/assets/fish_blue.png', skeleton: '/assets/fish_blue_skeleton.png', w: 48, h: 32 },
+  { skin: '/assets/fish_brown.png', skeleton: null, w: 52, h: 34 },
+  { skin: '/assets/fish_green.png', skeleton: '/assets/fish_green_skeleton.png', w: 46, h: 30 },
+  { skin: '/assets/fish_grey.png', skeleton: null, w: 50, h: 32 },
+  { skin: '/assets/fish_orange.png', skeleton: '/assets/fish_orange_skeleton.png', w: 54, h: 34 },
+  { skin: '/assets/fish_pink.png', skeleton: '/assets/fish_pink_skeleton.png', w: 44, h: 28 },
+  { skin: '/assets/fish_red.png', skeleton: '/assets/fish_red_skeleton.png', w: 56, h: 36 },
+  { skin: '/assets/fish_grey_long_a.png', skeleton: null, w: 72, h: 26 },
+  { skin: '/assets/fish_grey_long_b.png', skeleton: null, w: 68, h: 28 },
 ];
 
 const SEAWEED_GREEN = [
@@ -96,7 +84,8 @@ const BG_SEAWEED = [
 interface FishEntity {
   x: number; y: number;
   vx: number; vy: number;
-  img: HTMLImageElement;
+  skinImg: HTMLImageElement;
+  skeletonImg: HTMLImageElement | null;
   w: number; h: number;
   scale: number;
   flip: boolean;
@@ -106,6 +95,7 @@ interface FishEntity {
   tailPhase: number;
   layer: 'mid' | 'back' | 'front';
   opacity: number;
+  skinAlpha: number; // transparency of skin layer (0.55-0.85)
 }
 
 interface BubbleEntity {
@@ -214,8 +204,7 @@ export default function UnderwaterScene() {
 
     // ─── Load all images ───────────────────────────────────────────
     const allSources = [
-      ...FISH.map(f => f.src),
-      ...SKELETON_FISH.map(f => f.src),
+      ...FISH_WITH_SKELETON.flatMap(f => [f.skin, f.skeleton].filter(Boolean) as string[]),
       ...SEAWEED_GREEN, ...SEAWEED_ORANGE, ...SEAWEED_PINK, ...SEAWEED_GRASS,
       ...BUBBLES, ...ROCKS.map(r => r.src),
       ...TERRAIN_TOP, ...TERRAIN_SOLID,
@@ -249,12 +238,12 @@ export default function UnderwaterScene() {
       const H = s.height;
 
       // Fish
-      const allFishDefs = [...FISH, ...SKELETON_FISH];
       s.fish = [];
       for (let i = 0; i < 35; i++) {
-        const def = allFishDefs[randInt(0, allFishDefs.length)];
-        const img = getImg(def.src);
-        if (!img) continue;
+        const def = FISH_WITH_SKELETON[randInt(0, FISH_WITH_SKELETON.length)];
+        const skinImg = getImg(def.skin);
+        if (!skinImg) continue;
+        const skeletonImg = def.skeleton ? getImg(def.skeleton) || null : null;
         const layer = i < 8 ? 'back' as const : i < 25 ? 'mid' as const : 'front' as const;
         const scale = layer === 'back' ? rand(0.5, 0.7) : layer === 'mid' ? rand(0.8, 1.2) : rand(1.1, 1.6);
         const goRight = Math.random() > 0.5;
@@ -263,7 +252,7 @@ export default function UnderwaterScene() {
           y: rand(H * 0.08, H * 0.72),
           vx: (goRight ? 1 : -1) * rand(0.3, layer === 'back' ? 1.0 : 2.2) * (layer === 'back' ? 0.5 : layer === 'mid' ? 0.8 : 1),
           vy: rand(-0.1, 0.1),
-          img, w: def.w, h: def.h,
+          skinImg, skeletonImg, w: def.w, h: def.h,
           scale, flip: !goRight,
           wobblePhase: rand(0, Math.PI * 2),
           wobbleSpeed: rand(0.01, 0.03),
@@ -271,6 +260,7 @@ export default function UnderwaterScene() {
           tailPhase: rand(0, Math.PI * 2),
           layer,
           opacity: layer === 'back' ? rand(0.3, 0.5) : layer === 'mid' ? rand(0.6, 0.85) : rand(0.8, 1),
+          skinAlpha: rand(0.55, 0.82),
         });
       }
 
@@ -473,22 +463,29 @@ export default function UnderwaterScene() {
       ctx!.restore();
     }
 
-    // ─── Draw Fish ─────────────────────────────────────────────────
+    // ─── Draw Fish (skeleton base + semi-transparent skin overlay) ──
     function drawFish(f: FishEntity, time: number) {
       const wobbleY = Math.sin(f.wobblePhase + time * f.wobbleSpeed) * f.wobbleAmp;
       const tailWag = Math.sin(f.tailPhase + time * 0.08) * 0.05;
 
       ctx!.save();
-      ctx!.globalAlpha = f.opacity;
       ctx!.translate(f.x, f.y + wobbleY);
       ctx!.scale(f.flip ? -f.scale : f.scale, f.scale + tailWag);
 
-      // Subtle shadow under fish
-      ctx!.shadowColor = 'rgba(0,0,0,0.15)';
-      ctx!.shadowBlur = 6;
-      ctx!.shadowOffsetY = 3;
+      // 1) Draw skeleton as the base (full opacity)
+      if (f.skeletonImg) {
+        ctx!.globalAlpha = f.opacity;
+        ctx!.shadowColor = 'rgba(0,0,0,0.1)';
+        ctx!.shadowBlur = 4;
+        ctx!.shadowOffsetY = 2;
+        ctx!.drawImage(f.skeletonImg, -f.w / 2, -f.h / 2, f.w, f.h);
+        ctx!.shadowColor = 'transparent';
+      }
 
-      ctx!.drawImage(f.img, -f.w / 2, -f.h / 2, f.w, f.h);
+      // 2) Draw skin on top with reduced alpha so skeleton shows through
+      ctx!.globalAlpha = f.opacity * f.skinAlpha;
+      ctx!.drawImage(f.skinImg, -f.w / 2, -f.h / 2, f.w, f.h);
+
       ctx!.restore();
     }
 
