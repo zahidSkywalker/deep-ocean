@@ -13,9 +13,9 @@ const geistMono = Geist_Mono({
 });
 
 export const metadata: Metadata = {
-  title: "Open City World — Photorealistic 3D Urban Explorer",
+  title: "Deep Ocean — Animated Underwater Scene",
   description:
-    "A photorealistic 3D open world city experience with dynamic day/night cycle, weather systems, and first-person exploration. Built by Zahidul Islam.",
+    "An immersive animated underwater scene with fish, jellyfish, seaweed, bubbles, and light rays. Built with Kenney's Fish Pack 2.",
   icons: {
     icon: "https://z-cdn.chatglm.cn/z-ai/static/logo.svg",
   },
