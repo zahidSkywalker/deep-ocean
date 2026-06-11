@@ -1,22 +1,17 @@
 ---
 Task ID: 1
-Agent: Main Agent
-Task: Add NPCs, cars, urban details, improved mobile controls to Open City World
+Agent: Main
+Task: Build animated underwater scene with Kenney Fish Pack 2
 
 Work Log:
-- Read all existing project files to understand current state
-- Created NPCs.tsx: 60 pedestrian NPCs using InstancedMesh with body/head/arms/legs, walk animations, varied skin/clothing colors
-- Created Cars.tsx: 24 vehicles (5 car types) with metallic bodies, glass windows, wheels, headlights (with beams at night), taillights
-- Created UrbanDetails.tsx: Crosswalks, white lane edge markings, traffic lights (at major intersections), park benches, trash cans, fire hydrants, bus stops with shelters
-- Rewrote HUD.tsx: Improved virtual joysticks (bigger 120px+ area, directional arrows, glow feedback on push), added Sprint button for mobile, better touch button sizing (44px minimum)
-- Updated useWorldStore.ts: Added isSprintActive state + setSprintActive action for mobile sprint
-- Updated PlayerController.tsx: Uses isSprintActive for mobile sprint detection
-- Updated page.tsx: Added NPCs, Cars, UrbanDetails components
-- Build succeeded, pushed to GitHub for Vercel auto-deploy
+- Extracted 126 PNG assets from Kenney Fish Pack 2 (fish, seaweed, rocks, terrain, bubbles, HUD)
+- Created Canvas-based animated underwater scene in UnderwaterScene.tsx
+- Features: 35+ fish across 3 depth layers, 4 jellyfish, 22 seaweed with sway, 40 bubbles, light rays, caustics, plankton particles, undulating sand floor, vignette, mouse-follow glow, fish avoidance
+- Removed old Open City World Three.js components
+- Deployed to Vercel and pushed to GitHub
 
 Stage Summary:
-- 7 files changed, 1204 insertions, 51 deletions
-- New components: NPCs.tsx, Cars.tsx, UrbanDetails.tsx
-- Improved: HUD.tsx (mobile joystick), PlayerController.tsx (sprint), useWorldStore.ts (sprint state)
-- Build passed, pushed to main branch
-- Vercel auto-deploy from GitHub connection expected
+- Live URL: https://deep-ocean-eta.vercel.app
+- GitHub: https://github.com/zahidSkywalker/deep-ocean
+- 126 fish pack assets used in Canvas 2D animation
+- Scene includes: parallax layers, dynamic lighting, caustics, interactive mouse glow
