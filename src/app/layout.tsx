@@ -1,32 +1,9 @@
-import type { Metadata, Viewport } from "next";
-import { Geist, Geist_Mono } from "next/font/google";
+import type { Metadata } from "next";
 import "./globals.css";
 
-const geistSans = Geist({
-  variable: "--font-geist-sans",
-  subsets: ["latin"],
-});
-
-const geistMono = Geist_Mono({
-  variable: "--font-geist-mono",
-  subsets: ["latin"],
-});
-
 export const metadata: Metadata = {
-  title: "Deep Ocean — Animated Underwater Scene",
-  description:
-    "An immersive animated underwater scene with fish, jellyfish, seaweed, bubbles, and light rays. Built with Kenney's Fish Pack 2.",
-  icons: {
-    icon: "https://z-cdn.chatglm.cn/z-ai/static/logo.svg",
-  },
-};
-
-export const viewport: Viewport = {
-  width: "device-width",
-  initialScale: 1,
-  maximumScale: 1,
-  userScalable: false,
-  viewportFit: "cover",
+  title: "Farm Village — A Pixel Life",
+  description: "A cozy auto-playing slice-of-life farm village built with pixel art",
 };
 
 export default function RootLayout({
@@ -35,10 +12,8 @@ export default function RootLayout({
   children: React.ReactNode;
 }>) {
   return (
-    <html lang="en" suppressHydrationWarning>
-      <body
-        className={`${geistSans.variable} ${geistMono.variable} antialiased`}
-      >
+    <html lang="en">
+      <body className="m-0 p-0 overflow-hidden bg-black w-screen h-screen">
         {children}
       </body>
     </html>

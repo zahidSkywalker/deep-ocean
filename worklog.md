@@ -15,3 +15,22 @@ Stage Summary:
 - GitHub: https://github.com/zahidSkywalker/deep-ocean
 - 126 fish pack assets used in Canvas 2D animation
 - Scene includes: parallax layers, dynamic lighting, caustics, interactive mouse glow
+
+---
+Task ID: 1
+Agent: Main Agent
+Task: Build auto-playing slice-of-life farm village using Farm RPG asset pack
+
+Work Log:
+- Created new Next.js 16 project at /home/z/farm-village
+- Extracted Farm RPG FREE 16x16 Tiny Asset Pack (15 PNG files)
+- Copied assets to public/assets/ (sprites, objects, tileset)
+- Used VLM to analyze sprite sheet layouts
+- Delegated to full-stack-developer agent to build FarmScene.tsx (1403 lines)
+- Agent built: tilemap generator (50x45), object placement, crop system, farmer AI, animal AI, day/night cycle, particles, camera system, UI overlay
+- Fixed Vercel auth (used token directly), linked and deployed
+- Verified page loads at farm-village-two.vercel.app
+
+Stage Summary:
+- Deployed: https://farm-village-two.vercel.app
+- Features: auto-playing farmer routine, wandering animals, crop growth, day/night cycle, butterflies/fireflies, pond, house, fences, trees, pixel-perfect 3x rendering

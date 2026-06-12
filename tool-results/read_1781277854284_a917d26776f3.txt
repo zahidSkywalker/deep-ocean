@@ -1,0 +1,1404 @@
+     1→'use client';
+     2→
+     3→import { useRef, useEffect } from 'react';
+     4→
+     5→// ═══════════════════════════════════════════════════════════════
+     6→// CONSTANTS
+     7→// ═══════════════════════════════════════════════════════════════
+     8→const TILE = 16;
+     9→const SCALE = 3;
+    10→const SCALED = TILE * SCALE; // 48px
+    11→const MAP_W = 50;
+    12→const MAP_H = 45;
+    13→const DAY_SECONDS = 180; // 3 real minutes = 1 game day
+    14→
+    15→// Tile indices — Spring Tileset (12 cols × 20 rows = 240 tiles)
+    16→// Row 0 (0-11): Grass base variants
+    17→// Row 1 (12-23): Grass with detail/flowers
+    18→// Row 2 (24-35): Dirt/soil
+    19→// Row 3 (36-47): Path/road tiles
+    20→// Row 4 (48-59): Tilled farmland
+    21→// Row 5 (60-71): Water
+    22→// Row 6 (72-83): Water edges/transitions
+    23→// Row 7-8 (84-107): Grass-dirt/grass-water transitions
+    24→// Row 9-11 (108-143): Structural (fences, walls in tileset)
+    25→// Row 12-19 (144-239): Decorative, objects, misc
+    26→const T_GRASS = [0, 1, 2, 3, 4, 5];
+    27→const T_GRASS_DETAIL = [12, 13, 14, 15];
+    28→const T_DIRT = [24, 25, 26, 27];
+    29→const T_PATH = [36, 37, 38, 39];
+    30→const T_FARMLAND = [48, 49, 50, 51];
+    31→const T_WATER = [60, 61, 62, 63];
+    32→// Water edge tiles from row 6 (72-83)
+    33→const T_TALL_GRASS = [180, 181, 182];
+    34→const T_FLOWER = [156, 157, 158, 159, 160];
+    35→const T_ROCK = [168, 169, 170];
+    36→
+    37→// Directions: 0=down, 1=left, 2=right, 3=up
+    38→const DIR_DOWN = 0;
+    39→const DIR_LEFT = 1;
+    40→const DIR_RIGHT = 2;
+    41→const DIR_UP = 3;
+    42→
+    43→// ═══════════════════════════════════════════════════════════════
+    44→// TYPES
+    45→// ═══════════════════════════════════════════════════════════════
+    46→interface SpriteCache {
+    47→  tileset: HTMLImageElement;
+    48→  idle: HTMLImageElement;
+    49→  walk: HTMLImageElement;
+    50→  babyChicken: HTMLImageElement;
+    51→  chickenBlonde: HTMLImageElement;
+    52→  chickenRed: HTMLImageElement;
+    53→  femaleCow: HTMLImageElement;
+    54→  maleCow: HTMLImageElement;
+    55→  house: HTMLImageElement;
+    56→  mapleTree: HTMLImageElement;
+    57→  springCrops: HTMLImageElement;
+    58→  fence: HTMLImageElement;
+    59→  road: HTMLImageElement;
+    60→  chest: HTMLImageElement;
+    61→}
+    62→
+    63→interface Camera {
+    64→  x: number;
+    65→  y: number;
+    66→}
+    67→
+    68→interface Entity {
+    69→  x: number;
+    70→  y: number;
+    71→  targetX: number;
+    72→  targetY: number;
+    73→  direction: number;
+    74→  frame: number;
+    75→  frameTimer: number;
+    76→  moving: boolean;
+    77→  speed: number;
+    78→  state: string;
+    79→  stateTimer: number;
+    80→}
+    81→
+    82→interface CropTile {
+    83→  x: number;
+    84→  y: number;
+    85→  type: number; // crop type row (0-3)
+    86→  stage: number; // growth stage (0-4)
+    87→  progress: number; // 0-1 progress within stage
+    88→}
+    89→
+    90→interface Particle {
+    91→  x: number;
+    92→  y: number;
+    93→  vx: number;
+    94→  vy: number;
+    95→  life: number;
+    96→  maxLife: number;
+    97→  type: 'butterfly' | 'seed' | 'firefly' | 'dust';
+    98→  color: string;
+    99→  size: number;
+   100→  phase: number;
+   101→}
+   102→
+   103→interface MapObject {
+   104→  type: 'tree' | 'fence_h' | 'fence_v' | 'fence_corner_tl' | 'fence_corner_tr'
+   105→       | 'fence_corner_bl' | 'fence_corner_br' | 'flower_dec' | 'rock_dec'
+   106→       | 'tall_grass' | 'chest';
+   107→  x: number;
+   108→  y: number;
+   109→  variant: number;
+   110→  sortY: number;
+   111→}
+   112→
+   113→// ═══════════════════════════════════════════════════════════════
+   114→// SEEDED RANDOM (for consistent map generation)
+   115→// ═══════════════════════════════════════════════════════════════
+   116→function seededRandom(seed: number): () => number {
+   117→  let s = seed;
+   118→  return () => {
+   119→    s = (s * 16807 + 0) % 2147483647;
+   120→    return (s - 1) / 2147483646;
+   121→  };
+   122→}
+   123→
+   124→const rand = seededRandom(42);
+   125→
+   126→// ═══════════════════════════════════════════════════════════════
+   127→// MAP GENERATION
+   128→// ═══════════════════════════════════════════════════════════════
+   129→function generateTilemap(): number[][] {
+   130→  const map: number[][] = [];
+   131→
+   132→  // Fill with grass variants
+   133→  for (let y = 0; y < MAP_H; y++) {
+   134→    map[y] = [];
+   135→    for (let x = 0; x < MAP_W; x++) {
+   136→      const r = rand();
+   137→      if (r < 0.35) map[y][x] = T_GRASS[0];
+   138→      else if (r < 0.60) map[y][x] = T_GRASS[1];
+   139→      else if (r < 0.80) map[y][x] = T_GRASS[2];
+   140→      else if (r < 0.92) map[y][x] = T_GRASS[3];
+   141→      else map[y][x] = T_GRASS[4];
+   142→    }
+   143→  }
+   144→
+   145→  // Scatter grass detail tiles (flowers in grass)
+   146→  for (let y = 2; y < MAP_H - 2; y++) {
+   147→    for (let x = 2; x < MAP_W - 2; x++) {
+   148→      if (rand() < 0.06) {
+   149→        map[y][x] = T_GRASS_DETAIL[Math.floor(rand() * T_GRASS_DETAIL.length)];
+   150→      }
+   151→    }
+   152→  }
+   153→
+   154→  // ── PATHS ──
+   155→  function setPath(x: number, y: number) {
+   156→    if (x >= 0 && x < MAP_W && y >= 0 && y < MAP_H) {
+   157→      const variant = T_PATH[(x + y) % T_PATH.length];
+   158→      map[y][x] = variant;
+   159→    }
+   160→  }
+   161→
+   162→  // Main vertical path: from house southward
+   163→  for (let y = 11; y <= 38; y++) setPath(24, y);
+   164→
+   165→  // West branch to farm area
+   166→  for (let x = 8; x <= 24; x++) setPath(x, 18);
+   167→
+   168→  // East branch to animal area
+   169→  for (let x = 24; x <= 38; x++) setPath(x, 18);
+   170→
+   171→  // Path from farm gate to farm interior
+   172→  for (let y = 18; y <= 22; y++) setPath(14, y);
+   173→
+   174→  // Path to pond
+   175→  for (let y = 18; y <= 30; y++) setPath(12, y);
+   176→
+   177→  // Path from house to main path
+   178→  for (let y = 11; y <= 12; y++) {
+   179→    for (let x = 22; x <= 26; x++) setPath(x, y);
+   180→  }
+   181→
+   182→  // Small path to animal area
+   183→  for (let y = 18; y <= 22; y++) setPath(36, y);
+   184→
+   185→  // ── FARMLAND ──
+   186→  for (let y = 20; y <= 27; y++) {
+   187→    for (let x = 8; x <= 19; x++) {
+   188→      // Leave a path row
+   189→      if (y === 23 && x >= 8 && x <= 19) continue;
+   190→      map[y][x] = T_FARMLAND[(x + y) % T_FARMLAND.length];
+   191→    }
+   192→  }
+   193→
+   194→  // ── POND ── (elliptical, centered around 12, 34)
+   195→  for (let y = 30; y <= 38; y++) {
+   196→    for (let x = 6; x <= 18; x++) {
+   197→      const cx = 12, cy = 34;
+   198→      const dx = (x - cx) / 6;
+   199→      const dy = (y - cy) / 4.5;
+   200→      if (dx * dx + dy * dy <= 1) {
+   201→        map[y][x] = T_WATER[(x + y * 3) % T_WATER.length];
+   202→      }
+   203→    }
+   204→  }
+   205→
+   206→  // Water edges (sandy border around pond)
+   207→  for (let y = 29; y <= 39; y++) {
+   208→    for (let x = 5; x <= 19; x++) {
+   209→      if (map[y][x] >= T_WATER[0] && map[y][x] <= T_WATER[T_WATER.length - 1]) continue;
+   210→      // Check if adjacent to water
+   211→      let adjWater = false;
+   212→      for (let dy = -1; dy <= 1; dy++) {
+   213→        for (let dx = -1; dx <= 1; dx++) {
+   214→          const ny = y + dy, nx = x + dx;
+   215→          if (ny >= 0 && ny < MAP_H && nx >= 0 && nx < MAP_W) {
+   216→            if (map[ny][nx] >= T_WATER[0] && map[ny][nx] <= T_WATER[T_WATER.length - 1]) {
+   217→              adjWater = true;
+   218→            }
+   219→          }
+   220→        }
+   221→      }
+   222→      if (adjWater && map[y][x] < T_WATER[0]) {
+   223→        map[y][x] = T_DIRT[2]; // sandy dirt near water
+   224→      }
+   225→    }
+   226→  }
+   227→
+   228→  // ── SCATTER DECORATIVE TILES ──
+   229→  // Flowers in meadow areas
+   230→  for (let y = 2; y < MAP_H - 2; y++) {
+   231→    for (let x = 2; x < MAP_W - 2; x++) {
+   232→      if (map[y][x] >= T_GRASS[0] && map[y][x] <= T_GRASS[T_GRASS.length - 1]) {
+   233→        if (rand() < 0.02) {
+   234→          map[y][x] = T_FLOWER[Math.floor(rand() * T_FLOWER.length)];
+   235→        }
+   236→        if (rand() < 0.008) {
+   237→          map[y][x] = T_ROCK[Math.floor(rand() * T_ROCK.length)];
+   238→        }
+   239→      }
+   240→    }
+   241→  }
+   242→
+   243→  // Tall grass patches
+   244→  const tallGrassSpots = [
+   245→    [3, 3], [4, 5], [6, 3], [40, 4], [42, 6], [44, 3],
+   246→    [3, 40], [5, 42], [42, 40], [44, 38], [46, 41],
+   247→    [35, 35], [37, 37], [30, 5], [45, 15], [4, 20],
+   248→  ];
+   249→  for (const [tx, ty] of tallGrassSpots) {
+   250→    for (let dy = 0; dy < 2; dy++) {
+   251→      for (let dx = 0; dx < 2; dx++) {
+   252→        const ny = ty + dy, nx = tx + dx;
+   253→        if (ny >= 0 && ny < MAP_H && nx >= 0 && nx < MAP_W) {
+   254→          if (map[ny][nx] >= T_GRASS[0] && map[ny][nx] <= T_GRASS[T_GRASS.length - 1]) {
+   255→            map[ny][nx] = T_TALL_GRASS[Math.floor(rand() * T_TALL_GRASS.length)];
+   256→          }
+   257→        }
+   258→      }
+   259→    }
+   260→  }
+   261→
+   262→  return map;
+   263→}
+   264→
+   265→// ═══════════════════════════════════════════════════════════════
+   266→// OBJECT GENERATION
+   267→// ═══════════════════════════════════════════════════════════════
+   268→function generateObjects(): MapObject[] {
+   269→  const objects: MapObject[] = [];
+   270→
+   271→  // ── TREES ──
+   272→  // Dense border (2 tiles thick)
+   273→  function addTree(x: number, y: number) {
+   274→    objects.push({
+   275→      type: 'tree',
+   276→      x, y,
+   277→      variant: Math.floor(rand() * 5),
+   278→      sortY: y + 2,
+   279→    });
+   280→  }
+   281→
+   282→  // Top border
+   283→  for (let x = 2; x < MAP_W - 2; x++) {
+   284→    if (rand() < 0.7) addTree(x, 0);
+   285→    if (rand() < 0.5) addTree(x, 1);
+   286→  }
+   287→  // Bottom border
+   288→  for (let x = 2; x < MAP_W - 2; x++) {
+   289→    if (rand() < 0.5) addTree(x, MAP_H - 2);
+   290→    if (rand() < 0.7) addTree(x, MAP_H - 1);
+   291→  }
+   292→  // Left border
+   293→  for (let y = 2; y < MAP_H - 2; y++) {
+   294→    if (rand() < 0.7) addTree(0, y);
+   295→    if (rand() < 0.5) addTree(1, y);
+   296→  }
+   297→  // Right border
+   298→  for (let y = 2; y < MAP_H - 2; y++) {
+   299→    if (rand() < 0.5) addTree(MAP_W - 2, y);
+   300→    if (rand() < 0.7) addTree(MAP_W - 1, y);
+   301→  }
+   302→
+   303→  // Tree clusters
+   304→  const treeClusters: [number, number, number, number][] = [
+   305→    [3, 2, 6, 4],      // NW grove
+   306→    [42, 2, 7, 4],     // NE grove
+   307→    [3, 38, 5, 5],     // SW grove
+   308→    [40, 35, 8, 7],    // SE forest
+   309→    [28, 30, 4, 3],    // South small grove
+   310→    [42, 25, 4, 3],    // East small grove
+   311→  ];
+   312→
+   313→  for (const [cx, cy, w, h] of treeClusters) {
+   314→    for (let dy = 0; dy < h; dy++) {
+   315→      for (let dx = 0; dx < w; dx++) {
+   316→        if (rand() < 0.6) {
+   317→          addTree(cx + dx, cy + dy);
+   318→        }
+   319→      }
+   320→    }
+   321→  }
+   322→
+   323→  // Scattered individual trees
+   324→  const scatteredTrees = [
+   325→    [8, 10], [16, 4], [35, 8], [45, 12], [6, 15],
+   326→    [44, 18], [3, 28], [20, 35], [35, 30], [25, 42],
+   327→    [15, 14], [38, 10], [46, 22], [4, 34], [30, 40],
+   328→    [22, 3], [33, 4], [48, 30], [2, 14], [47, 10],
+   329→  ];
+   330→  for (const [x, y] of scatteredTrees) {
+   331→    if (x >= 0 && x < MAP_W && y >= 0 && y < MAP_H) {
+   332→      addTree(x, y);
+   333→    }
+   334→  }
+   335→
+   336→  // ── FENCES — Farm area (cols 7-20, rows 19-28) ──
+   337→  const farmMinX = 7, farmMaxX = 20, farmMinY = 19, farmMaxY = 28;
+   338→  // Top fence
+   339→  for (let x = farmMinX; x <= farmMaxX; x++) {
+   340→    if (x === farmMinX) objects.push({ type: 'fence_corner_tl', x, y: farmMinY, variant: 0, sortY: farmMinY });
+   341→    else if (x === farmMaxX) objects.push({ type: 'fence_corner_tr', x, y: farmMinY, variant: 0, sortY: farmMinY });
+   342→    else objects.push({ type: 'fence_h', x, y: farmMinY, variant: 0, sortY: farmMinY });
+   343→  }
+   344→  // Bottom fence (with gate at x=14)
+   345→  for (let x = farmMinX; x <= farmMaxX; x++) {
+   346→    if (x === farmMinX) objects.push({ type: 'fence_corner_bl', x, y: farmMaxY, variant: 0, sortY: farmMaxY });
+   347→    else if (x === farmMaxX) objects.push({ type: 'fence_corner_br', x, y: farmMaxY, variant: 0, sortY: farmMaxY });
+   348→    else if (x === 13 || x === 14) { /* gate opening */ }
+   349→    else objects.push({ type: 'fence_h', x, y: farmMaxY, variant: 1, sortY: farmMaxY });
+   350→  }
+   351→  // Left fence
+   352→  for (let y = farmMinY + 1; y < farmMaxY; y++) {
+   353→    objects.push({ type: 'fence_v', x: farmMinX, y, variant: 0, sortY: y });
+   354→  }
+   355→  // Right fence
+   356→  for (let y = farmMinY + 1; y < farmMaxY; y++) {
+   357→    objects.push({ type: 'fence_v', x: farmMaxX, y, variant: 1, sortY: y });
+   358→  }
+   359→
+   360→  // ── FENCES — Animal area (cols 30-43, rows 19-28) ──
+   361→  const animMinX = 30, animMaxX = 43, animMinY = 19, animMaxY = 28;
+   362→  for (let x = animMinX; x <= animMaxX; x++) {
+   363→    if (x === animMinX) objects.push({ type: 'fence_corner_tl', x, y: animMinY, variant: 1, sortY: animMinY });
+   364→    else if (x === animMaxX) objects.push({ type: 'fence_corner_tr', x, y: animMinY, variant: 1, sortY: animMinY });
+   365→    else objects.push({ type: 'fence_h', x, y: animMinY, variant: 2, sortY: animMinY });
+   366→  }
+   367→  for (let x = animMinX; x <= animMaxX; x++) {
+   368→    if (x === animMinX) objects.push({ type: 'fence_corner_bl', x, y: animMaxY, variant: 1, sortY: animMaxY });
+   369→    else if (x === animMaxX) objects.push({ type: 'fence_corner_br', x, y: animMaxY, variant: 1, sortY: animMaxY });
+   370→    else if (x === 35 || x === 36) { /* gate opening */ }
+   371→    else objects.push({ type: 'fence_h', x, y: animMaxY, variant: 3, sortY: animMaxY });
+   372→  }
+   373→  for (let y = animMinY + 1; y < animMaxY; y++) {
+   374→    objects.push({ type: 'fence_v', x: animMinX, y, variant: 2, sortY: y });
+   375→  }
+   376→  for (let y = animMinY + 1; y < animMaxY; y++) {
+   377→    objects.push({ type: 'fence_v', x: animMaxX, y, variant: 3, sortY: y });
+   378→  }
+   379→
+   380→  // ── DECORATIVE FLOWERS AND ROCKS ──
+   381→  const flowerSpots = [
+   382→    [21, 13], [22, 14], [27, 13], [26, 15], [20, 16],
+   383→    [29, 14], [28, 16], [5, 25], [45, 10], [44, 14],
+   384→    [22, 30], [25, 32], [30, 32], [38, 30], [15, 8],
+   385→    [35, 12], [40, 8], [10, 10], [48, 15],
+   386→  ];
+   387→  for (const [x, y] of flowerSpots) {
+   388→    if (x >= 0 && x < MAP_W && y >= 0 && y < MAP_H) {
+   389→      objects.push({ type: 'flower_dec', x, y, variant: Math.floor(rand() * 4), sortY: y });
+   390→    }
+   391→  }
+   392→
+   393→  const rockSpots = [
+   394→    [22, 3], [16, 12], [38, 14], [5, 30], [45, 20],
+   395→    [30, 8], [10, 16], [40, 32], [20, 40], [35, 38],
+   396→  ];
+   397→  for (const [x, y] of rockSpots) {
+   398→    if (x >= 0 && x < MAP_W && y >= 0 && y < MAP_H) {
+   399→      objects.push({ type: 'rock_dec', x, y, variant: Math.floor(rand() * 3), sortY: y });
+   400→    }
+   401→  }
+   402→
+   403→  // Chest near house
+   404→  objects.push({ type: 'chest', x: 32, y: 9, variant: 0, sortY: 9 });
+   405→
+   406→  return objects;
+   407→}
+   408→
+   409→// ═══════════════════════════════════════════════════════════════
+   410→// CROP GENERATION
+   411→// ═══════════════════════════════════════════════════════════════
+   412→function generateCrops(): CropTile[] {
+   413→  const crops: CropTile[] = [];
+   414→  // Farm plots: cols 8-19, rows 20-27 (excluding path row 23)
+   415→  const cropTypeRows = [0, 1, 2, 3]; // different crop types from Spring Crops
+   416→
+   417→  for (let y = 20; y <= 27; y++) {
+   418→    if (y === 23) continue; // path row
+   419→    for (let x = 8; x <= 19; x++) {
+   420→      // Leave some gaps for walking paths in the farm
+   421→      if (x === 14 && (y === 20 || y === 21 || y === 26 || y === 27)) continue;
+   422→      if ((x === 8 || x === 19) && y % 2 === 1) continue;
+   423→      crops.push({
+   424→        x, y,
+   425→        type: cropTypeRows[(y + x) % cropTypeRows.length],
+   426→        stage: Math.floor(rand() * 3), // start at various stages
+   427→        progress: rand() * 0.5,
+   428→      });
+   429→    }
+   430→  }
+   431→  return crops;
+   432→}
+   433→
+   434→// ═══════════════════════════════════════════════════════════════
+   435→// SPRITE LOADING
+   436→// ═══════════════════════════════════════════════════════════════
+   437→function loadImage(src: string): Promise<HTMLImageElement> {
+   438→  return new Promise((resolve, reject) => {
+   439→    const img = new Image();
+   440→    img.onload = () => resolve(img);
+   441→    img.onerror = reject;
+   442→    img.src = src;
+   443→  });
+   444→}
+   445→
+   446→async function loadSprites(): Promise<SpriteCache> {
+   447→  const [tileset, idle, walk, babyChicken, chickenBlonde, chickenRed,
+   448→         femaleCow, maleCow, house, mapleTree, springCrops, fence, road, chest] =
+   449→    await Promise.all([
+   450→      loadImage('/assets/tileset/Tileset Spring.png'),
+   451→      loadImage('/assets/sprites/Idle.png'),
+   452→      loadImage('/assets/sprites/Walk.png'),
+   453→      loadImage('/assets/sprites/Baby Chicken Yellow.png'),
+   454→      loadImage('/assets/sprites/Chicken Blonde  Green.png'),
+   455→      loadImage('/assets/sprites/Chicken Red.png'),
+   456→      loadImage('/assets/sprites/Female Cow Brown.png'),
+   457→      loadImage('/assets/sprites/Male Cow Brown.png'),
+   458→      loadImage('/assets/objects/House.png'),
+   459→      loadImage('/assets/objects/Maple Tree.png'),
+   460→      loadImage('/assets/objects/Spring Crops.png'),
+   461→      loadImage("/assets/objects/Fence's copiar.png"),
+   462→      loadImage('/assets/objects/Road copiar.png'),
+   463→      loadImage('/assets/objects/chest.png'),
+   464→    ]);
+   465→
+   466→  return { tileset, idle, walk, babyChicken, chickenBlonde, chickenRed,
+   467→           femaleCow, maleCow, house, mapleTree, springCrops, fence, road, chest };
+   468→}
+   469→
+   470→// ═══════════════════════════════════════════════════════════════
+   471→// DRAWING HELPERS
+   472→// ═══════════════════════════════════════════════════════════════
+   473→function drawTileFromSheet(
+   474→  ctx: CanvasRenderingContext2D,
+   475→  sheet: HTMLImageElement,
+   476→  tileIndex: number,
+   477→  sheetCols: number,
+   478→  destX: number,
+   479→  destY: number
+   480→) {
+   481→  const srcCol = tileIndex % sheetCols;
+   482→  const srcRow = Math.floor(tileIndex / sheetCols);
+   483→  ctx.drawImage(
+   484→    sheet,
+   485→    srcCol * TILE, srcRow * TILE, TILE, TILE,
+   486→    destX, destY, SCALED, SCALED
+   487→  );
+   488→}
+   489→
+   490→function drawSpritePortion(
+   491→  ctx: CanvasRenderingContext2D,
+   492→  sheet: HTMLImageElement,
+   493→  srcX: number,
+   494→  srcY: number,
+   495→  srcW: number,
+   496→  srcH: number,
+   497→  destX: number,
+   498→  destY: number,
+   499→  destW: number,
+   500→  destH: number
+   501→) {
+   502→  ctx.drawImage(sheet, srcX, srcY, srcW, srcH, destX, destY, destW, destH);
+   503→}
+   504→
+   505→// ═══════════════════════════════════════════════════════════════
+   506→// FARMER AI — Waypoint-based daily routine
+   507→// ═══════════════════════════════════════════════════════════════
+   508→interface Waypoint {
+   509→  x: number;
+   510→  y: number;
+   511→  arriveAction?: string;
+   512→  stayTime: number; // seconds to stay at this waypoint
+   513→}
+   514→
+   515→const FARMER_WAYPOINTS: { hour: number; waypoints: Waypoint[] }[] = [
+   516→  // Dawn: wake up and go to farm
+   517→  { hour: 5, waypoints: [
+   518→    { x: 24, y: 11, stayTime: 30 },    // step out of house
+   519→    { x: 24, y: 15, stayTime: 5 },     // walk to junction
+   520→    { x: 14, y: 18, stayTime: 5 },     // arrive at farm gate
+   521→    { x: 14, y: 21, arriveAction: 'farm', stayTime: 90 }, // tend crops
+   522→  ]},
+   523→  // Morning: go check animals
+   524→  { hour: 8, waypoints: [
+   525→    { x: 14, y: 18, stayTime: 3 },     // leave farm
+   526→    { x: 24, y: 18, stayTime: 5 },     // back to junction
+   527→    { x: 36, y: 18, stayTime: 5 },     // arrive at animal gate
+   528→    { x: 36, y: 22, arriveAction: 'animals', stayTime: 90 }, // check animals
+   529→  ]},
+   530→  // Mid-morning: wander village
+   531→  { hour: 10, waypoints: [
+   532→    { x: 36, y: 18, stayTime: 3 },     // leave animals
+   533→    { x: 30, y: 15, stayTime: 10 },    // wander
+   534→    { x: 28, y: 12, stayTime: 15 },    // near house yard
+   535→    { x: 20, y: 14, stayTime: 10 },    // west side
+   536→    { x: 24, y: 16, stayTime: 10 },    // back to center
+   537→    { x: 28, y: 20, stayTime: 10 },    // east side
+   538→    { x: 24, y: 15, stayTime: 10 },    // center again
+   539→  ]},
+   540→  // Afternoon: go to pond
+   541→  { hour: 15, waypoints: [
+   542→    { x: 24, y: 18, stayTime: 3 },
+   543→    { x: 12, y: 18, stayTime: 5 },
+   544→    { x: 10, y: 29, arriveAction: 'pond', stayTime: 60 }, // admire pond
+   545→  ]},
+   546→  // Late afternoon: return home
+   547→  { hour: 17, waypoints: [
+   548→    { x: 10, y: 18, stayTime: 3 },
+   549→    { x: 24, y: 18, stayTime: 3 },
+   550→    { x: 24, y: 11, stayTime: 120 },   // stand near house until dusk
+   551→  ]},
+   552→  // Night: sleep
+   553→  { hour: 19, waypoints: [
+   554→    { x: 24, y: 11, arriveAction: 'sleep', stayTime: 600 }, // sleep all night
+   555→  ]},
+   556→];
+   557→
+   558→function getFarmerRoutine(gameHour: number): { waypoints: Waypoint[] } {
+   559→  // Find the current routine based on game hour
+   560→  let best = FARMER_WAYPOINTS[0];
+   561→  for (const routine of FARMER_WAYPOINTS) {
+   562→    if (gameHour >= routine.hour) best = routine;
+   563→  }
+   564→  return best;
+   565→}
+   566→
+   567→// ═══════════════════════════════════════════════════════════════
+   568→// MAIN COMPONENT
+   569→// ═══════════════════════════════════════════════════════════════
+   570→export default function FarmScene() {
+   571→  const canvasRef = useRef<HTMLCanvasElement>(null);
+   572→
+   573→  useEffect(() => {
+   574→    let running = true;
+   575→    let animFrameId = 0;
+   576→
+   577→    async function init() {
+   578→      const sprites = await loadSprites();
+   579→      if (!running || !canvasRef.current) return;
+   580→
+   581→      const canvas = canvasRef.current;
+   582→      const ctx = canvas.getContext('2d')!;
+   583→
+   584→      // ── Resize handler ──
+   585→      function resize() {
+   586→        canvas.width = window.innerWidth;
+   587→        canvas.height = window.innerHeight;
+   588→      }
+   589→      resize();
+   590→      window.addEventListener('resize', resize);
+   591→
+   592→      // ── Generate world ──
+   593→      const tilemap = generateTilemap();
+   594→      const mapObjects = generateObjects();
+   595→      const crops = generateCrops();
+   596→
+   597→      // ── Stars (fixed positions) ──
+   598→      const stars: { x: number; y: number; brightness: number; twinkleSpeed: number }[] = [];
+   599→      for (let i = 0; i < 80; i++) {
+   600→        stars.push({
+   601→          x: rand() * MAP_W * SCALED,
+   602→          y: rand() * MAP_H * SCALED,
+   603→          brightness: 0.3 + rand() * 0.7,
+   604→          twinkleSpeed: 1 + rand() * 3,
+   605→        });
+   606→      }
+   607→
+   608→      // ── Camera ──
+   609→      const camera: Camera = { x: 0, y: 0 };
+   610→
+   611→      // ── Time system ──
+   612→      let gameTime = 6.0; // Start at 6:00 AM
+   613→      let dayCount = 1;
+   614→
+   615→      // ── Farmer entity ──
+   616→      const farmer: Entity = {
+   617→        x: 24, y: 11,
+   618→        targetX: 24, targetY: 11,
+   619→        direction: DIR_DOWN,
+   620→        frame: 0, frameTimer: 0,
+   621→        moving: false,
+   622→        speed: 2.2,
+   623→        state: 'idle',
+   624→        stateTimer: 0,
+   625→      };
+   626→      let currentRoutine = getFarmerRoutine(gameTime);
+   627→      let waypointIndex = 0;
+   628→      let waitingAtWaypoint = false;
+   629→
+   630→      function advanceFarmerRoutine() {
+   631→        waypointIndex++;
+   632→        if (waypointIndex >= currentRoutine.waypoints.length) {
+   633→          // Stay at last waypoint
+   634→          waypointIndex = currentRoutine.waypoints.length - 1;
+   635→        }
+   636→        waitingAtWaypoint = false;
+   637→      }
+   638→
+   639→      function updateFarmerRoutine() {
+   640→        const newRoutine = getFarmerRoutine(gameTime);
+   641→        if (newRoutine !== currentRoutine) {
+   642→          currentRoutine = newRoutine;
+   643→          waypointIndex = 0;
+   644→          waitingAtWaypoint = false;
+   645→        }
+   646→      }
+   647→
+   648→      // ── Animal entities ──
+   649→      const chickens: Entity[] = [
+   650→        { x: 32, y: 22, targetX: 32, targetY: 22, direction: DIR_DOWN, frame: 0, frameTimer: 0, moving: false, speed: 1.5, state: 'wander', stateTimer: rand() * 3 },
+   651→        { x: 36, y: 24, targetX: 36, targetY: 24, direction: DIR_LEFT, frame: 0, frameTimer: 0, moving: false, speed: 1.3, state: 'wander', stateTimer: rand() * 3 },
+   652→        { x: 39, y: 21, targetX: 39, targetY: 21, direction: DIR_RIGHT, frame: 0, frameTimer: 0, moving: false, speed: 1.4, state: 'idle', stateTimer: rand() * 2 },
+   653→      ];
+   654→
+   655→      const cows: Entity[] = [
+   656→        { x: 34, y: 25, targetX: 34, targetY: 25, direction: DIR_DOWN, frame: 0, frameTimer: 0, moving: false, speed: 0.6, state: 'wander', stateTimer: rand() * 5 },
+   657→        { x: 38, y: 23, targetX: 38, targetY: 23, direction: DIR_LEFT, frame: 0, frameTimer: 0, moving: false, speed: 0.5, state: 'idle', stateTimer: rand() * 4 },
+   658→      ];
+   659→
+   660→      // ── Particles ──
+   661→      const particles: Particle[] = [];
+   662→
+   663→      function spawnParticle(type: Particle['type']) {
+   664→        const p: Particle = {
+   665→          x: (camera.x + rand() * canvas.width) / SCALED,
+   666→          y: (camera.y + rand() * canvas.height) / SCALED,
+   667→          vx: (rand() - 0.5) * 0.5,
+   668→          vy: (rand() - 0.5) * 0.3,
+   669→          life: 0,
+   670→          maxLife: 5 + rand() * 10,
+   671→          type,
+   672→          color: '#fff',
+   673→          size: 1 + rand() * 2,
+   674→          phase: rand() * Math.PI * 2,
+   675→        };
+   676→
+   677→        if (type === 'butterfly') {
+   678→          p.color = ['#f9a8d4', '#fbbf24', '#a78bfa', '#34d399', '#f87171'][Math.floor(rand() * 5)];
+   679→          p.size = 2 + rand() * 2;
+   680→          p.maxLife = 8 + rand() * 12;
+   681→          p.vx = (rand() - 0.5) * 0.8;
+   682→          p.vy = (rand() - 0.5) * 0.4;
+   683→        } else if (type === 'seed') {
+   684→          p.color = '#fef3c7';
+   685→          p.size = 1 + rand();
+   686→          p.vy = 0.1 + rand() * 0.2;
+   687→          p.vx = 0.3 + rand() * 0.5;
+   688→        } else if (type === 'firefly') {
+   689→          p.color = '#fde047';
+   690→          p.size = 2 + rand() * 2;
+   691→          p.maxLife = 3 + rand() * 6;
+   692→          p.vx = (rand() - 0.5) * 0.3;
+   693→          p.vy = (rand() - 0.5) * 0.3;
+   694→        } else if (type === 'dust') {
+   695→          p.color = '#d4a76a';
+   696→          p.size = 1 + rand();
+   697→          p.maxLife = 0.5 + rand() * 0.5;
+   698→          p.vy = -0.3 - rand() * 0.3;
+   699→          p.vx = (rand() - 0.5) * 0.5;
+   700→        }
+   701→
+   702→        particles.push(p);
+   703→      }
+   704→
+   705→      // ── ANIMAL BOUNDS ──
+   706→      const animalBounds = { minX: 31, maxX: 42, minY: 20, maxY: 27 };
+   707→
+   708→      // ── UPDATE FUNCTIONS ──
+   709→
+   710→      function moveEntityToward(e: Entity, dt: number) {
+   711→        if (!e.moving) return;
+   712→
+   713→        const dx = e.targetX - e.x;
+   714→        const dy = e.targetY - e.y;
+   715→        const dist = Math.sqrt(dx * dx + dy * dy);
+   716→
+   717→        if (dist < 0.08) {
+   718→          e.x = e.targetX;
+   719→          e.y = e.targetY;
+   720→          e.moving = false;
+   721→          return;
+   722→        }
+   723→
+   724→        const moveSpeed = e.speed * dt;
+   725→        const mx = (dx / dist) * moveSpeed;
+   726→        const my = (dy / dist) * moveSpeed;
+   727→
+   728→        e.x += mx;
+   729→        e.y += my;
+   730→
+   731→        // Direction
+   732→        if (Math.abs(dx) > Math.abs(dy) * 0.5) {
+   733→          e.direction = dx > 0 ? DIR_RIGHT : DIR_LEFT;
+   734→        } else {
+   735→          e.direction = dy > 0 ? DIR_DOWN : DIR_UP;
+   736→        }
+   737→
+   738→        // Animation
+   739→        e.frameTimer += dt;
+   740→        if (e.frameTimer > 0.15) {
+   741→          e.frameTimer -= 0.15;
+   742→          e.frame = (e.frame + 1) % 3;
+   743→        }
+   744→      }
+   745→
+   746→      function updateFarmer(dt: number) {
+   747→        updateFarmerRoutine();
+   748→
+   749→        if (waitingAtWaypoint) {
+   750→          farmer.stateTimer -= dt;
+   751→          if (farmer.stateTimer <= 0) {
+   752→            advanceFarmerRoutine();
+   753→          }
+   754→          // Idle animation
+   755→          farmer.frameTimer += dt;
+   756→          if (farmer.frameTimer > 0.5) {
+   757→            farmer.frameTimer -= 0.5;
+   758→            farmer.frame = (farmer.frame + 1) % 2;
+   759→          }
+   760→          return;
+   761→        }
+   762→
+   763→        const wp = currentRoutine.waypoints[Math.min(waypointIndex, currentRoutine.waypoints.length - 1)];
+   764→        if (!wp) return;
+   765→
+   766→        if (!farmer.moving) {
+   767→          farmer.targetX = wp.x;
+   768→          farmer.targetY = wp.y;
+   769→          farmer.moving = true;
+   770→        }
+   771→
+   772→        moveEntityToward(farmer, dt);
+   773→
+   774→        if (!farmer.moving) {
+   775→          // Arrived at waypoint
+   776→          if (wp.arriveAction) farmer.state = wp.arriveAction;
+   777→          else farmer.state = 'idle';
+   778→          waitingAtWaypoint = true;
+   779→          farmer.stateTimer = wp.stayTime;
+   780→          farmer.direction = DIR_DOWN;
+   781→          farmer.frame = 0;
+   782→        }
+   783→
+   784→        // Dust particles when walking
+   785→        if (farmer.moving && rand() < 0.15) {
+   786→          const p: Particle = {
+   787→            x: farmer.x + (rand() - 0.5) * 0.5,
+   788→            y: farmer.y + 0.3,
+   789→            vx: (rand() - 0.5) * 0.3,
+   790→            vy: -0.2 - rand() * 0.2,
+   791→            life: 0,
+   792→            maxLife: 0.4 + rand() * 0.4,
+   793→            type: 'dust',
+   794→            color: '#c9a96e',
+   795→            size: 1 + rand(),
+   796→            phase: 0,
+   797→          };
+   798→          particles.push(p);
+   799→        }
+   800→      }
+   801→
+   802→      function updateAnimal(e: Entity, bounds: { minX: number; maxX: number; minY: number; maxY: number }, dt: number) {
+   803→        e.stateTimer -= dt;
+   804→
+   805→        if (!e.moving) {
+   806→          if (e.stateTimer <= 0) {
+   807→            // Pick new action
+   808→            if (rand() < 0.6) {
+   809→              // Wander
+   810→              e.state = 'wander';
+   811→              e.targetX = bounds.minX + 1 + rand() * (bounds.maxX - bounds.minX - 2);
+   812→              e.targetY = bounds.minY + 1 + rand() * (bounds.maxY - bounds.minY - 2);
+   813→              e.moving = true;
+   814→              e.stateTimer = 3 + rand() * 5;
+   815→            } else {
+   816→              // Idle/peck
+   817→              e.state = 'idle';
+   818→              e.stateTimer = 2 + rand() * 4;
+   819→            }
+   820→          }
+   821→          // Idle animation
+   822→          e.frameTimer += dt;
+   823→          if (e.frameTimer > 0.6) {
+   824→            e.frameTimer -= 0.6;
+   825→            e.frame = (e.frame + 1) % 2;
+   826→          }
+   827→        } else {
+   828→          moveEntityToward(e, dt);
+   829→          if (!e.moving) {
+   830→            e.stateTimer = 1 + rand() * 3;
+   831→          }
+   832→        }
+   833→      }
+   834→
+   835→      function updateCrops(dt: number) {
+   836→        for (const crop of crops) {
+   837→          if (crop.stage < 4) {
+   838→            crop.progress += dt * 0.008; // Grow slowly
+   839→            if (crop.progress >= 1) {
+   840→              crop.progress = 0;
+   841→              crop.stage++;
+   842→              if (crop.stage > 4) crop.stage = 4;
+   843→            }
+   844→          }
+   845→        }
+   846→      }
+   847→
+   848→      function updateParticles(dt: number, time: number) {
+   849→        // Spawn particles based on time of day
+   850→        const hour = gameTime % 24;
+   851→        const isDay = hour >= 6 && hour < 19;
+   852→
+   853→        if (isDay) {
+   854→          if (rand() < 0.01) spawnParticle('butterfly');
+   855→          if (rand() < 0.008) spawnParticle('seed');
+   856→        } else {
+   857→          if (rand() < 0.025) spawnParticle('firefly');
+   858→        }
+   859→
+   860→        // Update existing particles
+   861→        for (let i = particles.length - 1; i >= 0; i--) {
+   862→          const p = particles[i];
+   863→          p.life += dt;
+   864→          if (p.life > p.maxLife) {
+   865→            particles.splice(i, 1);
+   866→            continue;
+   867→          }
+   868→
+   869→          if (p.type === 'butterfly') {
+   870→            p.x += p.vx * dt + Math.sin(time * 2 + p.phase) * 0.3 * dt;
+   871→            p.y += p.vy * dt + Math.cos(time * 1.5 + p.phase) * 0.2 * dt;
+   872→          } else if (p.type === 'seed') {
+   873→            p.x += p.vx * dt + Math.sin(time + p.phase) * 0.2 * dt;
+   874→            p.y += p.vy * dt;
+   875→          } else if (p.type === 'firefly') {
+   876→            p.x += p.vx * dt + Math.sin(time * 3 + p.phase) * 0.15 * dt;
+   877→            p.y += p.vy * dt + Math.cos(time * 2.5 + p.phase) * 0.1 * dt;
+   878→          } else {
+   879→            p.x += p.vx * dt;
+   880→            p.y += p.vy * dt;
+   881→          }
+   882→        }
+   883→      }
+   884→
+   885→      function updateCamera(dt: number) {
+   886→        const targetX = farmer.x * SCALED - canvas.width / 2;
+   887→        const targetY = farmer.y * SCALED - canvas.height / 2;
+   888→
+   889→        const lerpFactor = 1 - Math.pow(0.02, dt);
+   890→        camera.x += (targetX - camera.x) * lerpFactor;
+   891→        camera.y += (targetY - camera.y) * lerpFactor;
+   892→
+   893→        // Clamp
+   894→        const maxX = MAP_W * SCALED - canvas.width;
+   895→        const maxY = MAP_H * SCALED - canvas.height;
+   896→        camera.x = Math.max(0, Math.min(maxX, camera.x));
+   897→        camera.y = Math.max(0, Math.min(maxY, camera.y));
+   898→      }
+   899→
+   900→      function updateTime(dt: number) {
+   901→        gameTime += (24 / DAY_SECONDS) * dt;
+   902→        if (gameTime >= 24) {
+   903→          gameTime -= 24;
+   904→          dayCount++;
+   905→          // Reset crops on new day (cycle)
+   906→          for (const crop of crops) {
+   907→            if (crop.stage >= 4) {
+   908→              crop.stage = 0;
+   909→              crop.progress = 0;
+   910→            }
+   911→          }
+   912→        }
+   913→      }
+   914→
+   915→      // ── RENDER FUNCTIONS ──
+   916→
+   917→      function getDayNightOverlay(): { color: string; alpha: number } {
+   918→        const hour = gameTime % 24;
+   919→
+   920→        if (hour >= 5 && hour < 7) {
+   921→          // Dawn - warm golden
+   922→          const t = (hour - 5) / 2;
+   923→          return { color: `rgba(255, 180, 80, ${0.25 * (1 - t)})`, alpha: 0.25 * (1 - t) };
+   924→        } else if (hour >= 7 && hour < 17) {
+   925→          // Day - no overlay
+   926→          return { color: 'rgba(0,0,0,0)', alpha: 0 };
+   927→        } else if (hour >= 17 && hour < 19) {
+   928→          // Dusk - orange/pink
+   929→          const t = (hour - 17) / 2;
+   930→          return { color: `rgba(200, 80, 40, ${0.15 * t})`, alpha: 0.15 * t };
+   931→        } else if (hour >= 19 && hour < 20) {
+   932→          // Twilight transition
+   933→          const t = (hour - 19);
+   934→          return { color: `rgba(10, 10, 50, ${0.35 * t})`, alpha: 0.35 * t };
+   935→        } else {
+   936→          // Night
+   937→          return { color: 'rgba(10, 10, 50, 0.4)', alpha: 0.4 };
+   938→        }
+   939→      }
+   940→
+   941→      function isNightTime(): boolean {
+   942→        const hour = gameTime % 24;
+   943→        return hour >= 19.5 || hour < 5;
+   944→      }
+   945→
+   946→      function render(time: number) {
+   947→        const w = canvas.width;
+   948→        const h = canvas.height;
+   949→        ctx.clearRect(0, 0, w, h);
+   950→        ctx.imageSmoothingEnabled = false;
+   951→
+   952→        // ── Visible tile range ──
+   953→        const startTileX = Math.max(0, Math.floor(camera.x / SCALED) - 1);
+   954→        const startTileY = Math.max(0, Math.floor(camera.y / SCALED) - 1);
+   955→        const endTileX = Math.min(MAP_W, Math.ceil((camera.x + w) / SCALED) + 1);
+   956→        const endTileY = Math.min(MAP_H, Math.ceil((camera.y + h) / SCALED) + 1);
+   957→
+   958→        // ── Draw ground tiles ──
+   959→        const waterPhase = Math.floor(time * 2) % 4;
+   960→        for (let y = startTileY; y < endTileY; y++) {
+   961→          for (let x = startTileX; x < endTileX; x++) {
+   962→            const tileIdx = tilemap[y][x];
+   963→            const screenX = x * SCALED - camera.x;
+   964→            const screenY = y * SCALED - camera.y;
+   965→
+   966→            // Animate water tiles
+   967→            let drawIdx = tileIdx;
+   968→            if (tileIdx >= T_WATER[0] && tileIdx <= T_WATER[T_WATER.length - 1]) {
+   969→              drawIdx = T_WATER[0] + ((tileIdx - T_WATER[0] + waterPhase) % T_WATER.length);
+   970→            }
+   971→
+   972→            drawTileFromSheet(ctx, sprites.tileset, drawIdx, 12, screenX, screenY);
+   973→          }
+   974→        }
+   975→
+   976→        // ── Collect all Y-sorted drawables ──
+   977→        interface Drawable {
+   978→          sortY: number;
+   979→          draw: () => void;
+   980→        }
+   981→        const drawables: Drawable[] = [];
+   982→
+   983→        // Helper for screen position
+   984→        function toScreen(tx: number, ty: number) {
+   985→          return { sx: tx * SCALED - camera.x, sy: ty * SCALED - camera.y };
+   986→        }
+   987→
+   988→        // -- House (rendered as a large object) --
+   989→        const hsx = 18 * SCALED - camera.x;
+   990→        const hsy = 5 * SCALED - camera.y;
+   991→        drawables.push({
+   992→          sortY: 5 + 6, // bottom of house
+   993→          draw: () => {
+   994→            // Draw the full house sprite (14 cols × 7 rows from House.png = 224×112)
+   995→            drawSpritePortion(ctx, sprites.house, 0, 0, 224, 112, hsx, hsy, 224 * SCALE, 112 * SCALE);
+   996→          }
+   997→        });
+   998→
+   999→        // -- Map objects (trees, fences, decorations) --
+  1000→        for (const obj of mapObjects) {
+  1001→          if (obj.type === 'tree') {
+  1002→            drawables.push({
+  1003→              sortY: obj.sortY,
+  1004→              draw: () => {
+  1005→                const { sx, sy } = toScreen(obj.x, obj.y);
+  1006→                // Maple Tree: 10 cols × 3 rows, each tree is 2 cols × 3 rows
+  1007→                // 5 tree variants: variant 0-4
+  1008→                const v = obj.variant % 5;
+  1009→                drawSpritePortion(ctx, sprites.mapleTree,
+  1010→                  v * 2 * TILE, 0, 2 * TILE, 3 * TILE,
+  1011→                  sx - SCALED * 0.5, sy - SCALED * 2, 2 * SCALED, 3 * SCALED
+  1012→                );
+  1013→
+  1014→                // Subtle sway
+  1015→                const sway = Math.sin(time * 0.8 + obj.x * 2 + obj.y) * 0.5;
+  1016→                if (Math.abs(sway) > 0.2) {
+  1017→                  // We could shift the canopy, but keep it simple
+  1018→                }
+  1019→              }
+  1020→            });
+  1021→          } else if (obj.type.startsWith('fence')) {
+  1022→            drawables.push({
+  1023→              sortY: obj.sortY,
+  1024→              draw: () => {
+  1025→                const { sx, sy } = toScreen(obj.x, obj.y);
+  1026→                // Fence: 3 cols × 5 rows
+  1027→                let srcCol = 1, srcRow = 0;
+  1028→                if (obj.type === 'fence_h') { srcCol = 1; srcRow = obj.variant % 5; }
+  1029→                else if (obj.type === 'fence_v') { srcCol = 1; srcRow = obj.variant % 5; }
+  1030→                else if (obj.type === 'fence_corner_tl') { srcCol = 0; srcRow = 0; }
+  1031→                else if (obj.type === 'fence_corner_tr') { srcCol = 2; srcRow = 0; }
+  1032→                else if (obj.type === 'fence_corner_bl') { srcCol = 0; srcRow = 2; }
+  1033→                else if (obj.type === 'fence_corner_br') { srcCol = 2; srcRow = 2; }
+  1034→                drawTileFromSheet(ctx, sprites.fence, srcRow * 3 + srcCol, 3, sx, sy);
+  1035→              }
+  1036→            });
+  1037→          } else if (obj.type === 'flower_dec') {
+  1038→            drawables.push({
+  1039→              sortY: obj.sortY,
+  1040→              draw: () => {
+  1041→                const { sx, sy } = toScreen(obj.x, obj.y);
+  1042→                // Use flower tiles from tileset
+  1043→                const tile = T_FLOWER[obj.variant % T_FLOWER.length];
+  1044→                drawTileFromSheet(ctx, sprites.tileset, tile, 12, sx, sy);
+  1045→              }
+  1046→            });
+  1047→          } else if (obj.type === 'rock_dec') {
+  1048→            drawables.push({
+  1049→              sortY: obj.sortY,
+  1050→              draw: () => {
+  1051→                const { sx, sy } = toScreen(obj.x, obj.y);
+  1052→                const tile = T_ROCK[obj.variant % T_ROCK.length];
+  1053→                drawTileFromSheet(ctx, sprites.tileset, tile, 12, sx, sy);
+  1054→              }
+  1055→            });
+  1056→          } else if (obj.type === 'tall_grass') {
+  1057→            drawables.push({
+  1058→              sortY: obj.sortY,
+  1059→              draw: () => {
+  1060→                const { sx, sy } = toScreen(obj.x, obj.y);
+  1061→                const tile = T_TALL_GRASS[obj.variant % T_TALL_GRASS.length];
+  1062→                drawTileFromSheet(ctx, sprites.tileset, tile, 12, sx, sy);
+  1063→              }
+  1064→            });
+  1065→          } else if (obj.type === 'chest') {
+  1066→            drawables.push({
+  1067→              sortY: obj.sortY,
+  1068→              draw: () => {
+  1069→                const { sx, sy } = toScreen(obj.x, obj.y);
+  1070→                // Chest: 2 cols × 2 rows, use first frame
+  1071→                drawSpritePortion(ctx, sprites.chest, 0, 0, TILE, TILE, sx, sy, SCALED, SCALED);
+  1072→              }
+  1073→            });
+  1074→          }
+  1075→        }
+  1076→
+  1077→        // -- Crops --
+  1078→        for (const crop of crops) {
+  1079→          drawables.push({
+  1080→            sortY: crop.y + 0.5,
+  1081→            draw: () => {
+  1082→              const { sx, sy } = toScreen(crop.x, crop.y);
+  1083→              // Spring Crops: 14 cols × 8 rows
+  1084→              // 4 crop types (rows 0-3), each with growth stages across columns
+  1085→              // Stages: seeds(0-2), sprouts(3-5), growing(6-8), mature(9-11), harvest(12-13)
+  1086→              const stageCols = [0, 3, 6, 9, 12];
+  1087→              const srcCol = stageCols[Math.min(crop.stage, 4)];
+  1088→              const srcRow = crop.type;
+  1089→              drawSpritePortion(ctx, sprites.springCrops,
+  1090→                srcCol * TILE, srcRow * TILE, TILE, TILE,
+  1091→                sx, sy, SCALED, SCALED
+  1092→              );
+  1093→            }
+  1094→          });
+  1095→        }
+  1096→
+  1097→        // -- Farmer --
+  1098→        drawables.push({
+  1099→          sortY: farmer.y + 0.8,
+  1100→          draw: () => {
+  1101→            const { sx, sy } = toScreen(farmer.x - 0.5, farmer.y - 1);
+  1102→
+  1103→            // Shadow
+  1104→            ctx.fillStyle = 'rgba(0,0,0,0.15)';
+  1105→            ctx.beginPath();
+  1106→            ctx.ellipse(
+  1107→              sx + SCALED * 0.5, sy + SCALED * 1.9,
+  1108→              SCALED * 0.35, SCALED * 0.12,
+  1109→              0, 0, Math.PI * 2
+  1110→            );
+  1111→            ctx.fill();
+  1112→
+  1113→            // Sprite
+  1114→            const sheet = farmer.moving ? sprites.walk : sprites.idle;
+  1115→            const cols = farmer.moving ? 12 : 8;
+  1116→            const numFrames = farmer.moving ? 3 : 2;
+  1117→            const frame = Math.floor(farmer.frame) % numFrames;
+  1118→            const dir = farmer.direction;
+  1119→
+  1120→            // Idle: row = dir, col = frame (0-1)
+  1121→            // Walk: row = dir, col = frame (0-2)
+  1122→            const srcCol = dir * (farmer.moving ? 3 : 2) + frame;
+  1123→            const srcRow = dir;
+  1124→
+  1125→            drawTileFromSheet(ctx, sheet, srcRow * cols + srcCol, cols, sx, sy);
+  1126→          }
+  1127→        });
+  1128→
+  1129→        // -- Chickens --
+  1130→        for (let i = 0; i < chickens.length; i++) {
+  1131→          const chicken = chickens[i];
+  1132→          const sheet = i === 0 ? sprites.babyChicken : (i === 1 ? sprites.chickenBlonde : sprites.chickenRed);
+  1133→          const sheetCols = sheet.width / TILE;
+  1134→
+  1135→          drawables.push({
+  1136→            sortY: chicken.y + 0.5,
+  1137→            draw: () => {
+  1138→              const { sx, sy } = toScreen(chicken.x - 0.3, chicken.y - 0.6);
+  1139→
+  1140→              // Shadow
+  1141→              ctx.fillStyle = 'rgba(0,0,0,0.12)';
+  1142→              ctx.beginPath();
+  1143→              ctx.ellipse(
+  1144→                sx + SCALED * 0.4, sy + SCALED * 0.95,
+  1145→                SCALED * 0.25, SCALED * 0.08,
+  1146→                0, 0, Math.PI * 2
+  1147→              );
+  1148→              ctx.fill();
+  1149→
+  1150→              const frame = Math.floor(chicken.frame) % 4;
+  1151→              const dir = chicken.direction;
+  1152→              // Chicken sprites: assume rows = animation state, cols = frames
+  1153→              // Simplified: use first 2 rows for down/up, cols 0-3 for animation
+  1154→              const srcRow = dir <= 1 ? 0 : 1;
+  1155→              drawTileFromSheet(ctx, sheet, srcRow * sheetCols + frame, sheetCols, sx, sy);
+  1156→            }
+  1157→          });
+  1158→        }
+  1159→
+  1160→        // -- Cows --
+  1161→        const cowSprites = [sprites.femaleCow, sprites.maleCow];
+  1162→        for (let i = 0; i < cows.length; i++) {
+  1163→          const cow = cows[i];
+  1164→          const sheet = cowSprites[i];
+  1165→
+  1166→          drawables.push({
+  1167→            sortY: cow.y + 1,
+  1168→            draw: () => {
+  1169→              const { sx, sy } = toScreen(cow.x - 0.5, cow.y - 1);
+  1170→
+  1171→              // Shadow
+  1172→              ctx.fillStyle = 'rgba(0,0,0,0.12)';
+  1173→              ctx.beginPath();
+  1174→              ctx.ellipse(
+  1175→                sx + SCALED * 0.8, sy + SCALED * 1.85,
+  1176→                SCALED * 0.55, SCALED * 0.15,
+  1177→                0, 0, Math.PI * 2
+  1178→              );
+  1179→              ctx.fill();
+  1180→
+  1181→              // Cow sprite: 8 cols × 6 rows, 4 dirs × 2 frames
+  1182→              // Row = direction, col = frame
+  1183→              const frame = Math.floor(cow.frame) % 2;
+  1184→              const dir = cow.direction;
+  1185→              drawTileFromSheet(ctx, sheet, dir * 2 + frame, 8, sx, sy);
+  1186→            }
+  1187→          });
+  1188→        }
+  1189→
+  1190→        // ── Sort and draw all ──
+  1191→        drawables.sort((a, b) => a.sortY - b.sortY);
+  1192→        for (const d of drawables) {
+  1193→          d.draw();
+  1194→        }
+  1195→
+  1196→        // ── Day/Night overlay ──
+  1197→        const overlay = getDayNightOverlay();
+  1198→        if (overlay.alpha > 0) {
+  1199→          ctx.fillStyle = overlay.color;
+  1200→          ctx.fillRect(0, 0, w, h);
+  1201→        }
+  1202→
+  1203→        // ── Stars at night ──
+  1204→        if (isNightTime()) {
+  1205→          let starAlpha = 1;
+  1206→          if (gameTime >= 19.5) starAlpha = Math.min(1, (gameTime - 19.5) * 2);
+  1207→          else if (gameTime < 5) starAlpha = Math.min(1, (5 - gameTime) * 2);
+  1208→          for (const star of stars) {
+  1209→            const sx = star.x - camera.x;
+  1210→            const sy = star.y - camera.y;
+  1211→            if (sx < -10 || sx > w + 10 || sy < -10 || sy > h + 10) continue;
+  1212→            const twinkle = 0.5 + 0.5 * Math.sin(time * star.twinkleSpeed + star.x);
+  1213→            ctx.fillStyle = `rgba(255, 255, 230, ${star.brightness * twinkle * Math.min(starAlpha, 1)})`;
+  1214→            ctx.fillRect(sx, sy, 2, 2);
+  1215→          }
+  1216→        }
+  1217→
+  1218→        // ── Particles ──
+  1219→        for (const p of particles) {
+  1220→          const sx = p.x * SCALED - camera.x;
+  1221→          const sy = p.y * SCALED - camera.y;
+  1222→          if (sx < -20 || sx > w + 20 || sy < -20 || sy > h + 20) continue;
+  1223→
+  1224→          const lifeRatio = p.life / p.maxLife;
+  1225→          const alpha = lifeRatio < 0.1 ? lifeRatio * 10 : (lifeRatio > 0.8 ? (1 - lifeRatio) * 5 : 1);
+  1226→
+  1227→          if (p.type === 'butterfly') {
+  1228→            // Draw butterfly as small colored wings
+  1229→            const wingFlap = Math.sin(time * 12 + p.phase) * 3;
+  1230→            ctx.fillStyle = p.color + Math.floor(alpha * 200).toString(16).padStart(2, '0');
+  1231→            ctx.fillRect(sx - wingFlap - p.size, sy - p.size * 0.5, p.size, p.size);
+  1232→            ctx.fillRect(sx + wingFlap, sy - p.size * 0.5, p.size, p.size);
+  1233→            ctx.fillStyle = '#333';
+  1234→            ctx.fillRect(sx - 0.5, sy - 1, 1, 2);
+  1235→          } else if (p.type === 'seed') {
+  1236→            ctx.fillStyle = `rgba(254, 243, 199, ${alpha * 0.7})`;
+  1237→            ctx.fillRect(sx, sy, p.size, p.size);
+  1238→          } else if (p.type === 'firefly') {
+  1239→            const glow = 0.5 + 0.5 * Math.sin(time * 5 + p.phase);
+  1240→            const r = p.size * (0.8 + glow * 0.4);
+  1241→            ctx.fillStyle = `rgba(253, 224, 71, ${alpha * glow * 0.8})`;
+  1242→            ctx.beginPath();
+  1243→            ctx.arc(sx, sy, r, 0, Math.PI * 2);
+  1244→            ctx.fill();
+  1245→            // Glow
+  1246→            ctx.fillStyle = `rgba(253, 224, 71, ${alpha * glow * 0.2})`;
+  1247→            ctx.beginPath();
+  1248→            ctx.arc(sx, sy, r * 2.5, 0, Math.PI * 2);
+  1249→            ctx.fill();
+  1250→          } else if (p.type === 'dust') {
+  1251→            ctx.fillStyle = `rgba(196, 167, 106, ${alpha * 0.5})`;
+  1252→            ctx.fillRect(sx, sy, p.size, p.size);
+  1253→          }
+  1254→        }
+  1255→
+  1256→        // ── Water shimmer ──
+  1257→        for (let y = startTileY; y < endTileY; y++) {
+  1258→          for (let x = startTileX; x < endTileX; x++) {
+  1259→            if (tilemap[y][x] >= T_WATER[0] && tilemap[y][x] <= T_WATER[T_WATER.length - 1]) {
+  1260→              const sx = x * SCALED - camera.x;
+  1261→              const sy = y * SCALED - camera.y;
+  1262→              const shimmer = Math.sin(time * 3 + x * 2 + y * 1.5) * 0.5 + 0.5;
+  1263→              ctx.fillStyle = `rgba(200, 230, 255, ${shimmer * 0.15})`;
+  1264→              ctx.fillRect(sx, sy, SCALED, SCALED);
+  1265→            }
+  1266→          }
+  1267→        }
+  1268→
+  1269→        // ── UI Overlay ──
+  1270→        drawUI(time);
+  1271→      }
+  1272→
+  1273→      function drawUI(time: number) {
+  1274→        const w = canvas.width;
+  1275→        const hour = gameTime % 24;
+  1276→        const h12 = hour % 12 || 12;
+  1277→        const ampm = hour < 12 ? 'AM' : 'PM';
+  1278→        const minutes = Math.floor((hour % 1) * 60);
+  1279→        const timeStr = `${h12}:${minutes.toString().padStart(2, '0')} ${ampm}`;
+  1280→
+  1281→        // Background panel
+  1282→        const panelW = 140;
+  1283→        const panelH = 70;
+  1284→        const panelX = w - panelW - 12;
+  1285→        const panelY = 12;
+  1286→
+  1287→        ctx.fillStyle = 'rgba(20, 15, 10, 0.65)';
+  1288→        ctx.beginPath();
+  1289→        ctx.roundRect(panelX, panelY, panelW, panelH, 6);
+  1290→        ctx.fill();
+  1291→        ctx.strokeStyle = 'rgba(180, 150, 100, 0.4)';
+  1292→        ctx.lineWidth = 1;
+  1293→        ctx.stroke();
+  1294→
+  1295→        // Time icon (sun/moon)
+  1296→        const iconX = panelX + 18;
+  1297→        const iconY = panelY + 20;
+  1298→        if (hour >= 6 && hour < 19) {
+  1299→          // Sun
+  1300→          ctx.fillStyle = '#fbbf24';
+  1301→          ctx.beginPath();
+  1302→          ctx.arc(iconX, iconY, 6, 0, Math.PI * 2);
+  1303→          ctx.fill();
+  1304→          ctx.strokeStyle = '#fbbf24';
+  1305→          ctx.lineWidth = 1.5;
+  1306→          for (let a = 0; a < 8; a++) {
+  1307→            const angle = (a / 8) * Math.PI * 2 + time * 0.3;
+  1308→            ctx.beginPath();
+  1309→            ctx.moveTo(iconX + Math.cos(angle) * 8, iconY + Math.sin(angle) * 8);
+  1310→            ctx.lineTo(iconX + Math.cos(angle) * 10, iconY + Math.sin(angle) * 10);
+  1311→            ctx.stroke();
+  1312→          }
+  1313→        } else {
+  1314→          // Moon
+  1315→          ctx.fillStyle = '#e2e8f0';
+  1316→          ctx.beginPath();
+  1317→          ctx.arc(iconX, iconY, 6, 0, Math.PI * 2);
+  1318→          ctx.fill();
+  1319→          ctx.fillStyle = 'rgba(20, 15, 10, 0.8)';
+  1320→          ctx.beginPath();
+  1321→          ctx.arc(iconX + 2, iconY - 1, 5, 0, Math.PI * 2);
+  1322→          ctx.fill();
+  1323→        }
+  1324→
+  1325→        // Time text
+  1326→        ctx.fillStyle = '#e8d5b7';
+  1327→        ctx.font = 'bold 14px monospace';
+  1328→        ctx.textAlign = 'left';
+  1329→        ctx.fillText(timeStr, panelX + 32, panelY + 24);
+  1330→
+  1331→        // Day count
+  1332→        ctx.fillStyle = '#a89070';
+  1333→        ctx.font = '11px monospace';
+  1334→        ctx.fillText(`Day ${dayCount}`, panelX + 12, panelY + 44);
+  1335→
+  1336→        // Season
+  1337→        ctx.fillStyle = '#7cba5c';
+  1338→        ctx.fillText('Spring', panelX + 72, panelY + 44);
+  1339→
+  1340→        // Farmer state (subtle)
+  1341→        if (farmer.state && farmer.state !== 'idle') {
+  1342→          const stateText = farmer.state === 'farm' ? 'Tending crops'
+  1343→            : farmer.state === 'animals' ? 'Checking animals'
+  1344→            : farmer.state === 'pond' ? 'Admiring pond'
+  1345→            : farmer.state === 'sleep' ? 'Sleeping...'
+  1346→            : farmer.state;
+  1347→          ctx.fillStyle = 'rgba(168, 144, 112, 0.6)';
+  1348→          ctx.font = '10px monospace';
+  1349→          ctx.fillText(stateText, panelX + 12, panelY + 60);
+  1350→        }
+  1351→      }
+  1352→
+  1353→      // ── GAME LOOP ──
+  1354→      let lastTime = performance.now();
+  1355→
+  1356→      function gameLoop(timestamp: number) {
+  1357→        if (!running) return;
+  1358→
+  1359→        const dt = Math.min((timestamp - lastTime) / 1000, 0.1); // cap delta time
+  1360→        lastTime = timestamp;
+  1361→
+  1362→        // Update
+  1363→        updateTime(dt);
+  1364→        updateFarmer(dt);
+  1365→        for (const c of chickens) updateAnimal(c, animalBounds, dt);
+  1366→        for (const c of cows) updateAnimal(c, animalBounds, dt);
+  1367→        updateCrops(dt);
+  1368→        updateParticles(dt, timestamp / 1000);
+  1369→        updateCamera(dt);
+  1370→
+  1371→        // Render
+  1372→        render(timestamp / 1000);
+  1373→
+  1374→        animFrameId = requestAnimationFrame(gameLoop);
+  1375→      }
+  1376→
+  1377→      // Start
+  1378→      animFrameId = requestAnimationFrame(gameLoop);
+  1379→
+  1380→      // Cleanup
+  1381→      return () => {
+  1382→        running = false;
+  1383→        cancelAnimationFrame(animFrameId);
+  1384→        window.removeEventListener('resize', resize);
+  1385→      };
+  1386→    }
+  1387→
+  1388→    init();
+  1389→
+  1390→    return () => { running = false; };
+  1391→  }, []);
+  1392→
+  1393→  return (
+  1394→    <canvas
+  1395→      ref={canvasRef}
+  1396→      style={{
+  1397→        display: 'block',
+  1398→        width: '100vw',
+  1399→        height: '100vh',
+  1400→        imageRendering: 'pixelated',
+  1401→      }}
+  1402→    />
+  1403→  );
+  1404→}
