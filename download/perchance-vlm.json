@@ -1,0 +1,28 @@
+{
+  "choices": [
+    {
+      "finish_reason": "stop",
+      "index": 0,
+      "message": {
+        "content": "The page shows a security verification screen for **perchance.org**, indicating the site is using a security service (Cloudflare) to protect against malicious bots.  \n\n- **Cloudflare challenge**: Yes, there is a Cloudflare challenge (the “Verify you are human” checkbox and Cloudflare branding confirm this).  \n- **Image**: No, there is no image on the page (only text, a checkbox, and the Cloudflare logo).  \n- **Page state**: The page is in a “security verification” state, displaying a message that the website is verifying the user is not a bot, with a checkbox to complete the human verification.",
+        "role": "assistant"
+      }
+    }
+  ],
+  "created": 1781345539,
+  "id": "20260613181217e76330b7d2df436a",
+  "model": "glm-4.6v",
+  "object": "chat.completion",
+  "request_id": "20260613181217e76330b7d2df436a",
+  "usage": {
+    "completion_tokens": 132,
+    "completion_tokens_details": {
+      "reasoning_tokens": 0
+    },
+    "prompt_tokens": 1005,
+    "prompt_tokens_details": {
+      "cached_tokens": 6
+    },
+    "total_tokens": 1137
+  }
+}
