@@ -1,0 +1,6 @@
+file '/home/z/my-project/production/videos/scene_01.mp4'
+file '/home/z/my-project/production/videos/scene_04.mp4'
+file '/home/z/my-project/production/videos/scene_07.mp4'
+file '/home/z/my-project/production/videos/scene_08.mp4'
+file '/home/z/my-project/production/videos/scene_14.mp4'
+file '/home/z/my-project/production/videos/scene_15.mp4'

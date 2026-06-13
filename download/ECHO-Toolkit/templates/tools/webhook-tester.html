@@ -1,0 +1,308 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Webhook Tester - ECHO Toolkit</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet">
+<style>
+        :root {
+            --bg-primary: #0a0e17; --bg-secondary: #111827; --bg-card: #1a2236;
+            --bg-input: #0f172a; --border-color: #1e293b; --border-hover: #334155;
+            --text-primary: #f1f5f9; --text-secondary: #94a3b8; --text-muted: #64748b;
+            --accent-cyan: #06b6d4; --accent-green: #10b981; --accent-yellow: #f59e0b;
+            --accent-red: #ef4444; --sidebar-width: 260px; --radius: 10px; --radius-sm: 6px;
+            --transition: .2s ease;
+        }
+        *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+        html { scroll-behavior: smooth; }
+        body { font-family: 'Inter', -apple-system, BlinkMacSystemFont, sans-serif; background: var(--bg-primary); color: var(--text-primary); line-height: 1.6; min-height: 100vh; }
+        a { color: var(--accent-cyan); text-decoration: none; transition: color var(--transition); }
+        a:hover { color: #22d3ee; }
+        ::selection { background: var(--accent-cyan); color: var(--bg-primary); }
+        ::-webkit-scrollbar { width: 8px; height: 8px; }
+        ::-webkit-scrollbar-track { background: var(--bg-secondary); }
+        ::-webkit-scrollbar-thumb { background: var(--border-hover); border-radius: 4px; }
+        .app-layout { display: flex; min-height: 100vh; }
+
+        .sidebar { position: fixed; top: 0; left: 0; width: var(--sidebar-width); height: 100vh; background: var(--bg-secondary); border-right: 1px solid var(--border-color); display: flex; flex-direction: column; z-index: 1000; overflow-y: auto; }
+        .sidebar-brand { padding: 20px 16px; border-bottom: 1px solid var(--border-color); }
+        .brand-link { display: flex; align-items: center; gap: 8px; font-family: 'JetBrains Mono', monospace; font-size: 14px; font-weight: 600; color: var(--accent-cyan); }
+        .brand-link:hover { color: #22d3ee; }
+        .sidebar-nav { padding: 16px 12px; flex: 1; }
+        .nav-category { font-size: 10px; font-weight: 600; text-transform: uppercase; letter-spacing: 1px; color: var(--text-muted); padding: 8px 12px 4px; }
+        .nav-link { display: flex; align-items: center; gap: 10px; padding: 7px 12px; font-size: 13px; color: var(--text-secondary); border-radius: var(--radius-sm); transition: all var(--transition); cursor: pointer; }
+        .nav-link:hover { color: var(--text-primary); background: rgba(6,182,212,.05); }
+        .nav-link.active { color: var(--accent-cyan); background: rgba(6,182,212,.08); }
+        .nav-link-icon { width: 20px; text-align: center; font-size: 14px; }
+
+        .main-content { flex: 1; margin-left: var(--sidebar-width); display: flex; flex-direction: column; min-height: 100vh; }
+        .tool-container { max-width: 960px; width: 100%; margin: 0 auto; padding: 32px 32px 48px; }
+        .tool-header { margin-bottom: 32px; }
+        .tool-header h1 { font-size: 24px; font-weight: 700; display: flex; align-items: center; gap: 12px; }
+        .tool-header-icon { width: 44px; height: 44px; border-radius: var(--radius); background: rgba(6,182,212,.12); border: 1px solid rgba(6,182,212,.2); display: flex; align-items: center; justify-content: center; font-size: 20px; }
+        .tool-header p { font-size: 14px; color: var(--text-secondary); margin-top: 8px; max-width: 640px; }
+
+        .tool-section { margin-bottom: 24px; }
+        .tool-section-title { font-size: 13px; font-weight: 600; color: var(--text-secondary); margin-bottom: 10px; display: flex; align-items: center; gap: 6px; text-transform: uppercase; letter-spacing: 0.5px; }
+        .tool-section-title::before { content: ''; width: 3px; height: 14px; background: var(--accent-cyan); border-radius: 2px; }
+
+        .btn { display: inline-flex; align-items: center; gap: 6px; padding: 8px 16px; font-size: 13px; font-weight: 600; border-radius: var(--radius-sm); cursor: pointer; transition: all var(--transition); border: 1px solid transparent; font-family: inherit; }
+        .btn:active { transform: scale(.97); }
+        .btn-primary { background: var(--accent-cyan); color: var(--bg-primary); border-color: var(--accent-cyan); }
+        .btn-primary:hover { background: #22d3ee; }
+        .btn-secondary { background: var(--bg-card); color: var(--text-secondary); border-color: var(--border-color); }
+        .btn-secondary:hover { color: var(--text-primary); border-color: var(--border-hover); }
+        .btn-danger { background: rgba(239,68,68,.15); color: var(--accent-red); border: 1px solid rgba(239,68,68,.3); }
+        .btn-danger:hover { background: rgba(239,68,68,.25); }
+        .btn-sm { padding: 4px 10px; font-size: 11px; }
+
+        /* URL Display */
+        .url-display { background: var(--bg-card); border: 2px solid var(--border-color); border-radius: var(--radius); padding: 20px; display: flex; align-items: center; gap: 12px; }
+        .url-label { font-size: 11px; color: var(--text-muted); text-transform: uppercase; letter-spacing: 0.5px; white-space: nowrap; }
+        .url-value { flex: 1; font-family: 'JetBrains Mono', monospace; font-size: 14px; color: var(--accent-cyan); word-break: break-all; }
+        .url-actions { display: flex; gap: 6px; flex-shrink: 0; }
+
+        /* Status indicator */
+        .status-dot { display: inline-flex; align-items: center; gap: 6px; padding: 4px 12px; border-radius: 20px; font-size: 11px; font-weight: 600; }
+        .status-active { background: rgba(16,185,129,.12); color: var(--accent-green); border: 1px solid rgba(16,185,129,.3); }
+        .status-dot .dot { width: 8px; height: 8px; border-radius: 50%; background: var(--accent-green); animation: pulse 2s infinite; }
+        @keyframes pulse { 0%, 100% { opacity: 1; } 50% { opacity: 0.4; } }
+
+        /* Log Table */
+        .log-table { width: 100%; border-collapse: collapse; font-size: 13px; }
+        .log-table thead th { text-align: left; padding: 10px 14px; background: var(--bg-input); border-bottom: 2px solid var(--border-color); font-weight: 600; color: var(--text-secondary); font-size: 11px; text-transform: uppercase; letter-spacing: 0.5px; }
+        .log-table tbody td { padding: 10px 14px; border-bottom: 1px solid var(--border-color); }
+        .log-table tbody tr:hover { background: rgba(6,182,212,.04); }
+        .log-table .empty-state { text-align: center; padding: 40px; color: var(--text-muted); font-style: italic; }
+
+        .method-badge { display: inline-flex; padding: 2px 8px; border-radius: 4px; font-size: 11px; font-weight: 700; font-family: 'JetBrains Mono', monospace; }
+        .method-get { background: rgba(16,185,129,.15); color: var(--accent-green); }
+        .method-post { background: rgba(6,182,212,.15); color: var(--accent-cyan); }
+        .method-put { background: rgba(245,158,11,.15); color: var(--accent-yellow); }
+        .method-patch { background: rgba(249,115,22,.15); color: #f97316; }
+        .method-delete { background: rgba(239,68,68,.15); color: var(--accent-red); }
+        .method-default { background: rgba(148,163,184,.15); color: var(--text-secondary); }
+
+        .body-preview { font-family: 'JetBrains Mono', monospace; font-size: 12px; color: var(--text-secondary); max-width: 300px; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+
+        .expand-btn { padding: 3px 8px; font-size: 10px; font-weight: 600; background: rgba(6,182,212,.15); color: var(--accent-cyan); border: 1px solid rgba(6,182,212,.3); border-radius: 4px; cursor: pointer; font-family: inherit; transition: all var(--transition); }
+        .expand-btn:hover { background: rgba(6,182,212,.25); }
+
+        /* Detail Modal */
+        .request-detail { background: var(--bg-input); border: 1px solid var(--border-color); border-radius: var(--radius); margin-top: 8px; padding: 16px; font-family: 'JetBrains Mono', monospace; font-size: 12px; white-space: pre-wrap; word-break: break-word; max-height: 400px; overflow-y: auto; display: none; }
+        .request-detail.visible { display: block; }
+
+        .loading { display: flex; align-items: center; gap: 8px; color: var(--text-muted); font-size: 13px; }
+        .spinner { width: 18px; height: 18px; border: 2px solid var(--border-color); border-top-color: var(--accent-cyan); border-radius: 50%; animation: spin .6s linear infinite; }
+        @keyframes spin { to { transform: rotate(360deg); } }
+
+        @media (max-width: 1024px) { .sidebar { transform: translateX(calc(var(--sidebar-width) * -1)); } .main-content { margin-left: 0; } }
+        @media (max-width: 768px) { .tool-container { padding: 20px 16px 32px; } .url-display { flex-direction: column; align-items: flex-start; } .url-actions { width: 100%; } }
+    </style>
+</head>
+<body>
+    <div class="app-layout">
+        <aside class="sidebar">
+            <div class="sidebar-brand"><a href="/" class="brand-link">← ECHO Toolkit</a></div>
+            <nav class="sidebar-nav">
+                <div class="nav-category">Categories</div>
+                <a href="/#code-tools" class="nav-link"><span class="nav-link-icon">{ }</span> Code Tools</a>
+                <a href="/#dev-utils" class="nav-link active"><span class="nav-link-icon">⚙</span> Dev Utils</a>
+                <a href="/#writing" class="nav-link"><span class="nav-link-icon">✍</span> Writing</a>
+                <a href="/#media" class="nav-link"><span class="nav-link-icon">🎨</span> Media</a>
+                <a href="/#social-seo" class="nav-link"><span class="nav-link-icon">📊</span> Social/SEO</a>
+                <a href="/#utilities" class="nav-link"><span class="nav-link-icon">🛠</span> Utilities</a>
+                <a href="/#ai-tools" class="nav-link"><span class="nav-link-icon">🤖</span> AI Tools</a>
+            </nav>
+        </aside>
+
+        <main class="main-content">
+            <div class="tool-container">
+                <div class="tool-header">
+                    <h1><span class="tool-header-icon">🪝</span> Webhook Tester</h1>
+                    <p>Generate a unique webhook URL to inspect incoming HTTP requests. View method, headers, and body in real time.</p>
+                </div>
+
+                <!-- URL Display -->
+                <div class="tool-section">
+                    <div class="tool-section-title">
+                        Webhook URL
+                        <span class="status-dot status-active" id="statusIndicator"><span class="dot"></span> Active</span>
+                    </div>
+                    <div class="url-display">
+                        <span class="url-label">POST</span>
+                        <span class="url-value" id="webhookUrl">Click "Create URL" to generate a webhook endpoint</span>
+                        <div class="url-actions">
+                            <button class="btn btn-sm btn-primary" onclick="createWebhook()">Create URL</button>
+                            <button class="btn btn-sm btn-secondary" id="copyUrlBtn" onclick="copyUrl()" style="display:none;">Copy</button>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Actions -->
+                <div class="tool-section">
+                    <div class="btn-group">
+                        <button class="btn btn-secondary" onclick="refreshLogs()">🔄 Refresh Logs</button>
+                        <button class="btn btn-danger btn-sm" onclick="clearLogs()">🗑️ Clear Logs</button>
+                    </div>
+                </div>
+
+                <!-- Request Log -->
+                <div class="tool-section">
+                    <div class="tool-section-title">Received Requests</div>
+                    <div style="overflow-x:auto;border:1px solid var(--border-color);border-radius:var(--radius);" id="logContainer">
+                        <table class="log-table">
+                            <thead>
+                                <tr>
+                                    <th>#</th>
+                                    <th>Method</th>
+                                    <th>Timestamp</th>
+                                    <th>Headers</th>
+                                    <th>Body Preview</th>
+                                    <th>Actions</th>
+                                </tr>
+                            </thead>
+                            <tbody id="logBody">
+                                <tr><td colspan="6" class="empty-state">No requests received yet. Send a POST request to your webhook URL.</td></tr>
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+            </div>
+        </main>
+    </div>
+
+    <script src="/static/js/app.js"></script>
+    <script>
+        let currentUrl = '';
+        let pollInterval = null;
+
+        async function createWebhook() {
+            const urlEl = document.getElementById('webhookUrl');
+            const copyBtn = document.getElementById('copyUrlBtn');
+            const statusEl = document.getElementById('statusIndicator');
+
+            urlEl.textContent = 'Creating...';
+
+            try {
+                const response = await fetch('/tools/dev/webhook-tester/create', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' }
+                });
+
+                const data = await response.json();
+
+                if (data.error) {
+                    urlEl.textContent = 'Error: ' + data.error;
+                    return;
+                }
+
+                currentUrl = data.url || '';
+                urlEl.textContent = currentUrl;
+                copyBtn.style.display = 'inline-flex';
+
+                // Start polling
+                if (pollInterval) clearInterval(pollInterval);
+                pollInterval = setInterval(refreshLogs, 3000);
+                refreshLogs();
+            } catch (err) {
+                urlEl.textContent = 'Failed: ' + err.message;
+            }
+        }
+
+        async function refreshLogs() {
+            const logBody = document.getElementById('logBody');
+
+            try {
+                const response = await fetch('/tools/dev/webhook-tester/logs');
+                const data = await response.json();
+
+                if (data.error) {
+                    console.error('Failed to fetch logs:', data.error);
+                    return;
+                }
+
+                const logs = data.logs || data.requests || [];
+                updateLogTable(logs);
+            } catch (err) {
+                console.error('Failed to fetch logs:', err);
+            }
+        }
+
+        function updateLogTable(logs) {
+            const logBody = document.getElementById('logBody');
+
+            if (logs.length === 0) {
+                logBody.innerHTML = '<tr><td colspan="6" class="empty-state">No requests received yet. Send a POST request to your webhook URL.</td></tr>';
+                return;
+            }
+
+            let html = '';
+            logs.reverse().forEach((req, i) => {
+                const method = (req.method || 'GET').toUpperCase();
+                const methodClass = getMethodClass(method);
+                const timestamp = req.timestamp || req.created_at || 'N/A';
+                const headers = req.headers ? JSON.stringify(req.headers).substring(0, 60) : 'N/A';
+                const body = req.body ? truncate(JSON.stringify(req.body), 50) : 'N/A';
+                const detailId = 'detail-' + (logs.length - i);
+
+                html += `<tr>
+                    <td style="color:var(--text-muted)">${logs.length - i}</td>
+                    <td><span class="method-badge ${methodClass}">${escapeHtml(method)}</span></td>
+                    <td style="font-family:'JetBrains Mono',monospace;font-size:12px;color:var(--text-secondary)">${escapeHtml(timestamp)}</td>
+                    <td class="body-preview">${escapeHtml(headers)}</td>
+                    <td class="body-preview">${escapeHtml(body)}</td>
+                    <td><button class="expand-btn" onclick="toggleDetail('${escapeHtml(detailId)}')">View</button></td>
+                </tr>
+                <tr><td colspan="6" style="padding:0;">
+                    <div class="request-detail" id="${detailId}">${escapeHtml(JSON.stringify(req, null, 2))}</div>
+                </td></tr>`;
+            });
+
+            logBody.innerHTML = html;
+        }
+
+        function toggleDetail(id) {
+            const el = document.getElementById(id);
+            if (el) {
+                el.classList.toggle('visible');
+            }
+        }
+
+        function getMethodClass(method) {
+            const map = {
+                'GET': 'method-get', 'POST': 'method-post', 'PUT': 'method-put',
+                'PATCH': 'method-patch', 'DELETE': 'method-delete'
+            };
+            return map[method] || 'method-default';
+        }
+
+        async function clearLogs() {
+            const logBody = document.getElementById('logBody');
+            logBody.innerHTML = '<tr><td colspan="6" class="empty-state">Logs cleared.</td></tr>';
+        }
+
+        function copyUrl() {
+            if (currentUrl) {
+                navigator.clipboard.writeText(currentUrl).then(() => {
+                    const btn = document.getElementById('copyUrlBtn');
+                    btn.textContent = 'Copied!';
+                    setTimeout(() => { btn.textContent = 'Copy'; }, 2000);
+                });
+            }
+        }
+
+        function truncate(str, len) {
+            return str.length > len ? str.substring(0, len) + '...' : str;
+        }
+
+        function escapeHtml(str) {
+            const map = { '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#039;' };
+            return String(str).replace(/[&<>"']/g, c => map[c]);
+        }
+    </script>
+</body>
+</html>

@@ -1,0 +1,6 @@
+file '/home/z/my-project/production/narration/padded_01.wav'
+file '/home/z/my-project/production/narration/padded_04.wav'
+file '/home/z/my-project/production/narration/padded_07.wav'
+file '/home/z/my-project/production/narration/padded_08.wav'
+file '/home/z/my-project/production/narration/padded_14.wav'
+file '/home/z/my-project/production/narration/padded_15.wav'

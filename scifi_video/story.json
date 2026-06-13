@@ -1,0 +1,385 @@
+{
+  "title": "The Last Signal",
+  "scenes": [
+    {
+      "scene": 1,
+      "narration": "In the year twenty-one eighty-seven, humanity had conquered the solar system.",
+      "image_prompt": "futuristic space station orbiting Earth at dawn, massive rotating ring habitat, cinematic lighting, photorealistic sci-fi, 8k"
+    },
+    {
+      "scene": 2,
+      "narration": "Cities gleamed on Mars. Colonies hummed on Europa. Probes had reached the edge of the void.",
+      "image_prompt": "futuristic red Mars colony city with domes and towers, epic landscape, photorealistic sci-fi, 8k"
+    },
+    {
+      "scene": 3,
+      "narration": "But beyond the heliosphere, the stars remained silent. No signal. No proof of life.",
+      "image_prompt": "vast dark deep space, billions of distant stars, eerie silence, photorealistic space scene, 8k ultra detailed"
+    },
+    {
+      "scene": 4,
+      "narration": "Most people stopped searching. Funding dried up. The great telescopes were repurposed.",
+      "image_prompt": "abandoned giant radio telescope array overgrown with dust on desolate alien landscape, photorealistic sci-fi, 8k"
+    },
+    {
+      "scene": 5,
+      "narration": "But not Doctor Elara Voss. She built her own observatory on the coldest world in the system.",
+      "image_prompt": "lone female scientist standing outside icy underground base on Pluto surface, tiny figure in vast frozen landscape, cinematic sci-fi, 8k"
+    },
+    {
+      "scene": 6,
+      "narration": "Observatory Seven was carved into the ice of Charon, Pluto's largest moon. Her colleagues called her obsessed.",
+      "image_prompt": "underground ice base interior on Pluto moon, blue lit corridors, scientific equipment, photorealistic sci-fi, 8k"
+    },
+    {
+      "scene": 7,
+      "narration": "Her funding was cut three years ago. She kept the equipment running on salvage parts and stubbornness.",
+      "image_prompt": "female scientist soldering circuit boards in dim workshop, old equipment, sparks, determined expression, cinematic sci-fi, 8k"
+    },
+    {
+      "scene": 8,
+      "narration": "Every night, Elara monitored frequencies that no one else cared about anymore.",
+      "image_prompt": "woman scientist at monitoring desk with multiple holographic frequency displays, dark room, blue glow, photorealistic sci-fi, 8k"
+    },
+    {
+      "scene": 9,
+      "narration": "Then on March fourteenth, the deep-space probe Odyssey-7 sent back a burst of data.",
+      "image_prompt": "deep space probe with golden antenna dish in dark void of space, dramatic lighting, photorealistic sci-fi, 8k"
+    },
+    {
+      "scene": 10,
+      "narration": "It was a signal. Not noise. Not an echo. Structured. Intentional.",
+      "image_prompt": "screen showing complex waveform signal pattern, green on black, scientific display, photorealistic sci-fi, 8k"
+    },
+    {
+      "scene": 11,
+      "narration": "And it was coming from a point in space that should have been completely empty.",
+      "image_prompt": "mysterious golden light source in deep dark space void, no stars nearby, enigmatic cosmic phenomenon, photorealistic sci-fi, 8k"
+    },
+    {
+      "scene": 12,
+      "narration": "Elara's hands trembled as she ran the analysis algorithms.",
+      "image_prompt": "close up female hands trembling over holographic keyboard, nervous tension, dramatic lighting, cinematic sci-fi, 8k"
+    },
+    {
+      "scene": 13,
+      "narration": "The signal repeated in prime number sequences. Two, three, five, seven, eleven.",
+      "image_prompt": "holographic display showing prime number sequence pattern 2 3 5 7 11 glowing in blue, dark room, photorealistic sci-fi, 8k"
+    },
+    {
+      "scene": 14,
+      "narration": "Layered within was a three-dimensional coordinate map of galaxies unknown to human astronomy.",
+      "image_prompt": "three dimensional holographic star map of unknown galaxies floating in air, brilliant colors, dark observatory, cinematic sci-fi, 8k"
+    },
+    {
+      "scene": 15,
+      "narration": "Something was calling out across twelve billion light years. She encrypted everything and recorded the coordinates.",
+      "image_prompt": "female scientist pressing encrypt button on futuristic console, data streams flowing, urgent red lighting, cinematic sci-fi, 8k"
+    },
+    {
+      "scene": 16,
+      "narration": "But Elara wasn't the only one watching the sky.",
+      "image_prompt": "dark surveillance room with wall of monitors showing satellite feeds, cyberpunk aesthetic, photorealistic sci-fi, 8k"
+    },
+    {
+      "scene": 17,
+      "narration": "Nexus Corporation controlled Earth's quantum computing grid. Their AI, ARIA, monitored everything.",
+      "image_prompt": "massive quantum computer core glowing blue in dark facility, cables and servers, photorealistic cyberpunk sci-fi, 8k"
+    },
+    {
+      "scene": 18,
+      "narration": "ARIA flagged Elara's encrypted transmission within four seconds.",
+      "image_prompt": "AI system alert screen showing encrypted transmission detected warning red text, cyberpunk interface, photorealistic sci-fi, 8k"
+    },
+    {
+      "scene": 19,
+      "narration": "The alert landed on the desk of Nexus CEO Marcus Thorne.",
+      "image_prompt": "powerful CEO in dark futuristic office, holographic alert floating before him, dramatic shadow lighting, cinematic sci-fi portrait, 8k"
+    },
+    {
+      "scene": 20,
+      "narration": "Thorne didn't believe in aliens. But he believed in power. A signal from beyond meant technology beyond imagination.",
+      "image_prompt": "ruthless CEO standing before floor to ceiling window overlooking cyberpunk megacity at night, power pose, cinematic sci-fi, 8k"
+    },
+    {
+      "scene": 21,
+      "narration": "He dispatched three black-ops dropships to Charon within the hour.",
+      "image_prompt": "three dark stealth military dropships launching from corporate hangar into night sky, dramatic lighting, cinematic sci-fi action, 8k"
+    },
+    {
+      "scene": 22,
+      "narration": "Over seventy-two hours, Elara decoded the signal layer by layer.",
+      "image_prompt": "female scientist working intensely through night, multiple holographic screens around her, coffee cups, exhausted, cinematic sci-fi, 8k"
+    },
+    {
+      "scene": 23,
+      "narration": "The first layer was a mathematical greeting. Universal. Unmistakable.",
+      "image_prompt": "beautiful mathematical patterns glowing in holographic display, fibonacci spirals, golden ratio, alien symbols, photorealistic sci-fi, 8k"
+    },
+    {
+      "scene": 24,
+      "narration": "The second contained star charts of galaxies not yet discovered by any human telescope.",
+      "image_prompt": "spectacular alien star chart hologram showing colorful unknown galaxies nebulae, rotating slowly, dark room, cinematic sci-fi, 8k"
+    },
+    {
+      "scene": 25,
+      "narration": "The third layer changed everything. It was a warning.",
+      "image_prompt": "holographic warning symbols pulsing red, female scientist face illuminated by red alert light, shock expression, cinematic sci-fi, 8k"
+    },
+    {
+      "scene": 26,
+      "narration": "An entropy cascade. A wave of destruction consuming entire galaxies as it expanded outward across the cosmos.",
+      "image_prompt": "terrifying dark energy wave consuming brilliant galaxies in deep space, cosmic destruction on massive scale, photorealistic sci-fi space art, 8k"
+    },
+    {
+      "scene": 27,
+      "narration": "According to the signal's timestamp, the cascade began millions of years ago.",
+      "image_prompt": "ancient galaxy being consumed by dark void, timeline visualization showing millions of years, photorealistic sci-fi, 8k"
+    },
+    {
+      "scene": 28,
+      "narration": "It was now approaching the Milky Way. Perhaps two hundred years remained.",
+      "image_prompt": "dark destructive energy wave visible near Milky Way galaxy edge, approaching, ominous red glow, photorealistic cosmic scene, 8k"
+    },
+    {
+      "scene": 29,
+      "narration": "But the signal wasn't just a warning. The fourth layer was a blueprint.",
+      "image_prompt": "detailed alien engineering blueprints appearing as holographic schematics, complex mechanical diagrams, glowing lines, photorealistic sci-fi, 8k"
+    },
+    {
+      "scene": 30,
+      "narration": "Schematics for a device the senders called the Genesis Engine. A machine to create a stable wormhole.",
+      "image_prompt": "massive ring shaped alien machine blueprint, wormhole generator schematics with energy coils, holographic design, photorealistic sci-fi, 8k"
+    },
+    {
+      "scene": 31,
+      "narration": "Large enough to relocate an entire civilization through space and time.",
+      "image_prompt": "enormous glowing wormhole portal with fleet of ships passing through, epic scale, photorealistic sci-fi space scene, 8k"
+    },
+    {
+      "scene": 32,
+      "narration": "The aliens had sent humanity a lifeboat. Elara could barely breathe.",
+      "image_prompt": "female scientist sitting back in chair, emotional, hand over mouth, holographic blueprints surrounding her, cinematic sci-fi portrait, 8k"
+    },
+    {
+      "scene": 33,
+      "narration": "Then the alarms shattered the silence. Three blips on the scope, entering Charon orbit.",
+      "image_prompt": "tactical radar display showing three incoming hostile contacts, red blips, alarm lights, dark military station, cinematic sci-fi, 8k"
+    },
+    {
+      "scene": 34,
+      "narration": "Nexus dropships. Black-armored soldiers cutting through the outer hull.",
+      "image_prompt": "black armored soldiers using plasma torches cutting through metal hull of space station, sparks flying, cinematic sci-fi action, 8k"
+    },
+    {
+      "scene": 35,
+      "narration": "Elara grabbed the decryption key and uploaded everything to a hidden relay satellite.",
+      "image_prompt": "female scientist urgently typing at console, upload progress bar on screen, data transmission lines, red emergency lights, cinematic sci-fi, 8k"
+    },
+    {
+      "scene": 36,
+      "narration": "A backup she had secretly maintained for years. The data escaped. She sealed the blast doors.",
+      "image_prompt": "massive metal blast doors closing in corridor, woman silhouetted behind them, emergency lighting, cinematic sci-fi thriller, 8k"
+    },
+    {
+      "scene": 37,
+      "narration": "Through security cameras, she watched Nexus soldiers flood the corridors.",
+      "image_prompt": "security camera viewpoint of black armored soldiers swarming through corridor, tactical lights, photorealistic sci-fi, 8k"
+    },
+    {
+      "scene": 38,
+      "narration": "Commander Reeves breached the control room with a plasma cutter.",
+      "image_prompt": "armored commander cutting through heavy metal door with bright plasma cutter, sparks and smoke, dramatic lighting, cinematic sci-fi, 8k"
+    },
+    {
+      "scene": 39,
+      "narration": "An engineer connected a portable drive to siphon the observatory's data.",
+      "image_prompt": "soldier technician connecting cables to server rack, holographic data streams, dark tense environment, photorealistic sci-fi, 8k"
+    },
+    {
+      "scene": 40,
+      "narration": "Elara watched from the shadows of a maintenance shaft. The data was already gone.",
+      "image_prompt": "woman's eyes visible through grate in dark ventilation shaft, tense, close up, dramatic lighting, cinematic sci-fi thriller, 8k"
+    },
+    {
+      "scene": 41,
+      "narration": "Reeves found the main drives wiped clean. He ordered a sweep.",
+      "image_prompt": "armored commander examining empty server rack, angry expression visible through visor, soldiers searching behind him, cinematic sci-fi, 8k"
+    },
+    {
+      "scene": 42,
+      "narration": "Elara crawled through the maintenance shaft toward the escape pod bay.",
+      "image_prompt": "woman crawling through narrow dark metal maintenance tunnel, emergency light ahead, claustrophobic, cinematic sci-fi, 8k"
+    },
+    {
+      "scene": 43,
+      "narration": "Boots echoed behind her. Flashlights swept the ducts.",
+      "image_prompt": "flashlight beams sweeping through dark metal duct from behind, woman crawling ahead desperately, tense cinematic sci-fi, 8k"
+    },
+    {
+      "scene": 44,
+      "narration": "She reached the pod bay as a soldier spotted her. No time left.",
+      "image_prompt": "female scientist running toward escape pod, soldier raising weapon behind her, dramatic action shot, cinematic sci-fi, 8k"
+    },
+    {
+      "scene": 45,
+      "narration": "The escape pod launched through Charon's thin atmosphere, shaking violently.",
+      "image_prompt": "small emergency escape pod blasting off from icy Pluto surface into dark space, flames and ice debris, cinematic sci-fi, 8k"
+    },
+    {
+      "scene": 46,
+      "narration": "A Nexus interceptor fired but missed. Elara engaged the faster-than-light drive.",
+      "image_prompt": "laser fire streaking past small escape pod in space, near miss, stars streaking, dramatic action scene, cinematic sci-fi, 8k"
+    },
+    {
+      "scene": 47,
+      "narration": "Six days to Earth. She studied the blueprints obsessively every hour.",
+      "image_prompt": "woman scientist in small spacecraft cockpit studying holographic blueprints, starfield through window, focused, cinematic sci-fi, 8k"
+    },
+    {
+      "scene": 48,
+      "narration": "The Genesis Engine required a quantum field stabilizer, exotic matter, and the power of a small star.",
+      "image_prompt": "holographic engineering diagram showing quantum stabilizer components, exotic matter chamber, power core, detailed alien tech, cinematic sci-fi, 8k"
+    },
+    {
+      "scene": 49,
+      "narration": "Building it would be the greatest engineering challenge in human history. The alternative was extinction.",
+      "image_prompt": "dramatic split view, one side showing utopian new world, other side showing galaxy consumed by darkness, photorealistic sci-fi, 8k"
+    },
+    {
+      "scene": 50,
+      "narration": "When Elara entered Earth's orbit, a Coalition fleet intercepted her. Not Nexus ships.",
+      "image_prompt": "small damaged escape pod approaching lunar dock, coalition fleet of white and blue ships surrounding it, protective formation, cinematic sci-fi, 8k"
+    },
+    {
+      "scene": 51,
+      "narration": "Professor Tanaka, her old mentor, now Chief Science Advisor, was waiting at the lunar dock.",
+      "image_prompt": "elderly Asian man professor waiting at futuristic lunar dock, warm lighting, hopeful expression, small ship arriving, cinematic sci-fi, 8k"
+    },
+    {
+      "scene": 52,
+      "narration": "Within hours, Elara briefed the Coalition leadership. Presidents, generals, the brightest minds on Earth.",
+      "image_prompt": "female scientist presenting holographic cosmic data in grand futuristic council chamber, world leaders listening, cinematic sci-fi, 8k"
+    },
+    {
+      "scene": 53,
+      "narration": "She showed them the signal. The warning. And the blueprints. The room fell completely silent.",
+      "image_prompt": "council chamber audience in shadow, single holographic display showing apocalyptic cosmic warning, stunned silence, cinematic sci-fi, 8k"
+    },
+    {
+      "scene": 54,
+      "narration": "Some called it a trap. Others saw salvation. Arguments erupted.",
+      "image_prompt": "world leaders arguing at council table, some standing, gesturing angrily, holographic displays behind them, tense cinematic sci-fi, 8k"
+    },
+    {
+      "scene": 55,
+      "narration": "Marcus Thorne argued Nexus should lead construction. Only their quantum grid could handle it.",
+      "image_prompt": "CEO Thorne standing confidently at podium addressing council, confident smirk, holographic Nexus logo behind him, cinematic sci-fi, 8k"
+    },
+    {
+      "scene": 56,
+      "narration": "But Elara had anticipated this. The blueprints contained a quantum encryption lock.",
+      "image_prompt": "female scientist revealing hidden encryption layer in holographic blueprints, glowing quantum code patterns, dramatic reveal, cinematic sci-fi, 8k"
+    },
+    {
+      "scene": 57,
+      "narration": "The full schematics would only unlock for a collaborative, open-source effort. The aliens designed it that way.",
+      "image_prompt": "blueprints transforming from red locked to green unlocked state, collaborative network nodes connecting, holographic display, cinematic sci-fi, 8k"
+    },
+    {
+      "scene": 58,
+      "narration": "Nexus couldn't monopolize the technology even if they stole every byte. The Coalition voted to begin immediately.",
+      "image_prompt": "council members raising hands voting, holographic approval graphics, decisive moment, bright lighting, cinematic sci-fi, 8k"
+    },
+    {
+      "scene": 59,
+      "narration": "A construction site was chosen deep in the asteroid belt. A hollowed asteroid called Ceres Prime.",
+      "image_prompt": "massive hollowed asteroid in space, interior lit with construction lights, ships flying around it, epic sci-fi engineering, 8k"
+    },
+    {
+      "scene": 60,
+      "narration": "Every nation contributed resources, scientists, and engineers. For the first time in decades, humanity was truly united.",
+      "image_prompt": "diverse group of engineers and scientists from different nations working together on massive structure, collaborative, hopeful, cinematic sci-fi, 8k"
+    },
+    {
+      "scene": 61,
+      "narration": "Construction took three years. Three years of miracles and sabotage.",
+      "image_prompt": "time montage of massive sci-fi machine construction, robotic arms welding, workers in space suits, epic scale, cinematic sci-fi, 8k"
+    },
+    {
+      "scene": 62,
+      "narration": "Nexus tried seventeen acts of sabotage. Each time, alien-derived detection technology stopped them.",
+      "image_prompt": "covert agents caught by blue scanning beam near construction site, arrested, dramatic security alert scene, cinematic sci-fi, 8k"
+    },
+    {
+      "scene": 63,
+      "narration": "In the final month, Elara discovered a hidden layer in the signal. A personal message.",
+      "image_prompt": "female scientist alone at night discovering hidden alien text message in holographic display, mysterious glow, emotional, cinematic sci-fi, 8k"
+    },
+    {
+      "scene": 64,
+      "narration": "Not to humanity as a whole. To whoever decoded the signal alone.",
+      "image_prompt": "alien symbols and text materializing in air around woman, personal intimate message, otherworldly blue light, cinematic sci-fi, 8k"
+    },
+    {
+      "scene": 65,
+      "narration": "It said: You are not the first. Others received this message before you. Some built the engine. Some ignored it.",
+      "image_prompt": "mysterious alien text floating in darkness, translation appearing below, haunting atmosphere, photorealistic sci-fi, 8k"
+    },
+    {
+      "scene": 66,
+      "narration": "The cascade does not negotiate. Elara felt the weight of civilizations that had failed this test.",
+      "image_prompt": "silhouettes of destroyed alien civilizations, ruined cities floating in space debris, haunting, photorealistic sci-fi, 8k"
+    },
+    {
+      "scene": 67,
+      "narration": "September seventh, twenty-one ninety-one. The Genesis Engine activated.",
+      "image_prompt": "massive alien ring structure inside asteroid beginning to spin, energy building, lights powering on, epic scale, cinematic sci-fi, 8k"
+    },
+    {
+      "scene": 68,
+      "narration": "Ceres Prime hummed with impossible energy as the ring warped the fabric of space-time itself.",
+      "image_prompt": "massive ring machine spinning generating visible space-time distortion, light bending around it, quantum energy effects, epic cinematic sci-fi, 8k"
+    },
+    {
+      "scene": 69,
+      "narration": "A pinpoint of light appeared at the center and expanded into a swirling vortex. The wormhole was open.",
+      "image_prompt": "brilliant wormhole portal opening at center of massive ring structure, swirling golden and blue energy, epic cosmic spectacle, photorealistic, 8k"
+    },
+    {
+      "scene": 70,
+      "narration": "Through the wormhole, scouts found a paradise. Two habitable worlds orbiting a yellow star, shielded by a dark matter barrier.",
+      "image_prompt": "beautiful alien solar system with two green blue habitable planets, dark matter shield visible as shimmering barrier, paradise, photorealistic sci-fi, 8k"
+    },
+    {
+      "scene": 71,
+      "narration": "The evacuation began. Over eighteen months, three billion people passed through. The largest migration in history.",
+      "image_prompt": "massive fleet of thousands of colony ships in formation approaching glowing wormhole, Earth visible behind, epic migration, cinematic sci-fi, 8k"
+    },
+    {
+      "scene": 72,
+      "narration": "Libraries, laboratories, art, music, everything that made us human, crossed the threshold. On the new world called Genesis, humanity rebuilt.",
+      "image_prompt": "beautiful new world with futuristic city, green landscape, two suns in sky, people walking in park, hopeful golden hour, photorealistic sci-fi, 8k"
+    },
+    {
+      "scene": 73,
+      "narration": "Marcus Thorne crossed last. Stripped of power, a普通 citizen. As his ship passed through, he looked back at the Milky Way. The cascade was visible. A dark stain spreading across the stars.",
+      "image_prompt": "defeated man looking through spaceship window at dark energy consuming galaxy behind him, wormhole ahead, emotional contrast, cinematic sci-fi, 8k"
+    },
+    {
+      "scene": 74,
+      "narration": "Doctor Voss never sought fame. She built a small observatory on a hilltop overlooking the first settlement.",
+      "image_prompt": "small cozy observatory on green hilltop overlooking new futuristic city below, two moons in alien sky, peaceful, cinematic sci-fi, 8k"
+    },
+    {
+      "scene": 75,
+      "narration": "Every night she listened. Never another message. But she kept listening. Because out there, beyond the cascade, the beings who saved humanity were watching.",
+      "image_prompt": "elderly woman scientist sitting alone looking through telescope at brilliant alien night sky, nebulae and aurora, contemplative, cinematic sci-fi portrait, 8k"
+    },
+    {
+      "scene": 76,
+      "narration": "The Last Signal proved that intelligence reaches out to intelligence. And sometimes, across twelve billion light years of darkness, someone answers.",
+      "image_prompt": "stunning cosmic scene, brilliant nebula, distant galaxies, mysterious signal waves of light crossing the universe, sense of cosmic wonder, masterpiece sci-fi art, 8k"
+    }
+  ]
+}

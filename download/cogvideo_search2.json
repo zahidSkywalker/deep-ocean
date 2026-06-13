@@ -1,0 +1,92 @@
+[
+  {
+    "url": "https://github.com/zai-org/CogVideo",
+    "name": "GitHub - zai-org/CogVideo: text and image to video generation",
+    "snippet": "Please make sure your Python version is between 3.10 and 3.12, inclusive of both 3.10 and 3.12. pip install -r requirements.txt. Then follow diffusers_demo ...",
+    "host_name": "github.com",
+    "rank": 0,
+    "date": "",
+    "favicon": ""
+  },
+  {
+    "url": "https://www.youtube.com/watch?v=dHQPNf75ViQ",
+    "name": "Install and Run Open-Source Text to Video Model CogVideo",
+    "snippet": "... install and run CogVideo text to video model locally in Python on Linux Ubuntu Machine. CogVideoX is an open-source video generation model ...",
+    "host_name": "www.youtube.com",
+    "rank": 1,
+    "date": "",
+    "favicon": ""
+  },
+  {
+    "url": "https://huggingface.co/zai-org/CogVideoX-5b",
+    "name": "zai-org/CogVideoX-5b - Hugging Face",
+    "snippet": "Instructions to use zai-org/CogVideoX-5b with libraries, inference providers, notebooks, and local apps. Follow these links to get started.",
+    "host_name": "huggingface.co",
+    "rank": 2,
+    "date": "",
+    "favicon": ""
+  },
+  {
+    "url": "https://pub.aimind.so/thudm-cogvideox-video-generation-model-0461b38fcc07",
+    "name": "THUDM CogVideoX — Video Generation Model - AI Mind",
+    "snippet": "First, the required packages are to be installed using pip installer. Using --upgrade it would install the latest version of these packages.",
+    "host_name": "pub.aimind.so",
+    "rank": 3,
+    "date": "",
+    "favicon": ""
+  },
+  {
+    "url": "https://www.stablediffusiontutorials.com/2024/08/cogvideox.html",
+    "name": "Install CogVideoX: Text-to-Video and Image-to-Video",
+    "snippet": "A Text-to-Video diffusion-based model, CogVideoX has been released by The Knowledge Engineering Group (KEG) & Data Mining (THUDM) at Tsinghua University.",
+    "host_name": "www.stablediffusiontutorials.com",
+    "rank": 4,
+    "date": "",
+    "favicon": ""
+  },
+  {
+    "url": "https://www.kaggle.com/code/adriensales/t2v-cogvideox-open-source-text2video",
+    "name": "T2V CogVideoX : Open Source Text2Video - Kaggle",
+    "snippet": "This notebook has been created to show (and keep output video) how cool CogVideoX, and how they open new frontiers in Open Source Text2Video.",
+    "host_name": "www.kaggle.com",
+    "rank": 5,
+    "date": "",
+    "favicon": ""
+  },
+  {
+    "url": "https://replicate.com/thudm/cogvideox-i2v",
+    "name": "thudm/cogvideox-i2v | Run with an API on Replicate",
+    "snippet": "Install Replicate's Python client library: pip install replicate. Copy. Set the REPLICATE_API_TOKEN environment variable: export ...",
+    "host_name": "replicate.com",
+    "rank": 6,
+    "date": "",
+    "favicon": ""
+  },
+  {
+    "url": "https://zenn.dev/asap/articles/a4077e8b9ddf1a?locale=en",
+    "name": "Running CogVideoX Video Generation AI Locally - Zenn",
+    "snippet": "Installing the Required Packages. Install them with the following command: pip install ... THUDM/CogVideoX-5b\" elif generate_type == \"i2v ...",
+    "host_name": "zenn.dev",
+    "rank": 7,
+    "date": "",
+    "favicon": ""
+  },
+  {
+    "url": "https://paddlenlp.readthedocs.io/zh/latest/website/THUDM/CogVideoX-5b-I2V/index.html",
+    "name": "CogVideoX-5b-I2V - PaddleNLP 文档",
+    "snippet": "Low cost for running and secondary development. Larger model with higher video generation quality and better visual effects. CogVideoX-5B image-to-video version ...",
+    "host_name": "paddlenlp.readthedocs.io",
+    "rank": 8,
+    "date": "",
+    "favicon": ""
+  },
+  {
+    "url": "https://www.reddit.com/r/StableDiffusion/comments/1fnn08o/cogvideoxi2v_workflow_for_lazy_people",
+    "name": "CogVideoX-I2V workflow for lazy people : r/StableDiffusion - Reddit",
+    "snippet": "This workflow is intended for people that don't want to type any prompt and still get some decent motion/animation.",
+    "host_name": "www.reddit.com",
+    "rank": 9,
+    "date": "",
+    "favicon": ""
+  }
+]

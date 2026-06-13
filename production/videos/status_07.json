@@ -1,0 +1,27 @@
+{
+  "choices": [
+    {
+      "finish_reason": "stop",
+      "index": 0,
+      "message": {
+        "role": "assistant"
+      }
+    }
+  ],
+  "created": 1780928380,
+  "id": "2026060822084879350f65d5ba4372",
+  "model": "cogvideox-3",
+  "request_id": "2026060822084879350f65d5ba4372",
+  "task_status": "SUCCESS",
+  "usage": {
+    "completion_tokens": 0,
+    "prompt_tokens": 0,
+    "total_tokens": 0
+  },
+  "video_result": [
+    {
+      "cover_image_url": "https://maas-watermark-prod-new.cn-wlcb.ufileos.com/202606082216502cb30447ac9e4db8_watermark.png?UCloudPublicKey=TOKEN_6df395df-5d8c-4f69-90f8-a4fe46088958&Signature=xLYW8jAYzBjTykYjp676pYCIhTc%3D&Expires=1781014610",
+      "url": "https://aigc-files.bigmodel.cn/api/cogvideo/921471c6-6343-11f1-a9ac-da9aeca5ba52_0.mp4"
+    }
+  ]
+}

@@ -1,0 +1,299 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Cron Builder - ECHO Toolkit</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet">
+<style>
+        :root {
+            --bg-primary: #0a0e17; --bg-secondary: #111827; --bg-card: #1a2236;
+            --bg-input: #0f172a; --border-color: #1e293b; --border-hover: #334155;
+            --text-primary: #f1f5f9; --text-secondary: #94a3b8; --text-muted: #64748b;
+            --accent-cyan: #06b6d4; --accent-green: #10b981; --accent-yellow: #f59e0b;
+            --accent-red: #ef4444; --sidebar-width: 260px; --radius: 10px; --radius-sm: 6px;
+            --transition: .2s ease;
+        }
+        *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+        html { scroll-behavior: smooth; }
+        body { font-family: 'Inter', -apple-system, BlinkMacSystemFont, sans-serif; background: var(--bg-primary); color: var(--text-primary); line-height: 1.6; min-height: 100vh; }
+        a { color: var(--accent-cyan); text-decoration: none; transition: color var(--transition); }
+        a:hover { color: #22d3ee; }
+        ::selection { background: var(--accent-cyan); color: var(--bg-primary); }
+        ::-webkit-scrollbar { width: 8px; height: 8px; }
+        ::-webkit-scrollbar-track { background: var(--bg-secondary); }
+        ::-webkit-scrollbar-thumb { background: var(--border-hover); border-radius: 4px; }
+        .app-layout { display: flex; min-height: 100vh; }
+
+        .sidebar { position: fixed; top: 0; left: 0; width: var(--sidebar-width); height: 100vh; background: var(--bg-secondary); border-right: 1px solid var(--border-color); display: flex; flex-direction: column; z-index: 1000; overflow-y: auto; }
+        .sidebar-brand { padding: 20px 16px; border-bottom: 1px solid var(--border-color); }
+        .brand-link { display: flex; align-items: center; gap: 8px; font-family: 'JetBrains Mono', monospace; font-size: 14px; font-weight: 600; color: var(--accent-cyan); }
+        .brand-link:hover { color: #22d3ee; }
+        .sidebar-nav { padding: 16px 12px; flex: 1; }
+        .nav-category { font-size: 10px; font-weight: 600; text-transform: uppercase; letter-spacing: 1px; color: var(--text-muted); padding: 8px 12px 4px; }
+        .nav-link { display: flex; align-items: center; gap: 10px; padding: 7px 12px; font-size: 13px; color: var(--text-secondary); border-radius: var(--radius-sm); transition: all var(--transition); cursor: pointer; }
+        .nav-link:hover { color: var(--text-primary); background: rgba(6,182,212,.05); }
+        .nav-link.active { color: var(--accent-cyan); background: rgba(6,182,212,.08); }
+        .nav-link-icon { width: 20px; text-align: center; font-size: 14px; }
+
+        .main-content { flex: 1; margin-left: var(--sidebar-width); display: flex; flex-direction: column; min-height: 100vh; }
+        .tool-container { max-width: 720px; width: 100%; margin: 0 auto; padding: 32px 32px 48px; }
+        .tool-header { margin-bottom: 32px; }
+        .tool-header h1 { font-size: 24px; font-weight: 700; display: flex; align-items: center; gap: 12px; }
+        .tool-header-icon { width: 44px; height: 44px; border-radius: var(--radius); background: rgba(6,182,212,.12); border: 1px solid rgba(6,182,212,.2); display: flex; align-items: center; justify-content: center; font-size: 20px; }
+        .tool-header p { font-size: 14px; color: var(--text-secondary); margin-top: 8px; max-width: 640px; }
+
+        .tool-section { margin-bottom: 24px; }
+        .tool-section-title { font-size: 13px; font-weight: 600; color: var(--text-secondary); margin-bottom: 10px; display: flex; align-items: center; gap: 6px; text-transform: uppercase; letter-spacing: 0.5px; }
+        .tool-section-title::before { content: ''; width: 3px; height: 14px; background: var(--accent-cyan); border-radius: 2px; }
+
+        .input { width: 100%; padding: 10px 14px; background: var(--bg-input); border: 1px solid var(--border-color); border-radius: var(--radius-sm); color: var(--text-primary); font-family: inherit; font-size: 14px; transition: all var(--transition); outline: none; }
+        .input:focus { border-color: var(--accent-cyan); box-shadow: 0 0 0 3px rgba(6,182,212,.15); }
+        .input--mono { font-family: 'JetBrains Mono', monospace; font-size: 16px; text-align: center; letter-spacing: 4px; }
+
+        .btn-group { display: flex; gap: 8px; flex-wrap: wrap; margin-top: 12px; }
+        .btn { display: inline-flex; align-items: center; gap: 6px; padding: 8px 16px; font-size: 13px; font-weight: 600; border-radius: var(--radius-sm); cursor: pointer; transition: all var(--transition); border: 1px solid transparent; font-family: inherit; }
+        .btn:active { transform: scale(.97); }
+        .btn-primary { background: var(--accent-cyan); color: var(--bg-primary); border-color: var(--accent-cyan); }
+        .btn-primary:hover { background: #22d3ee; }
+        .btn-sm { padding: 4px 10px; font-size: 11px; background: var(--bg-card); color: var(--text-secondary); border: 1px solid var(--border-color); border-radius: 4px; cursor: pointer; font-family: inherit; transition: all var(--transition); }
+        .btn-sm:hover { color: var(--text-primary); border-color: var(--border-hover); }
+        .btn-sm.active { background: rgba(6,182,212,.15); color: var(--accent-cyan); border-color: rgba(6,182,212,.3); }
+
+        .cron-fields { display: grid; grid-template-columns: repeat(5, 1fr); gap: 10px; margin-bottom: 16px; }
+        .cron-field { text-align: center; }
+        .cron-field label { display: block; font-size: 11px; color: var(--text-muted); text-transform: uppercase; letter-spacing: 0.5px; margin-bottom: 6px; }
+        .cron-field input { width: 100%; padding: 12px 8px; background: var(--bg-input); border: 1px solid var(--border-color); border-radius: var(--radius-sm); color: var(--accent-cyan); font-family: 'JetBrains Mono', monospace; font-size: 16px; text-align: center; transition: all var(--transition); outline: none; }
+        .cron-field input:focus { border-color: var(--accent-cyan); box-shadow: 0 0 0 3px rgba(6,182,212,.15); }
+        .cron-field .hint { font-size: 10px; color: var(--text-muted); margin-top: 4px; }
+
+        .presets { display: flex; flex-wrap: wrap; gap: 6px; margin-bottom: 20px; }
+        .presets-label { font-size: 12px; color: var(--text-muted); width: 100%; margin-bottom: 4px; }
+
+        .description-box { background: var(--bg-card); border: 1px solid var(--border-color); border-radius: var(--radius); padding: 20px; margin-bottom: 20px; }
+        .description-text { font-size: 16px; font-weight: 500; color: var(--accent-cyan); }
+        .expression-display { font-family: 'JetBrains Mono', monospace; font-size: 13px; color: var(--text-muted); margin-top: 8px; }
+
+        .result-table { width: 100%; border-collapse: collapse; font-size: 13px; }
+        .result-table thead th { text-align: left; padding: 10px 14px; background: var(--bg-input); border-bottom: 2px solid var(--border-color); font-weight: 600; color: var(--text-secondary); font-size: 11px; text-transform: uppercase; letter-spacing: 0.5px; }
+        .result-table tbody td { padding: 10px 14px; border-bottom: 1px solid var(--border-color); font-family: 'JetBrains Mono', monospace; font-size: 13px; }
+        .result-table tbody tr:hover { background: rgba(6,182,212,.04); }
+
+        .loading { display: flex; align-items: center; gap: 8px; color: var(--text-muted); font-size: 13px; }
+        .spinner { width: 18px; height: 18px; border: 2px solid var(--border-color); border-top-color: var(--accent-cyan); border-radius: 50%; animation: spin .6s linear infinite; }
+        @keyframes spin { to { transform: rotate(360deg); } }
+
+        @media (max-width: 1024px) { .sidebar { transform: translateX(calc(var(--sidebar-width) * -1)); } .main-content { margin-left: 0; } }
+        @media (max-width: 768px) { .tool-container { padding: 20px 16px 32px; } .cron-fields { grid-template-columns: repeat(5, 1fr); gap: 6px; } .cron-field input { font-size: 14px; padding: 10px 4px; } }
+    </style>
+</head>
+<body>
+    <div class="app-layout">
+        <aside class="sidebar">
+            <div class="sidebar-brand"><a href="/" class="brand-link">← ECHO Toolkit</a></div>
+            <nav class="sidebar-nav">
+                <div class="nav-category">Categories</div>
+                <a href="/#code-tools" class="nav-link"><span class="nav-link-icon">{ }</span> Code Tools</a>
+                <a href="/#dev-utils" class="nav-link active"><span class="nav-link-icon">⚙</span> Dev Utils</a>
+                <a href="/#writing" class="nav-link"><span class="nav-link-icon">✍</span> Writing</a>
+                <a href="/#media" class="nav-link"><span class="nav-link-icon">🎨</span> Media</a>
+                <a href="/#social-seo" class="nav-link"><span class="nav-link-icon">📊</span> Social/SEO</a>
+                <a href="/#utilities" class="nav-link"><span class="nav-link-icon">🛠</span> Utilities</a>
+                <a href="/#ai-tools" class="nav-link"><span class="nav-link-icon">🤖</span> AI Tools</a>
+            </nav>
+        </aside>
+
+        <main class="main-content">
+            <div class="tool-container">
+                <div class="tool-header">
+                    <h1><span class="tool-header-icon">⏰</span> Cron Builder</h1>
+                    <p>Parse cron expressions into human-readable descriptions and preview upcoming execution times.</p>
+                </div>
+
+                <!-- Cron Fields -->
+                <div class="tool-section">
+                    <div class="tool-section-title">Cron Expression</div>
+                    <div class="cron-fields">
+                        <div class="cron-field">
+                            <label>Minute</label>
+                            <input type="text" id="field-min" value="*" placeholder="*">
+                            <div class="hint">0-59</div>
+                        </div>
+                        <div class="cron-field">
+                            <label>Hour</label>
+                            <input type="text" id="field-hour" value="*" placeholder="*">
+                            <div class="hint">0-23</div>
+                        </div>
+                        <div class="cron-field">
+                            <label>Day</label>
+                            <input type="text" id="field-day" value="*" placeholder="*">
+                            <div class="hint">1-31</div>
+                        </div>
+                        <div class="cron-field">
+                            <label>Month</label>
+                            <input type="text" id="field-month" value="*" placeholder="*">
+                            <div class="hint">1-12</div>
+                        </div>
+                        <div class="cron-field">
+                            <label>Weekday</label>
+                            <input type="text" id="field-weekday" value="*" placeholder="*">
+                            <div class="hint">0-6</div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Quick Expression Input -->
+                <div class="tool-section">
+                    <div class="input" class="input--mono" style="margin-bottom:12px;">
+                        <input type="text" class="input input--mono" id="expressionInput" placeholder="* * * * * *  or  paste full expression" style="margin-bottom:0;border:none;box-shadow:none;padding:0;">
+                    </div>
+                </div>
+
+                <!-- Presets -->
+                <div class="tool-section">
+                    <div class="presets">
+                        <div class="presets-label">Quick Presets:</div>
+                        <button class="btn-sm" onclick="setPreset('* * * * *')">Every minute</button>
+                        <button class="btn-sm" onclick="setPreset('0 * * * *')">Every hour</button>
+                        <button class="btn-sm" onclick="setPreset('0 0 * * *')">Daily</button>
+                        <button class="btn-sm" onclick="setPreset('0 0 * * 1')">Weekly</button>
+                        <button class="btn-sm" onclick="setPreset('0 0 1 * *')">Monthly</button>
+                        <button class="btn-sm" onclick="setPreset('*/5 * * * *')">Every 5 min</button>
+                        <button class="btn-sm" onclick="setPreset('*/15 * * * *')">Every 15 min</button>
+                        <button class="btn-sm" onclick="setPreset('30 9 * * 1-5')">Weekdays 9:30</button>
+                    </div>
+                </div>
+
+                <!-- Parse Button -->
+                <div class="tool-section">
+                    <button class="btn btn-primary" onclick="parseCron()">🔍 Parse Expression</button>
+                </div>
+
+                <!-- Description -->
+                <div class="tool-section">
+                    <div class="tool-section-title">Description</div>
+                    <div class="description-box" id="descriptionBox">
+                        <div class="description-text" id="descriptionText" style="color:var(--text-muted);font-style:italic;font-size:14px;">Enter a cron expression and click Parse.</div>
+                        <div class="expression-display" id="expressionDisplay"></div>
+                    </div>
+                </div>
+
+                <!-- Next Executions -->
+                <div class="tool-section">
+                    <div class="tool-section-title">Next 10 Executions</div>
+                    <div id="scheduleResult">
+                        <div style="color:var(--text-muted);font-style:italic;font-family:'Inter',sans-serif;">Execution times will appear here after parsing.</div>
+                    </div>
+                </div>
+            </div>
+        </main>
+    </div>
+
+    <script src="/static/js/app.js"></script>
+    <script>
+        function setPreset(expr) {
+            const parts = expr.split(' ');
+            document.getElementById('field-min').value = parts[0] || '*';
+            document.getElementById('field-hour').value = parts[1] || '*';
+            document.getElementById('field-day').value = parts[2] || '*';
+            document.getElementById('field-month').value = parts[3] || '*';
+            document.getElementById('field-weekday').value = parts[4] || '*';
+            document.getElementById('expressionInput').value = expr;
+        }
+
+        function getExpression() {
+            const exprInput = document.getElementById('expressionInput').value.trim();
+            if (exprInput) return exprInput;
+            return [
+                document.getElementById('field-min').value || '*',
+                document.getElementById('field-hour').value || '*',
+                document.getElementById('field-day').value || '*',
+                document.getElementById('field-month').value || '*',
+                document.getElementById('field-weekday').value || '*'
+            ].join(' ');
+        }
+
+        async function parseCron() {
+            const expression = getExpression();
+            const descText = document.getElementById('descriptionText');
+            const exprDisplay = document.getElementById('expressionDisplay');
+            const scheduleResult = document.getElementById('scheduleResult');
+
+            if (!expression || expression.trim() === '* * * * *' && !document.getElementById('expressionInput').value) {
+                descText.style.color = 'var(--accent-yellow)';
+                descText.style.fontStyle = 'italic';
+                descText.style.fontSize = '14px';
+                descText.textContent = 'Please enter a cron expression.';
+                exprDisplay.textContent = '';
+                return;
+            }
+
+            descText.style.color = 'var(--text-muted)';
+            descText.style.fontStyle = 'italic';
+            descText.style.fontSize = '14px';
+            descText.textContent = 'Parsing...';
+            exprDisplay.textContent = '';
+            scheduleResult.innerHTML = '<div class="loading"><div class="spinner"></div> Calculating execution times...</div>';
+
+            try {
+                const response = await fetch('/tools/dev/cron-builder/parse', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ expression: expression })
+                });
+
+                const data = await response.json();
+
+                if (data.error) {
+                    descText.style.color = 'var(--accent-red)';
+                    descText.style.fontStyle = 'normal';
+                    descText.style.fontSize = '16px';
+                    descText.textContent = data.error;
+                    scheduleResult.innerHTML = '';
+                    return;
+                }
+
+                // Description
+                descText.style.color = 'var(--accent-cyan)';
+                descText.style.fontStyle = 'normal';
+                descText.style.fontSize = '16px';
+                descText.textContent = data.description || 'Unable to parse.';
+                exprDisplay.textContent = 'Expression: ' + data.expression || expression;
+
+                // Schedule table
+                const times = data.next_executions || data.next_runs || [];
+                if (times.length > 0) {
+                    let html = '<div style="overflow-x:auto;border:1px solid var(--border-color);border-radius:var(--radius);">';
+                    html += '<table class="result-table">';
+                    html += '<thead><tr><th>#</th><th>Date & Time</th><th>Day</th></tr></thead>';
+                    html += '<tbody>';
+                    times.forEach((time, i) => {
+                        html += `<tr>
+                            <td style="color:var(--text-muted)">${i + 1}</td>
+                            <td style="color:var(--text-primary)">${escapeHtml(time)}</td>
+                            <td style="color:var(--accent-cyan)">${escapeHtml(data.days?.[i] || '')}</td>
+                        </tr>`;
+                    });
+                    html += '</tbody></table></div>';
+                    scheduleResult.innerHTML = html;
+                } else {
+                    scheduleResult.innerHTML = '<div style="color:var(--text-muted);font-family:Inter,sans-serif;">No upcoming executions found.</div>';
+                }
+            } catch (err) {
+                descText.style.color = 'var(--accent-red)';
+                descText.style.fontStyle = 'normal';
+                descText.style.fontSize = '14px';
+                descText.textContent = 'Request failed: ' + err.message;
+                scheduleResult.innerHTML = '';
+            }
+        }
+
+        function escapeHtml(str) {
+            const map = { '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#039;' };
+            return String(str).replace(/[&<>"']/g, c => map[c]);
+        }
+    </script>
+</body>
+</html>

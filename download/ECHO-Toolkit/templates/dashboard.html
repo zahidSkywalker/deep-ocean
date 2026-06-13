@@ -1,0 +1,1640 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>ECHO Toolkit — Developer &amp; Creator Suite</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&family=JetBrains+Mono:wght@400;500;600&display=swap" rel="stylesheet">
+    <style>
+        /* ============================================
+           ECHO TOOLKIT — DASHBOARD STYLES
+           ============================================ */
+
+        /* --- CSS Custom Properties --- */
+        :root {
+            --bg-primary: #0a0e17;
+            --bg-secondary: #111827;
+            --bg-card: #1a2236;
+            --bg-card-hover: #1f2a42;
+            --bg-input: #0f172a;
+            --border-color: #1e293b;
+            --border-hover: #334155;
+            --text-primary: #f1f5f9;
+            --text-secondary: #94a3b8;
+            --text-muted: #64748b;
+            --accent-cyan: #06b6d4;
+            --accent-green: #10b981;
+            --accent-yellow: #f59e0b;
+            --accent-purple: #a855f7;
+            --accent-orange: #f97316;
+            --accent-blue: #3b82f6;
+            --accent-pink: #ec4899;
+            --accent-red: #ef4444;
+            --sidebar-width: 260px;
+            --header-height: 64px;
+            --radius: 10px;
+            --radius-sm: 6px;
+            --shadow: 0 4px 6px -1px rgba(0,0,0,.3), 0 2px 4px -2px rgba(0,0,0,.2);
+            --shadow-lg: 0 10px 25px -5px rgba(0,0,0,.4), 0 8px 10px -6px rgba(0,0,0,.3);
+            --transition: .2s ease;
+        }
+
+        /* --- Reset & Base --- */
+        *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+        html {
+            scroll-behavior: smooth;
+            -webkit-text-size-adjust: 100%;
+        }
+
+        body {
+            font-family: 'Inter', -apple-system, BlinkMacSystemFont, sans-serif;
+            background: var(--bg-primary);
+            color: var(--text-primary);
+            line-height: 1.6;
+            min-height: 100vh;
+            overflow-x: hidden;
+        }
+
+        a { color: var(--accent-cyan); text-decoration: none; transition: color var(--transition); }
+        a:hover { color: #22d3ee; }
+
+        ::selection { background: var(--accent-cyan); color: var(--bg-primary); }
+
+        ::-webkit-scrollbar { width: 8px; height: 8px; }
+        ::-webkit-scrollbar-track { background: var(--bg-secondary); }
+        ::-webkit-scrollbar-thumb { background: var(--border-hover); border-radius: 4px; }
+        ::-webkit-scrollbar-thumb:hover { background: var(--text-muted); }
+
+        /* --- Layout --- */
+        .app-layout {
+            display: flex;
+            min-height: 100vh;
+        }
+
+        /* --- Sidebar --- */
+        .sidebar {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: var(--sidebar-width);
+            height: 100vh;
+            background: var(--bg-secondary);
+            border-right: 1px solid var(--border-color);
+            display: flex;
+            flex-direction: column;
+            z-index: 1000;
+            transition: transform .3s cubic-bezier(.4,0,.2,1);
+            overflow: hidden;
+        }
+
+        .sidebar.collapsed {
+            transform: translateX(calc(var(--sidebar-width) * -1));
+        }
+
+        .sidebar-brand {
+            padding: 20px 16px;
+            border-bottom: 1px solid var(--border-color);
+            flex-shrink: 0;
+        }
+
+        .brand-ascii {
+            font-family: 'JetBrains Mono', monospace;
+            font-size: 10px;
+            line-height: 1.2;
+            color: var(--accent-cyan);
+            white-space: pre;
+            text-align: center;
+            margin-bottom: 4px;
+        }
+
+        .brand-label {
+            text-align: center;
+            font-size: 11px;
+            color: var(--text-muted);
+            letter-spacing: 2px;
+            text-transform: uppercase;
+        }
+
+        .sidebar-nav {
+            flex: 1;
+            overflow-y: auto;
+            padding: 12px 0;
+        }
+
+        .nav-section {
+            margin-bottom: 4px;
+        }
+
+        .nav-section-header {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            padding: 8px 16px;
+            font-size: 11px;
+            font-weight: 600;
+            color: var(--text-muted);
+            text-transform: uppercase;
+            letter-spacing: 1px;
+            cursor: pointer;
+            transition: color var(--transition);
+            user-select: none;
+        }
+
+        .nav-section-header:hover { color: var(--text-secondary); }
+
+        .nav-section-toggle {
+            font-size: 14px;
+            transition: transform var(--transition);
+            width: 20px;
+            text-align: center;
+            flex-shrink: 0;
+        }
+
+        .nav-section.collapsed .nav-section-toggle { transform: rotate(-90deg); }
+        .nav-section.collapsed .nav-section-links { display: none; }
+
+        .nav-section-links {
+            list-style: none;
+        }
+
+        .nav-link {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            padding: 7px 16px 7px 24px;
+            font-size: 13px;
+            color: var(--text-secondary);
+            transition: all var(--transition);
+            border-left: 3px solid transparent;
+            white-space: nowrap;
+            overflow: hidden;
+            text-overflow: ellipsis;
+        }
+
+        .nav-link:hover {
+            color: var(--text-primary);
+            background: rgba(6,182,212,.05);
+            border-left-color: var(--border-hover);
+        }
+
+        .nav-link.active {
+            color: var(--accent-cyan);
+            border-left-color: var(--accent-cyan);
+            background: rgba(6,182,212,.08);
+        }
+
+        .nav-link-icon {
+            font-size: 15px;
+            width: 20px;
+            text-align: center;
+            flex-shrink: 0;
+        }
+
+        .nav-link-text {
+            overflow: hidden;
+            text-overflow: ellipsis;
+        }
+
+        .nav-link-badge {
+            margin-left: auto;
+            font-size: 10px;
+            padding: 1px 6px;
+            border-radius: 10px;
+            background: rgba(6,182,212,.15);
+            color: var(--accent-cyan);
+            flex-shrink: 0;
+        }
+
+        /* --- Main Content --- */
+        .main-content {
+            flex: 1;
+            margin-left: var(--sidebar-width);
+            display: flex;
+            flex-direction: column;
+            min-height: 100vh;
+        }
+
+        /* --- Top Bar --- */
+        .topbar {
+            position: sticky;
+            top: 0;
+            z-index: 100;
+            background: rgba(10,14,23,.85);
+            backdrop-filter: blur(12px);
+            -webkit-backdrop-filter: blur(12px);
+            border-bottom: 1px solid var(--border-color);
+            padding: 0 24px;
+            height: var(--header-height);
+            display: flex;
+            align-items: center;
+            gap: 16px;
+        }
+
+        .sidebar-toggle {
+            display: none;
+            background: none;
+            border: none;
+            color: var(--text-secondary);
+            cursor: pointer;
+            padding: 6px;
+            border-radius: var(--radius-sm);
+            transition: all var(--transition);
+        }
+
+        .sidebar-toggle:hover {
+            color: var(--text-primary);
+            background: rgba(255,255,255,.05);
+        }
+
+        .search-container {
+            flex: 1;
+            max-width: 560px;
+            position: relative;
+        }
+
+        .search-input {
+            width: 100%;
+            padding: 10px 16px 10px 42px;
+            background: var(--bg-input);
+            border: 1px solid var(--border-color);
+            border-radius: var(--radius);
+            color: var(--text-primary);
+            font-family: inherit;
+            font-size: 14px;
+            transition: all var(--transition);
+            outline: none;
+        }
+
+        .search-input:focus {
+            border-color: var(--accent-cyan);
+            box-shadow: 0 0 0 3px rgba(6,182,212,.15);
+        }
+
+        .search-input::placeholder { color: var(--text-muted); }
+
+        .search-icon {
+            position: absolute;
+            left: 14px;
+            top: 50%;
+            transform: translateY(-50%);
+            color: var(--text-muted);
+            font-size: 16px;
+            pointer-events: none;
+        }
+
+        .search-shortcut {
+            position: absolute;
+            right: 12px;
+            top: 50%;
+            transform: translateY(-50%);
+            padding: 2px 8px;
+            border: 1px solid var(--border-color);
+            border-radius: 4px;
+            font-size: 11px;
+            color: var(--text-muted);
+            font-family: 'JetBrains Mono', monospace;
+            pointer-events: none;
+        }
+
+        .topbar-actions {
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            flex-shrink: 0;
+        }
+
+        .topbar-btn {
+            background: none;
+            border: 1px solid var(--border-color);
+            color: var(--text-secondary);
+            padding: 8px;
+            border-radius: var(--radius-sm);
+            cursor: pointer;
+            transition: all var(--transition);
+            font-size: 16px;
+        }
+
+        .topbar-btn:hover {
+            color: var(--text-primary);
+            border-color: var(--border-hover);
+            background: rgba(255,255,255,.03);
+        }
+
+        /* --- Hero Section --- */
+        .hero {
+            padding: 48px 32px 40px;
+            text-align: center;
+            position: relative;
+            overflow: hidden;
+        }
+
+        .hero::before {
+            content: '';
+            position: absolute;
+            top: 0; left: 50%;
+            transform: translateX(-50%);
+            width: 600px;
+            height: 300px;
+            background: radial-gradient(ellipse, rgba(6,182,212,.12) 0%, transparent 70%);
+            pointer-events: none;
+        }
+
+        .hero-terminal {
+            display: inline-block;
+            background: var(--bg-card);
+            border: 1px solid var(--border-color);
+            border-radius: var(--radius);
+            padding: 16px 28px;
+            margin-bottom: 20px;
+            font-family: 'JetBrains Mono', monospace;
+            font-size: 15px;
+            color: var(--accent-cyan);
+            position: relative;
+        }
+
+        .hero-terminal .prompt { color: var(--accent-green); }
+        .hero-terminal .command { color: var(--accent-cyan); }
+        .hero-terminal .cursor {
+            display: inline-block;
+            width: 8px;
+            height: 18px;
+            background: var(--accent-cyan);
+            margin-left: 2px;
+            vertical-align: text-bottom;
+            animation: blink 1s step-end infinite;
+        }
+
+        @keyframes blink {
+            0%, 100% { opacity: 1; }
+            50% { opacity: 0; }
+        }
+
+        .hero h1 {
+            font-size: 28px;
+            font-weight: 700;
+            margin-bottom: 12px;
+            background: linear-gradient(135deg, var(--text-primary) 0%, var(--accent-cyan) 100%);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            background-clip: text;
+        }
+
+        .hero p {
+            font-size: 16px;
+            color: var(--text-secondary);
+            max-width: 640px;
+            margin: 0 auto 28px;
+        }
+
+        .hero-stats {
+            display: flex;
+            justify-content: center;
+            gap: 32px;
+            flex-wrap: wrap;
+        }
+
+        .hero-stat {
+            text-align: center;
+        }
+
+        .hero-stat-value {
+            font-size: 24px;
+            font-weight: 700;
+            color: var(--text-primary);
+            font-variant-numeric: tabular-nums;
+        }
+
+        .hero-stat-label {
+            font-size: 12px;
+            color: var(--text-muted);
+            text-transform: uppercase;
+            letter-spacing: 1px;
+            margin-top: 2px;
+        }
+
+        .hero-stat-divider {
+            width: 1px;
+            height: 40px;
+            background: var(--border-color);
+            align-self: center;
+        }
+
+        /* --- Category Sections --- */
+        .content-area {
+            flex: 1;
+            padding: 0 32px 48px;
+        }
+
+        .category-section {
+            margin-bottom: 36px;
+        }
+
+        .category-header {
+            display: flex;
+            align-items: center;
+            gap: 12px;
+            margin-bottom: 16px;
+            padding-bottom: 12px;
+            border-bottom: 2px solid var(--border-color);
+        }
+
+        .category-icon {
+            width: 38px;
+            height: 38px;
+            border-radius: var(--radius-sm);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 20px;
+            flex-shrink: 0;
+        }
+
+        .category-icon.cyan    { background: rgba(6,182,212,.15); }
+        .category-icon.green   { background: rgba(16,185,129,.15); }
+        .category-icon.yellow  { background: rgba(245,158,11,.15); }
+        .category-icon.purple  { background: rgba(168,85,247,.15); }
+        .category-icon.orange  { background: rgba(249,115,22,.15); }
+        .category-icon.blue    { background: rgba(59,130,246,.15); }
+        .category-icon.pink    { background: rgba(236,72,153,.15); }
+
+        .category-title-group { flex: 1; }
+
+        .category-title {
+            font-size: 18px;
+            font-weight: 700;
+            color: var(--text-primary);
+        }
+
+        .category-count {
+            font-size: 12px;
+            color: var(--text-muted);
+        }
+
+        .category-accent.cyan   { border-bottom-color: var(--accent-cyan); }
+        .category-accent.green  { border-bottom-color: var(--accent-green); }
+        .category-accent.yellow { border-bottom-color: var(--accent-yellow); }
+        .category-accent.purple { border-bottom-color: var(--accent-purple); }
+        .category-accent.orange { border-bottom-color: var(--accent-orange); }
+        .category-accent.blue   { border-bottom-color: var(--accent-blue); }
+        .category-accent.pink   { border-bottom-color: var(--accent-pink); }
+
+        /* --- Tool Grid --- */
+        .tool-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(270px, 1fr));
+            gap: 12px;
+        }
+
+        .tool-card {
+            display: flex;
+            align-items: flex-start;
+            gap: 12px;
+            padding: 16px;
+            background: var(--bg-card);
+            border: 1px solid var(--border-color);
+            border-radius: var(--radius);
+            transition: all var(--transition);
+            cursor: pointer;
+            position: relative;
+            overflow: hidden;
+        }
+
+        .tool-card::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 3px;
+            height: 100%;
+            border-radius: 0 2px 2px 0;
+            opacity: 0;
+            transition: opacity var(--transition);
+        }
+
+        .tool-card:hover {
+            border-color: var(--border-hover);
+            background: var(--bg-card-hover);
+            transform: translateY(-1px);
+            box-shadow: var(--shadow);
+        }
+
+        .tool-card:hover::before { opacity: 1; }
+
+        .tool-card.accent-cyan::before   { background: var(--accent-cyan); }
+        .tool-card.accent-green::before  { background: var(--accent-green); }
+        .tool-card.accent-yellow::before { background: var(--accent-yellow); }
+        .tool-card.accent-purple::before { background: var(--accent-purple); }
+        .tool-card.accent-orange::before { background: var(--accent-orange); }
+        .tool-card.accent-blue::before   { background: var(--accent-blue); }
+        .tool-card.accent-pink::before   { background: var(--accent-pink); }
+
+        .tool-card-icon {
+            width: 40px;
+            height: 40px;
+            border-radius: var(--radius-sm);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 20px;
+            flex-shrink: 0;
+            background: rgba(255,255,255,.04);
+            border: 1px solid var(--border-color);
+        }
+
+        .tool-card-body { flex: 1; min-width: 0; }
+
+        .tool-card-name {
+            font-size: 14px;
+            font-weight: 600;
+            color: var(--text-primary);
+            margin-bottom: 3px;
+            white-space: nowrap;
+            overflow: hidden;
+            text-overflow: ellipsis;
+        }
+
+        .tool-card-desc {
+            font-size: 12px;
+            color: var(--text-muted);
+            line-height: 1.4;
+            display: -webkit-box;
+            -webkit-line-clamp: 2;
+            -webkit-box-orient: vertical;
+            overflow: hidden;
+        }
+
+        .tool-card-arrow {
+            color: var(--text-muted);
+            font-size: 14px;
+            align-self: center;
+            flex-shrink: 0;
+            opacity: 0;
+            transition: opacity var(--transition), transform var(--transition);
+        }
+
+        .tool-card:hover .tool-card-arrow {
+            opacity: 1;
+            transform: translateX(2px);
+        }
+
+        .tool-card.hidden { display: none; }
+
+        .no-results {
+            text-align: center;
+            padding: 60px 20px;
+            color: var(--text-muted);
+        }
+
+        .no-results-icon { font-size: 48px; margin-bottom: 12px; }
+        .no-results-text { font-size: 16px; }
+        .no-results-sub { font-size: 13px; margin-top: 4px; }
+
+        /* --- Back to Top --- */
+        .back-to-top {
+            position: fixed;
+            bottom: 24px;
+            right: 24px;
+            width: 42px;
+            height: 42px;
+            border-radius: 50%;
+            background: var(--accent-cyan);
+            color: var(--bg-primary);
+            border: none;
+            cursor: pointer;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 18px;
+            font-weight: 700;
+            box-shadow: var(--shadow-lg);
+            opacity: 0;
+            visibility: hidden;
+            transform: translateY(10px);
+            transition: all .3s ease;
+            z-index: 999;
+        }
+
+        .back-to-top.visible {
+            opacity: 1;
+            visibility: visible;
+            transform: translateY(0);
+        }
+
+        .back-to-top:hover {
+            background: #22d3ee;
+            transform: translateY(-2px);
+        }
+
+        /* --- Footer --- */
+        .footer {
+            border-top: 1px solid var(--border-color);
+            padding: 24px 32px;
+            text-align: center;
+            color: var(--text-muted);
+            font-size: 13px;
+            background: var(--bg-secondary);
+        }
+
+        .footer-brand {
+            color: var(--accent-cyan);
+            font-weight: 600;
+        }
+
+        .footer-tagline {
+            font-style: italic;
+            margin-top: 4px;
+            opacity: .7;
+        }
+
+        /* --- Mobile Overlay --- */
+        .sidebar-overlay {
+            display: none;
+            position: fixed;
+            inset: 0;
+            background: rgba(0,0,0,.5);
+            z-index: 999;
+        }
+
+        .sidebar-overlay.active { display: block; }
+
+        /* --- Responsive --- */
+        @media (max-width: 1024px) {
+            .sidebar { transform: translateX(calc(var(--sidebar-width) * -1)); }
+            .sidebar.open { transform: translateX(0); }
+            .main-content { margin-left: 0; }
+            .sidebar-toggle { display: flex; }
+            .search-shortcut { display: none; }
+        }
+
+        @media (max-width: 768px) {
+            .hero { padding: 32px 16px 28px; }
+            .hero h1 { font-size: 22px; }
+            .hero p { font-size: 14px; }
+            .hero-stats { gap: 20px; }
+            .hero-stat-value { font-size: 20px; }
+            .content-area { padding: 0 16px 32px; }
+            .tool-grid { grid-template-columns: 1fr; }
+            .topbar { padding: 0 16px; }
+            .footer { padding: 20px 16px; }
+        }
+
+        @media (max-width: 480px) {
+            .hero-terminal { font-size: 12px; padding: 12px 16px; }
+            .hero-stats { gap: 16px; }
+            .hero-stat-value { font-size: 18px; }
+            .hero-stat-divider { display: none; }
+        }
+    </style>
+</head>
+<body>
+
+<div class="app-layout">
+
+    <!-- ============================================
+         SIDEBAR NAVIGATION
+         ============================================ -->
+    <aside class="sidebar" id="sidebar" role="navigation" aria-label="Main Navigation">
+        <div class="sidebar-brand">
+            <div class="brand-ascii">╔══╗║ ║══╬══╬══║ ║╔═╩══╩═╗
+║ ECHO ║
+╚═══════╝</div>
+            <div class="brand-label">Toolkit</div>
+        </div>
+
+        <nav class="sidebar-nav">
+
+            <!-- Dashboard -->
+            <div class="nav-section" data-section="dashboard">
+                <div class="nav-section-header" onclick="toggleNavSection(this)">
+                    <span>Overview</span>
+                    <span class="nav-section-toggle">▾</span>
+                </div>
+                <ul class="nav-section-links">
+                    <li><a href="#hero" class="nav-link active" data-nav="dashboard"><span class="nav-link-icon">🏠</span><span class="nav-link-text">Dashboard</span></a></li>
+                </ul>
+            </div>
+
+            <!-- Developer Code Tools -->
+            <div class="nav-section" data-section="dev-code">
+                <div class="nav-section-header" onclick="toggleNavSection(this)">
+                    <span>👨‍💻 Developer Code Tools</span>
+                    <span class="nav-section-toggle">▾</span>
+                </div>
+                <ul class="nav-section-links">
+                    <li><a href="#cat-dev-code" class="nav-link"><span class="nav-link-icon">{ }</span><span class="nav-link-text">All Code Tools</span><span class="nav-link-badge">12</span></a></li>
+                    <li><a href="/tool/json-formatter" class="nav-link"><span class="nav-link-icon">{ }</span><span class="nav-link-text">JSON Formatter</span></a></li>
+                    <li><a href="/tool/base64" class="nav-link"><span class="nav-link-icon">🔐</span><span class="nav-link-text">Base64 Encoder</span></a></li>
+                    <li><a href="/tool/regex-tester" class="nav-link"><span class="nav-link-icon">.*</span><span class="nav-link-text">Regex Tester</span></a></li>
+                    <li><a href="/tool/hash-generator" class="nav-link"><span class="nav-link-icon">#</span><span class="nav-link-text">Hash Generator</span></a></li>
+                    <li><a href="/tool/jwt-decoder" class="nav-link"><span class="nav-link-icon">🎫</span><span class="nav-link-text">JWT Decoder</span></a></li>
+                    <li><a href="/tool/timestamp" class="nav-link"><span class="nav-link-icon">⏱</span><span class="nav-link-text">Timestamp Converter</span></a></li>
+                    <li><a href="/tool/url-encoder" class="nav-link"><span class="nav-link-icon">🔗</span><span class="nav-link-text">URL Encoder</span></a></li>
+                    <li><a href="/tool/unicode" class="nav-link"><span class="nav-link-icon">🪣</span><span class="nav-link-text">Unicode Lookup</span></a></li>
+                    <li><a href="/tool/color-converter" class="nav-link"><span class="nav-link-icon">🎨</span><span class="nav-link-text">Color Converter</span></a></li>
+                    <li><a href="/tool/lorem-ipsum" class="nav-link"><span class="nav-link-icon">📝</span><span class="nav-link-text">Lorem Ipsum</span></a></li>
+                    <li><a href="/tool/markdown-preview" class="nav-link"><span class="nav-link-icon">📄</span><span class="nav-link-text">Markdown Preview</span></a></li>
+                    <li><a href="/tool/sql-formatter" class="nav-link"><span class="nav-link-icon">🗃</span><span class="nav-link-text">SQL Formatter</span></a></li>
+                </ul>
+            </div>
+
+            <!-- Developer Utilities -->
+            <div class="nav-section" data-section="dev-utils">
+                <div class="nav-section-header" onclick="toggleNavSection(this)">
+                    <span>🔧 Developer Utilities</span>
+                    <span class="nav-section-toggle">▾</span>
+                </div>
+                <ul class="nav-section-links">
+                    <li><a href="#cat-dev-utils" class="nav-link"><span class="nav-link-icon">⚙</span><span class="nav-link-text">All Utilities</span><span class="nav-link-badge">10</span></a></li>
+                    <li><a href="/tool/dep-checker" class="nav-link"><span class="nav-link-icon">📦</span><span class="nav-link-text">Dependency Checker</span></a></li>
+                    <li><a href="/tool/password-gen" class="nav-link"><span class="nav-link-icon">🔑</span><span class="nav-link-text">Password Generator</span></a></li>
+                    <li><a href="/tool/slug-gen" class="nav-link"><span class="nav-link-icon">📝</span><span class="nav-link-text">Slug Generator</span></a></li>
+                    <li><a href="/tool/cron-builder" class="nav-link"><span class="nav-link-icon">⏰</span><span class="nav-link-text">Cron Builder</span></a></li>
+                    <li><a href="/tool/scaffolder" class="nav-link"><span class="nav-link-icon">🏗</span><span class="nav-link-text">Project Scaffolder</span></a></li>
+                    <li><a href="/tool/webhook-tester" class="nav-link"><span class="nav-link-icon">🪝</span><span class="nav-link-text">Webhook Tester</span></a></li>
+                    <li><a href="/tool/diff-tool" class="nav-link"><span class="nav-link-icon">↔</span><span class="nav-link-text">Diff Tool</span></a></li>
+                    <li><a href="/tool/snippet-manager" class="nav-link"><span class="nav-link-icon">📋</span><span class="nav-link-text">Snippet Manager</span></a></li>
+                    <li><a href="/tool/env-manager" class="nav-link"><span class="nav-link-icon">🌍</span><span class="nav-link-text">Env Manager</span></a></li>
+                    <li><a href="/tool/secret-manager" class="nav-link"><span class="nav-link-icon">🔒</span><span class="nav-link-text">Secret Manager</span></a></li>
+                </ul>
+            </div>
+
+            <!-- Writing & Content -->
+            <div class="nav-section" data-section="writing">
+                <div class="nav-section-header" onclick="toggleNavSection(this)">
+                    <span>✍️ Writing &amp; Content</span>
+                    <span class="nav-section-toggle">▾</span>
+                </div>
+                <ul class="nav-section-links">
+                    <li><a href="#cat-writing" class="nav-link"><span class="nav-link-icon">✍</span><span class="nav-link-text">All Writing Tools</span><span class="nav-link-badge">10</span></a></li>
+                    <li><a href="/tool/markdown-converter" class="nav-link"><span class="nav-link-icon">🔄</span><span class="nav-link-text">Markdown Converter</span></a></li>
+                    <li><a href="/tool/headline-gen" class="nav-link"><span class="nav-link-icon">💥</span><span class="nav-link-text">Headline Generator</span></a></li>
+                    <li><a href="/tool/reading-time" class="nav-link"><span class="nav-link-icon">⏱</span><span class="nav-link-text">Reading Time Calculator</span></a></li>
+                    <li><a href="/tool/text-case" class="nav-link"><span class="nav-link-icon">Aa</span><span class="nav-link-text">Text Case Converter</span></a></li>
+                    <li><a href="/tool/content-planner" class="nav-link"><span class="nav-link-icon">📅</span><span class="nav-link-text">Content Planner</span></a></li>
+                    <li><a href="/tool/blog-manager" class="nav-link"><span class="nav-link-icon">📝</span><span class="nav-link-text">Blog Manager</span></a></li>
+                    <li><a href="/tool/newsletter-builder" class="nav-link"><span class="nav-link-icon">📧</span><span class="nav-link-text">Newsletter Builder</span></a></li>
+                    <li><a href="/tool/meta-tag-gen" class="nav-link"><span class="nav-link-icon">🏷</span><span class="nav-link-text">Meta Tag Generator</span></a></li>
+                    <li><a href="/tool/word-counter" class="nav-link"><span class="nav-link-icon">🔢</span><span class="nav-link-text">Word Counter</span></a></li>
+                    <li><a href="/tool/auto-tagger" class="nav-link"><span class="nav-link-icon">🏷️</span><span class="nav-link-text">Auto-Tagger</span></a></li>
+                </ul>
+            </div>
+
+            <!-- Media & Design -->
+            <div class="nav-section" data-section="media">
+                <div class="nav-section-header" onclick="toggleNavSection(this)">
+                    <span>🎨 Media &amp; Design</span>
+                    <span class="nav-section-toggle">▾</span>
+                </div>
+                <ul class="nav-section-links">
+                    <li><a href="#cat-media" class="nav-link"><span class="nav-link-icon">🎨</span><span class="nav-link-text">All Media Tools</span><span class="nav-link-badge">9</span></a></li>
+                    <li><a href="/tool/qr-generator" class="nav-link"><span class="nav-link-icon">📱</span><span class="nav-link-text">QR Code Generator</span></a></li>
+                    <li><a href="/tool/palette-gen" class="nav-link"><span class="nav-link-icon">🌈</span><span class="nav-link-text">Color Palette Generator</span></a></li>
+                    <li><a href="/tool/image-converter" class="nav-link"><span class="nav-link-icon">🖼</span><span class="nav-link-text">Image Converter</span></a></li>
+                    <li><a href="/tool/image-resizer" class="nav-link"><span class="nav-link-icon">📐</span><span class="nav-link-text">Image Resizer</span></a></li>
+                    <li><a href="/tool/meme-gen" class="nav-link"><span class="nav-link-icon">😂</span><span class="nav-link-text">Meme Generator</span></a></li>
+                    <li><a href="/tool/watermark" class="nav-link"><span class="nav-link-icon">💧</span><span class="nav-link-text">Watermark Tool</span></a></li>
+                    <li><a href="/tool/favicon-gen" class="nav-link"><span class="nav-link-icon">🌐</span><span class="nav-link-text">Favicon Generator</span></a></li>
+                    <li><a href="/tool/image-info" class="nav-link"><span class="nav-link-icon">ℹ️</span><span class="nav-link-text">Image Info</span></a></li>
+                    <li><a href="/tool/gif-text" class="nav-link"><span class="nav-link-icon">🎬</span><span class="nav-link-text">GIF Text Animator</span></a></li>
+                </ul>
+            </div>
+
+            <!-- Social & SEO -->
+            <div class="nav-section" data-section="seo">
+                <div class="nav-section-header" onclick="toggleNavSection(this)">
+                    <span>📊 Social &amp; SEO</span>
+                    <span class="nav-section-toggle">▾</span>
+                </div>
+                <ul class="nav-section-links">
+                    <li><a href="#cat-seo" class="nav-link"><span class="nav-link-icon">📊</span><span class="nav-link-text">All SEO Tools</span><span class="nav-link-badge">10</span></a></li>
+                    <li><a href="/tool/hashtag-analyzer" class="nav-link"><span class="nav-link-icon">#</span><span class="nav-link-text">Hashtag Analyzer</span></a></li>
+                    <li><a href="/tool/content-repurpose" class="nav-link"><span class="nav-link-icon">♻</span><span class="nav-link-text">Content Repurposer</span></a></li>
+                    <li><a href="/tool/keyword-research" class="nav-link"><span class="nav-link-icon">🔍</span><span class="nav-link-text">Keyword Researcher</span></a></li>
+                    <li><a href="/tool/seo-audit" class="nav-link"><span class="nav-link-icon">📈</span><span class="nav-link-text">SEO Audit Tool</span></a></li>
+                    <li><a href="/tool/content-score" class="nav-link"><span class="nav-link-icon">⭐</span><span class="nav-link-text">Content Score Checker</span></a></li>
+                    <li><a href="/tool/social-formatter" class="nav-link"><span class="nav-link-icon">📲</span><span class="nav-link-text">Social Post Formatter</span></a></li>
+                    <li><a href="/tool/robots-gen" class="nav-link"><span class="nav-link-icon">🤖</span><span class="nav-link-text">Robots.txt Generator</span></a></li>
+                    <li><a href="/tool/sitemap-gen" class="nav-link"><span class="nav-link-icon">🗺</span><span class="nav-link-text">Sitemap Generator</span></a></li>
+                    <li><a href="/tool/og-preview" class="nav-link"><span class="nav-link-icon">👁</span><span class="nav-link-text">OG Preview</span></a></li>
+                    <li><a href="/tool/broken-link" class="nav-link"><span class="nav-link-icon">🔗</span><span class="nav-link-text">Broken Link Checker</span></a></li>
+                </ul>
+            </div>
+
+            <!-- General Utilities -->
+            <div class="nav-section" data-section="utils">
+                <div class="nav-section-header" onclick="toggleNavSection(this)">
+                    <span>🛠️ General Utilities</span>
+                    <span class="nav-section-toggle">▾</span>
+                </div>
+                <ul class="nav-section-links">
+                    <li><a href="#cat-utils" class="nav-link"><span class="nav-link-icon">🛠</span><span class="nav-link-text">All Utilities</span><span class="nav-link-badge">10</span></a></li>
+                    <li><a href="/tool/text-encryptor" class="nav-link"><span class="nav-link-icon">🔐</span><span class="nav-link-text">Text Encryptor</span></a></li>
+                    <li><a href="/tool/file-organizer" class="nav-link"><span class="nav-link-icon">📁</span><span class="nav-link-text">File Organizer</span></a></li>
+                    <li><a href="/tool/batch-rename" class="nav-link"><span class="nav-link-icon">✏️</span><span class="nav-link-text">Batch Renamer</span></a></li>
+                    <li><a href="/tool/calculator" class="nav-link"><span class="nav-link-icon">🧮</span><span class="nav-link-text">Calculator</span></a></li>
+                    <li><a href="/tool/unit-converter" class="nav-link"><span class="nav-link-icon">📏</span><span class="nav-link-text">Unit Converter</span></a></li>
+                    <li><a href="/tool/age-calc" class="nav-link"><span class="nav-link-icon">🎂</span><span class="nav-link-text">Age Calculator</span></a></li>
+                    <li><a href="/tool/pomodoro" class="nav-link"><span class="nav-link-icon">🍅</span><span class="nav-link-text">Pomodoro Timer</span></a></li>
+                    <li><a href="/tool/countdown" class="nav-link"><span class="nav-link-icon">⏳</span><span class="nav-link-text">Countdown Generator</span></a></li>
+                    <li><a href="/tool/text-stats" class="nav-link"><span class="nav-link-icon">📊</span><span class="nav-link-text">Text Statistics</span></a></li>
+                    <li><a href="/tool/number-converter" class="nav-link"><span class="nav-link-icon">🔢</span><span class="nav-link-text">Number Converter</span></a></li>
+                </ul>
+            </div>
+
+            <!-- AI Tools -->
+            <div class="nav-section" data-section="ai">
+                <div class="nav-section-header" onclick="toggleNavSection(this)">
+                    <span>🤖 AI Tools (Offline)</span>
+                    <span class="nav-section-toggle">▾</span>
+                </div>
+                <ul class="nav-section-links">
+                    <li><a href="#cat-ai" class="nav-link"><span class="nav-link-icon">🤖</span><span class="nav-link-text">All AI Tools</span><span class="nav-link-badge">10</span></a></li>
+                    <li><a href="/tool/ai-summarizer" class="nav-link"><span class="nav-link-icon">📄</span><span class="nav-link-text">AI Summarizer</span></a></li>
+                    <li><a href="/tool/code-explainer" class="nav-link"><span class="nav-link-icon">💡</span><span class="nav-link-text">Code Explainer</span></a></li>
+                    <li><a href="/tool/text-generator" class="nav-link"><span class="nav-link-icon">✨</span><span class="nav-link-text">Text Generator</span></a></li>
+                    <li><a href="/tool/sentiment" class="nav-link"><span class="nav-link-icon">😊</span><span class="nav-link-text">Sentiment Analyzer</span></a></li>
+                    <li><a href="/tool/text-similarity" class="nav-link"><span class="nav-link-icon">📉</span><span class="nav-link-text">Text Similarity</span></a></li>
+                    <li><a href="/tool/keyword-extract" class="nav-link"><span class="nav-link-icon">🔑</span><span class="nav-link-text">Keyword Extractor</span></a></li>
+                    <li><a href="/tool/grammar-check" class="nav-link"><span class="nav-link-icon">✅</span><span class="nav-link-text">Grammar Checker</span></a></li>
+                    <li><a href="/tool/plagiarism" class="nav-link"><span class="nav-link-icon">🔎</span><span class="nav-link-text">Plagiarism Detector</span></a></li>
+                    <li><a href="/tool/text-translate" class="nav-link"><span class="nav-link-icon">🌐</span><span class="nav-link-text">Text Translator</span></a></li>
+                    <li><a href="/tool/code-quality" class="nav-link"><span class="nav-link-icon">🏆</span><span class="nav-link-text">Code Quality Scorer</span></a></li>
+                </ul>
+            </div>
+
+        </nav>
+    </aside>
+
+    <!-- Sidebar Overlay for mobile -->
+    <div class="sidebar-overlay" id="sidebarOverlay" onclick="closeSidebar()"></div>
+
+    <!-- ============================================
+         MAIN CONTENT
+         ============================================ -->
+    <div class="main-content">
+
+        <!-- Top Bar -->
+        <header class="topbar" role="banner">
+            <button class="sidebar-toggle" id="sidebarToggle" onclick="toggleSidebar()" aria-label="Toggle navigation menu">
+                <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><line x1="3" y1="6" x2="21" y2="6"/><line x1="3" y1="12" x2="21" y2="12"/><line x1="3" y1="18" x2="21" y2="18"/></svg>
+            </button>
+            <div class="search-container">
+                <span class="search-icon">
+                    <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="11" cy="11" r="8"/><line x1="21" y1="21" x2="16.65" y2="16.65"/></svg>
+                </span>
+                <input
+                    type="text"
+                    class="search-input"
+                    id="searchInput"
+                    placeholder="Search tools by name, description, or category..."
+                    autocomplete="off"
+                    aria-label="Search tools"
+                >
+                <span class="search-shortcut">/</span>
+            </div>
+            <div class="topbar-actions">
+                <button class="topbar-btn" title="Expand all sections" onclick="expandAll()">
+                    <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="15 3 21 3 21 9"/><polyline points="9 21 3 21 3 15"/><line x1="21" y1="3" x2="14" y2="10"/><line x1="3" y1="21" x2="10" y2="14"/></svg>
+                </button>
+                <button class="topbar-btn" title="Collapse all sections" onclick="collapseAll()">
+                    <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="4 14 10 14 10 20"/><polyline points="20 10 14 10 14 4"/><line x1="14" y1="10" x2="21" y2="3"/><line x1="3" y1="21" x2="10" y2="14"/></svg>
+                </button>
+            </div>
+        </header>
+
+        <!-- Hero Section -->
+        <section class="hero" id="hero">
+            <div class="hero-terminal">
+                <span class="prompt">$ </span><span class="command">echo 'Welcome to ECHO Toolkit'</span><span class="cursor"></span>
+            </div>
+            <h1>Developer &amp; Creator Suite</h1>
+            <p>71 tools for developers and content creators. No API keys needed. 100% offline-capable.</p>
+            <div class="hero-stats">
+                <div class="hero-stat">
+                    <div class="hero-stat-value" id="statTools">71</div>
+                    <div class="hero-stat-label">Tools</div>
+                </div>
+                <div class="hero-stat-divider"></div>
+                <div class="hero-stat">
+                    <div class="hero-stat-value">7</div>
+                    <div class="hero-stat-label">Categories</div>
+                </div>
+                <div class="hero-stat-divider"></div>
+                <div class="hero-stat">
+                    <div class="hero-stat-value">0</div>
+                    <div class="hero-stat-label">Dependencies</div>
+                </div>
+                <div class="hero-stat-divider"></div>
+                <div class="hero-stat">
+                    <div class="hero-stat-value">100%</div>
+                    <div class="hero-stat-label">Free</div>
+                </div>
+            </div>
+        </section>
+
+        <!-- Category Sections -->
+        <main class="content-area" role="main">
+
+            <!-- No Results Message (hidden by default) -->
+            <div class="no-results" id="noResults" style="display:none;">
+                <div class="no-results-icon">🔍</div>
+                <div class="no-results-text">No tools found matching your search.</div>
+                <div class="no-results-sub">Try a different term or <a href="#" onclick="clearSearch(); return false;">clear the search</a>.</div>
+            </div>
+
+            <!-- ==========================================
+                 CATEGORY 1: Developer Code Tools
+                 ========================================== -->
+            <section class="category-section" id="cat-dev-code" data-category="Developer Code Tools">
+                <div class="category-header category-accent cyan">
+                    <div class="category-icon cyan">👨‍💻</div>
+                    <div class="category-title-group">
+                        <h2 class="category-title">Developer Code Tools</h2>
+                        <div class="category-count">12 tools for everyday coding tasks</div>
+                    </div>
+                </div>
+                <div class="tool-grid">
+                    <a href="/tool/json-formatter" class="tool-card accent-cyan" data-name="JSON Formatter" data-desc="Format, validate, and minify JSON data" data-category="Developer Code Tools">
+                        <div class="tool-card-icon">{ }</div>
+                        <div class="tool-card-body">
+                            <div class="tool-card-name">JSON Formatter</div>
+                            <div class="tool-card-desc">Format, validate, and minify JSON data with syntax highlighting.</div>
+                        </div>
+                        <div class="tool-card-arrow">→</div>
+                    </a>
+                    <a href="/tool/base64" class="tool-card accent-cyan" data-name="Base64 Encoder" data-desc="Encode and decode Base64 strings" data-category="Developer Code Tools">
+                        <div class="tool-card-icon">🔐</div>
+                        <div class="tool-card-body">
+                            <div class="tool-card-name">Base64 Encoder</div>
+                            <div class="tool-card-desc">Encode and decode Base64 strings instantly in the browser.</div>
+                        </div>
+                        <div class="tool-card-arrow">→</div>
+                    </a>
+                    <a href="/tool/regex-tester" class="tool-card accent-cyan" data-name="Regex Tester" data-desc="Test and debug regular expressions" data-category="Developer Code Tools">
+                        <div class="tool-card-icon">.*</div>
+                        <div class="tool-card-body">
+                            <div class="tool-card-name">Regex Tester</div>
+                            <div class="tool-card-desc">Test and debug regular expressions with real-time matching.</div>
+                        </div>
+                        <div class="tool-card-arrow">→</div>
+                    </a>
+                    <a href="/tool/hash-generator" class="tool-card accent-cyan" data-name="Hash Generator" data-desc="Generate MD5, SHA-1, SHA-256 hashes" data-category="Developer Code Tools">
+                        <div class="tool-card-icon">#</div>
+                        <div class="tool-card-body">
+                            <div class="tool-card-name">Hash Generator</div>
+                            <div class="tool-card-desc">Generate MD5, SHA-1, SHA-256, and other hash digests.</div>
+                        </div>
+                        <div class="tool-card-arrow">→</div>
+                    </a>
+                    <a href="/tool/jwt-decoder" class="tool-card accent-cyan" data-name="JWT Decoder" data-desc="Decode and inspect JSON Web Tokens" data-category="Developer Code Tools">
+                        <div class="tool-card-icon">🎫</div>
+                        <div class="tool-card-body">
+                            <div class="tool-card-name">JWT Decoder</div>
+                            <div class="tool-card-desc">Decode and inspect JSON Web Tokens — header, payload, signature.</div>
+                        </div>
+                        <div class="tool-card-arrow">→</div>
+                    </a>
+                    <a href="/tool/timestamp" class="tool-card accent-cyan" data-name="Timestamp Converter" data-desc="Convert Unix timestamps to dates" data-category="Developer Code Tools">
+                        <div class="tool-card-icon">⏱</div>
+                        <div class="tool-card-body">
+                            <div class="tool-card-name">Timestamp Converter</div>
+                            <div class="tool-card-desc">Convert Unix timestamps to human-readable dates and vice versa.</div>
+                        </div>
+                        <div class="tool-card-arrow">→</div>
+                    </a>
+                    <a href="/tool/url-encoder" class="tool-card accent-cyan" data-name="URL Encoder" data-desc="Encode and decode URL components" data-category="Developer Code Tools">
+                        <div class="tool-card-icon">🔗</div>
+                        <div class="tool-card-body">
+                            <div class="tool-card-name">URL Encoder</div>
+                            <div class="tool-card-desc">Encode and decode URL components and query parameters.</div>
+                        </div>
+                        <div class="tool-card-arrow">→</div>
+                    </a>
+                    <a href="/tool/unicode" class="tool-card accent-cyan" data-name="Unicode Lookup" data-desc="Search Unicode characters and codepoints" data-category="Developer Code Tools">
+                        <div class="tool-card-icon">🪣</div>
+                        <div class="tool-card-body">
+                            <div class="tool-card-name">Unicode Lookup</div>
+                            <div class="tool-card-desc">Search and explore Unicode characters, codepoints, and entities.</div>
+                        </div>
+                        <div class="tool-card-arrow">→</div>
+                    </a>
+                    <a href="/tool/color-converter" class="tool-card accent-cyan" data-name="Color Converter" data-desc="Convert between HEX, RGB, HSL" data-category="Developer Code Tools">
+                        <div class="tool-card-icon">🎨</div>
+                        <div class="tool-card-body">
+                            <div class="tool-card-name">Color Converter</div>
+                            <div class="tool-card-desc">Convert between HEX, RGB, HSL, and other color formats.</div>
+                        </div>
+                        <div class="tool-card-arrow">→</div>
+                    </a>
+                    <a href="/tool/lorem-ipsum" class="tool-card accent-cyan" data-name="Lorem Ipsum" data-desc="Generate placeholder text" data-category="Developer Code Tools">
+                        <div class="tool-card-icon">📝</div>
+                        <div class="tool-card-body">
+                            <div class="tool-card-name">Lorem Ipsum</div>
+                            <div class="tool-card-desc">Generate customizable placeholder text for mockups and testing.</div>
+                        </div>
+                        <div class="tool-card-arrow">→</div>
+                    </a>
+                    <a href="/tool/markdown-preview" class="tool-card accent-cyan" data-name="Markdown Preview" data-desc="Render and preview Markdown content" data-category="Developer Code Tools">
+                        <div class="tool-card-icon">📄</div>
+                        <div class="tool-card-body">
+                            <div class="tool-card-name">Markdown Preview</div>
+                            <div class="tool-card-desc">Write and preview Markdown with live rendering and export.</div>
+                        </div>
+                        <div class="tool-card-arrow">→</div>
+                    </a>
+                    <a href="/tool/sql-formatter" class="tool-card accent-cyan" data-name="SQL Formatter" data-desc="Format and beautify SQL queries" data-category="Developer Code Tools">
+                        <div class="tool-card-icon">🗃</div>
+                        <div class="tool-card-body">
+                            <div class="tool-card-name">SQL Formatter</div>
+                            <div class="tool-card-desc">Format, beautify, and validate SQL queries with syntax color.</div>
+                        </div>
+                        <div class="tool-card-arrow">→</div>
+                    </a>
+                </div>
+            </section>
+
+            <!-- ==========================================
+                 CATEGORY 2: Developer Utilities
+                 ========================================== -->
+            <section class="category-section" id="cat-dev-utils" data-category="Developer Utilities">
+                <div class="category-header category-accent green">
+                    <div class="category-icon green">🔧</div>
+                    <div class="category-title-group">
+                        <h2 class="category-title">Developer Utilities</h2>
+                        <div class="category-count">10 tools for project workflow</div>
+                    </div>
+                </div>
+                <div class="tool-grid">
+                    <a href="/tool/dep-checker" class="tool-card accent-green" data-name="Dependency Checker" data-desc="Check for outdated npm packages" data-category="Developer Utilities">
+                        <div class="tool-card-icon">📦</div>
+                        <div class="tool-card-body">
+                            <div class="tool-card-name">Dependency Checker</div>
+                            <div class="tool-card-desc">Analyze package.json for outdated or vulnerable dependencies.</div>
+                        </div>
+                        <div class="tool-card-arrow">→</div>
+                    </a>
+                    <a href="/tool/password-gen" class="tool-card accent-green" data-name="Password Generator" data-desc="Generate secure random passwords" data-category="Developer Utilities">
+                        <div class="tool-card-icon">🔑</div>
+                        <div class="tool-card-body">
+                            <div class="tool-card-name">Password Generator</div>
+                            <div class="tool-card-desc">Generate secure random passwords with custom rules and entropy.</div>
+                        </div>
+                        <div class="tool-card-arrow">→</div>
+                    </a>
+                    <a href="/tool/slug-gen" class="tool-card accent-green" data-name="Slug Generator" data-desc="Create URL-friendly slugs from text" data-category="Developer Utilities">
+                        <div class="tool-card-icon">📝</div>
+                        <div class="tool-card-body">
+                            <div class="tool-card-name">Slug Generator</div>
+                            <div class="tool-card-desc">Create clean, URL-friendly slugs from any text input.</div>
+                        </div>
+                        <div class="tool-card-arrow">→</div>
+                    </a>
+                    <a href="/tool/cron-builder" class="tool-card accent-green" data-name="Cron Builder" data-desc="Visual cron expression builder" data-category="Developer Utilities">
+                        <div class="tool-card-icon">⏰</div>
+                        <div class="tool-card-body">
+                            <div class="tool-card-name">Cron Builder</div>
+                            <div class="tool-card-desc">Build and validate cron expressions with a visual interface.</div>
+                        </div>
+                        <div class="tool-card-arrow">→</div>
+                    </a>
+                    <a href="/tool/scaffolder" class="tool-card accent-green" data-name="Project Scaffolder" data-desc="Generate boilerplate project structures" data-category="Developer Utilities">
+                        <div class="tool-card-icon">🏗</div>
+                        <div class="tool-card-body">
+                            <div class="tool-card-name">Project Scaffolder</div>
+                            <div class="tool-card-desc">Generate boilerplate project structures with configurable templates.</div>
+                        </div>
+                        <div class="tool-card-arrow">→</div>
+                    </a>
+                    <a href="/tool/webhook-tester" class="tool-card accent-green" data-name="Webhook Tester" data-desc="Inspect incoming webhook payloads" data-category="Developer Utilities">
+                        <div class="tool-card-icon">🪝</div>
+                        <div class="tool-card-body">
+                            <div class="tool-card-name">Webhook Tester</div>
+                            <div class="tool-card-desc">Inspect and debug incoming webhook payloads in real-time.</div>
+                        </div>
+                        <div class="tool-card-arrow">→</div>
+                    </a>
+                    <a href="/tool/diff-tool" class="tool-card accent-green" data-name="Diff Tool" data-desc="Compare text side-by-side" data-category="Developer Utilities">
+                        <div class="tool-card-icon">↔</div>
+                        <div class="tool-card-body">
+                            <div class="tool-card-name">Diff Tool</div>
+                            <div class="tool-card-desc">Compare text side-by-side with highlighted differences.</div>
+                        </div>
+                        <div class="tool-card-arrow">→</div>
+                    </a>
+                    <a href="/tool/snippet-manager" class="tool-card accent-green" data-name="Snippet Manager" data-desc="Save and organize code snippets" data-category="Developer Utilities">
+                        <div class="tool-card-icon">📋</div>
+                        <div class="tool-card-body">
+                            <div class="tool-card-name">Snippet Manager</div>
+                            <div class="tool-card-desc">Save, organize, and retrieve reusable code snippets.</div>
+                        </div>
+                        <div class="tool-card-arrow">→</div>
+                    </a>
+                    <a href="/tool/env-manager" class="tool-card accent-green" data-name="Env Manager" data-desc="Manage environment variable files" data-category="Developer Utilities">
+                        <div class="tool-card-icon">🌍</div>
+                        <div class="tool-card-body">
+                            <div class="tool-card-name">Env Manager</div>
+                            <div class="tool-card-desc">Create, parse, and manage .env files across environments.</div>
+                        </div>
+                        <div class="tool-card-arrow">→</div>
+                    </a>
+                    <a href="/tool/secret-manager" class="tool-card accent-green" data-name="Secret Manager" data-desc="Securely store and retrieve secrets" data-category="Developer Utilities">
+                        <div class="tool-card-icon">🔒</div>
+                        <div class="tool-card-body">
+                            <div class="tool-card-name">Secret Manager</div>
+                            <div class="tool-card-desc">Encrypt, store, and retrieve API keys and secrets locally.</div>
+                        </div>
+                        <div class="tool-card-arrow">→</div>
+                    </a>
+                </div>
+            </section>
+
+            <!-- ==========================================
+                 CATEGORY 3: Writing & Content
+                 ========================================== -->
+            <section class="category-section" id="cat-writing" data-category="Writing & Content">
+                <div class="category-header category-accent yellow">
+                    <div class="category-icon yellow">✍️</div>
+                    <div class="category-title-group">
+                        <h2 class="category-title">Writing &amp; Content</h2>
+                        <div class="category-count">10 tools for content creation</div>
+                    </div>
+                </div>
+                <div class="tool-grid">
+                    <a href="/tool/markdown-converter" class="tool-card accent-yellow" data-name="Markdown Converter" data-desc="Convert Markdown to HTML and back" data-category="Writing & Content">
+                        <div class="tool-card-icon">🔄</div>
+                        <div class="tool-card-body">
+                            <div class="tool-card-name">Markdown Converter</div>
+                            <div class="tool-card-desc">Convert Markdown to HTML, plain text, or other formats.</div>
+                        </div>
+                        <div class="tool-card-arrow">→</div>
+                    </a>
+                    <a href="/tool/headline-gen" class="tool-card accent-yellow" data-name="Headline Generator" data-desc="Generate catchy article headlines" data-category="Writing & Content">
+                        <div class="tool-card-icon">💥</div>
+                        <div class="tool-card-body">
+                            <div class="tool-card-name">Headline Generator</div>
+                            <div class="tool-card-desc">Generate catchy, click-worthy headlines using proven formulas.</div>
+                        </div>
+                        <div class="tool-card-arrow">→</div>
+                    </a>
+                    <a href="/tool/reading-time" class="tool-card accent-yellow" data-name="Reading Time Calculator" data-desc="Calculate estimated reading time" data-category="Writing & Content">
+                        <div class="tool-card-icon">⏱</div>
+                        <div class="tool-card-body">
+                            <div class="tool-card-name">Reading Time Calculator</div>
+                            <div class="tool-card-desc">Estimate reading time for any article or text passage.</div>
+                        </div>
+                        <div class="tool-card-arrow">→</div>
+                    </a>
+                    <a href="/tool/text-case" class="tool-card accent-yellow" data-name="Text Case Converter" data-desc="Convert text between cases" data-category="Writing & Content">
+                        <div class="tool-card-icon">Aa</div>
+                        <div class="tool-card-body">
+                            <div class="tool-card-name">Text Case Converter</div>
+                            <div class="tool-card-desc">Transform text to UPPER, lower, Title, camelCase, and more.</div>
+                        </div>
+                        <div class="tool-card-arrow">→</div>
+                    </a>
+                    <a href="/tool/content-planner" class="tool-card accent-yellow" data-name="Content Planner" data-desc="Plan and schedule content calendar" data-category="Writing & Content">
+                        <div class="tool-card-icon">📅</div>
+                        <div class="tool-card-body">
+                            <div class="tool-card-name">Content Planner</div>
+                            <div class="tool-card-desc">Plan and schedule content with a visual editorial calendar.</div>
+                        </div>
+                        <div class="tool-card-arrow">→</div>
+                    </a>
+                    <a href="/tool/blog-manager" class="tool-card accent-yellow" data-name="Blog Manager" data-desc="Manage blog posts and drafts" data-category="Writing & Content">
+                        <div class="tool-card-icon">📝</div>
+                        <div class="tool-card-body">
+                            <div class="tool-card-name">Blog Manager</div>
+                            <div class="tool-card-desc">Write, manage, and export blog posts with frontmatter support.</div>
+                        </div>
+                        <div class="tool-card-arrow">→</div>
+                    </a>
+                    <a href="/tool/newsletter-builder" class="tool-card accent-yellow" data-name="Newsletter Builder" data-desc="Design email newsletter templates" data-category="Writing & Content">
+                        <div class="tool-card-icon">📧</div>
+                        <div class="tool-card-body">
+                            <div class="tool-card-name">Newsletter Builder</div>
+                            <div class="tool-card-desc">Design responsive email newsletter templates with a drag builder.</div>
+                        </div>
+                        <div class="tool-card-arrow">→</div>
+                    </a>
+                    <a href="/tool/meta-tag-gen" class="tool-card accent-yellow" data-name="Meta Tag Generator" data-desc="Generate HTML meta tags" data-category="Writing & Content">
+                        <div class="tool-card-icon">🏷</div>
+                        <div class="tool-card-body">
+                            <div class="tool-card-name">Meta Tag Generator</div>
+                            <div class="tool-card-desc">Generate SEO-friendly HTML meta tags and Open Graph markup.</div>
+                        </div>
+                        <div class="tool-card-arrow">→</div>
+                    </a>
+                    <a href="/tool/word-counter" class="tool-card accent-yellow" data-name="Word Counter" data-desc="Count words, characters, sentences" data-category="Writing & Content">
+                        <div class="tool-card-icon">🔢</div>
+                        <div class="tool-card-body">
+                            <div class="tool-card-name">Word Counter</div>
+                            <div class="tool-card-desc">Count words, characters, sentences, and paragraphs in text.</div>
+                        </div>
+                        <div class="tool-card-arrow">→</div>
+                    </a>
+                    <a href="/tool/auto-tagger" class="tool-card accent-yellow" data-name="Auto-Tagger" data-desc="Automatically generate content tags" data-category="Writing & Content">
+                        <div class="tool-card-icon">🏷️</div>
+                        <div class="tool-card-body">
+                            <div class="tool-card-name">Auto-Tagger</div>
+                            <div class="tool-card-desc">Automatically extract and suggest tags for your content.</div>
+                        </div>
+                        <div class="tool-card-arrow">→</div>
+                    </a>
+                </div>
+            </section>
+
+            <!-- ==========================================
+                 CATEGORY 4: Media & Design
+                 ========================================== -->
+            <section class="category-section" id="cat-media" data-category="Media & Design">
+                <div class="category-header category-accent purple">
+                    <div class="category-icon purple">🎨</div>
+                    <div class="category-title-group">
+                        <h2 class="category-title">Media &amp; Design</h2>
+                        <div class="category-count">9 tools for visual assets</div>
+                    </div>
+                </div>
+                <div class="tool-grid">
+                    <a href="/tool/qr-generator" class="tool-card accent-purple" data-name="QR Code Generator" data-desc="Generate QR codes from text or URLs" data-category="Media & Design">
+                        <div class="tool-card-icon">📱</div>
+                        <div class="tool-card-body">
+                            <div class="tool-card-name">QR Code Generator</div>
+                            <div class="tool-card-desc">Generate customizable QR codes from text, URLs, or data.</div>
+                        </div>
+                        <div class="tool-card-arrow">→</div>
+                    </a>
+                    <a href="/tool/palette-gen" class="tool-card accent-purple" data-name="Color Palette Generator" data-desc="Generate harmonious color palettes" data-category="Media & Design">
+                        <div class="tool-card-icon">🌈</div>
+                        <div class="tool-card-body">
+                            <div class="tool-card-name">Color Palette Generator</div>
+                            <div class="tool-card-desc">Generate harmonious color palettes with export options.</div>
+                        </div>
+                        <div class="tool-card-arrow">→</div>
+                    </a>
+                    <a href="/tool/image-converter" class="tool-card accent-purple" data-name="Image Converter" data-desc="Convert images between formats" data-category="Media & Design">
+                        <div class="tool-card-icon">🖼</div>
+                        <div class="tool-card-body">
+                            <div class="tool-card-name">Image Converter</div>
+                            <div class="tool-card-desc">Convert images between PNG, JPG, WebP, and other formats.</div>
+                        </div>
+                        <div class="tool-card-arrow">→</div>
+                    </a>
+                    <a href="/tool/image-resizer" class="tool-card accent-purple" data-name="Image Resizer" data-desc="Resize and crop images in-browser" data-category="Media & Design">
+                        <div class="tool-card-icon">📐</div>
+                        <div class="tool-card-body">
+                            <div class="tool-card-name">Image Resizer</div>
+                            <div class="tool-card-desc">Resize and crop images directly in the browser with precision.</div>
+                        </div>
+                        <div class="tool-card-arrow">→</div>
+                    </a>
+                    <a href="/tool/meme-gen" class="tool-card accent-purple" data-name="Meme Generator" data-desc="Create memes with custom text" data-category="Media & Design">
+                        <div class="tool-card-icon">😂</div>
+                        <div class="tool-card-body">
+                            <div class="tool-card-name">Meme Generator</div>
+                            <div class="tool-card-desc">Create memes with custom text overlays on popular templates.</div>
+                        </div>
+                        <div class="tool-card-arrow">→</div>
+                    </a>
+                    <a href="/tool/watermark" class="tool-card accent-purple" data-name="Watermark Tool" data-desc="Add watermarks to images" data-category="Media & Design">
+                        <div class="tool-card-icon">💧</div>
+                        <div class="tool-card-body">
+                            <div class="tool-card-name">Watermark Tool</div>
+                            <div class="tool-card-desc">Add text or image watermarks to photos with batch support.</div>
+                        </div>
+                        <div class="tool-card-arrow">→</div>
+                    </a>
+                    <a href="/tool/favicon-gen" class="tool-card accent-purple" data-name="Favicon Generator" data-desc="Generate favicons from images or text" data-category="Media & Design">
+                        <div class="tool-card-icon">🌐</div>
+                        <div class="tool-card-body">
+                            <div class="tool-card-name">Favicon Generator</div>
+                            <div class="tool-card-desc">Generate favicons and app icons from images or emoji text.</div>
+                        </div>
+                        <div class="tool-card-arrow">→</div>
+                    </a>
+                    <a href="/tool/image-info" class="tool-card accent-purple" data-name="Image Info" data-desc="Extract metadata and dimensions from images" data-category="Media & Design">
+                        <div class="tool-card-icon">ℹ️</div>
+                        <div class="tool-card-body">
+                            <div class="tool-card-name">Image Info</div>
+                            <div class="tool-card-desc">Extract metadata, dimensions, color info, and EXIF data.</div>
+                        </div>
+                        <div class="tool-card-arrow">→</div>
+                    </a>
+                    <a href="/tool/gif-text" class="tool-card accent-purple" data-name="GIF Text Animator" data-desc="Add animated text to GIF images" data-category="Media & Design">
+                        <div class="tool-card-icon">🎬</div>
+                        <div class="tool-card-body">
+                            <div class="tool-card-name">GIF Text Animator</div>
+                            <div class="tool-card-desc">Add animated text overlays to GIF images with timing control.</div>
+                        </div>
+                        <div class="tool-card-arrow">→</div>
+                    </a>
+                </div>
+            </section>
+
+            <!-- ==========================================
+                 CATEGORY 5: Social & SEO
+                 ========================================== -->
+            <section class="category-section" id="cat-seo" data-category="Social & SEO">
+                <div class="category-header category-accent orange">
+                    <div class="category-icon orange">📊</div>
+                    <div class="category-title-group">
+                        <h2 class="category-title">Social &amp; SEO</h2>
+                        <div class="category-count">10 tools for growth and optimization</div>
+                    </div>
+                </div>
+                <div class="tool-grid">
+                    <a href="/tool/hashtag-analyzer" class="tool-card accent-orange" data-name="Hashtag Analyzer" data-desc="Analyze hashtag performance and trends" data-category="Social & SEO">
+                        <div class="tool-card-icon">#</div>
+                        <div class="tool-card-body">
+                            <div class="tool-card-name">Hashtag Analyzer</div>
+                            <div class="tool-card-desc">Analyze hashtag reach, frequency, and suggest alternatives.</div>
+                        </div>
+                        <div class="tool-card-arrow">→</div>
+                    </a>
+                    <a href="/tool/content-repurpose" class="tool-card accent-orange" data-name="Content Repurposer" data-desc="Repurpose content across platforms" data-category="Social & SEO">
+                        <div class="tool-card-icon">♻</div>
+                        <div class="tool-card-body">
+                            <div class="tool-card-name">Content Repurposer</div>
+                            <div class="tool-card-desc">Transform long-form content into platform-specific snippets.</div>
+                        </div>
+                        <div class="tool-card-arrow">→</div>
+                    </a>
+                    <a href="/tool/keyword-research" class="tool-card accent-orange" data-name="Keyword Researcher" data-desc="Research and analyze keywords" data-category="Social & SEO">
+                        <div class="tool-card-icon">🔍</div>
+                        <div class="tool-card-body">
+                            <div class="tool-card-name">Keyword Researcher</div>
+                            <div class="tool-card-desc">Research keywords with density analysis and suggestions.</div>
+                        </div>
+                        <div class="tool-card-arrow">→</div>
+                    </a>
+                    <a href="/tool/seo-audit" class="tool-card accent-orange" data-name="SEO Audit Tool" data-desc="Audit pages for SEO compliance" data-category="Social & SEO">
+                        <div class="tool-card-icon">📈</div>
+                        <div class="tool-card-body">
+                            <div class="tool-card-name">SEO Audit Tool</div>
+                            <div class="tool-card-desc">Audit web pages for SEO issues, meta tags, and structure.</div>
+                        </div>
+                        <div class="tool-card-arrow">→</div>
+                    </a>
+                    <a href="/tool/content-score" class="tool-card accent-orange" data-name="Content Score Checker" data-desc="Score content readability and quality" data-category="Social & SEO">
+                        <div class="tool-card-icon">⭐</div>
+                        <div class="tool-card-body">
+                            <div class="tool-card-name">Content Score Checker</div>
+                            <div class="tool-card-desc">Analyze readability, keyword density, and content quality score.</div>
+                        </div>
+                        <div class="tool-card-arrow">→</div>
+                    </a>
+                    <a href="/tool/social-formatter" class="tool-card accent-orange" data-name="Social Post Formatter" data-desc="Format posts for social media platforms" data-category="Social & SEO">
+                        <div class="tool-card-icon">📲</div>
+                        <div class="tool-card-body">
+                            <div class="tool-card-name">Social Post Formatter</div>
+                            <div class="tool-card-desc">Format and preview posts optimized for each social platform.</div>
+                        </div>
+                        <div class="tool-card-arrow">→</div>
+                    </a>
+                    <a href="/tool/robots-gen" class="tool-card accent-orange" data-name="Robots.txt Generator" data-desc="Generate robots.txt files" data-category="Social & SEO">
+                        <div class="tool-card-icon">🤖</div>
+                        <div class="tool-card-body">
+                            <div class="tool-card-name">Robots.txt Generator</div>
+                            <div class="tool-card-desc">Generate and validate robots.txt with a visual rule builder.</div>
+                        </div>
+                        <div class="tool-card-arrow">→</div>
+                    </a>
+                    <a href="/tool/sitemap-gen" class="tool-card accent-orange" data-name="Sitemap Generator" data-desc="Generate XML sitemaps" data-category="Social & SEO">
+                        <div class="tool-card-icon">🗺</div>
+                        <div class="tool-card-body">
+                            <div class="tool-card-name">Sitemap Generator</div>
+                            <div class="tool-card-desc">Generate XML sitemaps from URLs with priority and frequency.</div>
+                        </div>
+                        <div class="tool-card-arrow">→</div>
+                    </a>
+                    <a href="/tool/og-preview" class="tool-card accent-orange" data-name="OG Preview" data-desc="Preview Open Graph social cards" data-category="Social & SEO">
+                        <div class="tool-card-icon">👁</div>
+                        <div class="tool-card-body">
+                            <div class="tool-card-name">OG Preview</div>
+                            <div class="tool-card-desc">Preview how links appear on Twitter, Facebook, LinkedIn, and Slack.</div>
+                        </div>
+                        <div class="tool-card-arrow">→</div>
+                    </a>
+                    <a href="/tool/broken-link" class="tool-card accent-orange" data-name="Broken Link Checker" data-desc="Find broken links in content" data-category="Social & SEO">
+                        <div class="tool-card-icon">🔗</div>
+                        <div class="tool-card-body">
+                            <div class="tool-card-name">Broken Link Checker</div>
+                            <div class="tool-card-desc">Scan pages and content for broken or redirected links.</div>
+                        </div>
+                        <div class="tool-card-arrow">→</div>
+                    </a>
+                </div>
+            </section>
+
+            <!-- ==========================================
+                 CATEGORY 6: General Utilities
+                 ========================================== -->
+            <section class="category-section" id="cat-utils" data-category="General Utilities">
+                <div class="category-header category-accent blue">
+                    <div class="category-icon blue">🛠️</div>
+                    <div class="category-title-group">
+                        <h2 class="category-title">General Utilities</h2>
+                        <div class="category-count">10 tools for everyday tasks</div>
+                    </div>
+                </div>
+                <div class="tool-grid">
+                    <a href="/tool/text-encryptor" class="tool-card accent-blue" data-name="Text Encryptor" data-desc="Encrypt and decrypt text messages" data-category="General Utilities">
+                        <div class="tool-card-icon">🔐</div>
+                        <div class="tool-card-body">
+                            <div class="tool-card-name">Text Encryptor</div>
+                            <div class="tool-card-desc">Encrypt and decrypt text using AES, Caesar cipher, and more.</div>
+                        </div>
+                        <div class="tool-card-arrow">→</div>
+                    </a>
+                    <a href="/tool/file-organizer" class="tool-card accent-blue" data-name="File Organizer" data-desc="Organize files by type and rules" data-category="General Utilities">
+                        <div class="tool-card-icon">📁</div>
+                        <div class="tool-card-body">
+                            <div class="tool-card-name">File Organizer</div>
+                            <div class="tool-card-desc">Define rules to automatically organize and sort files by type.</div>
+                        </div>
+                        <div class="tool-card-arrow">→</div>
+                    </a>
+                    <a href="/tool/batch-rename" class="tool-card accent-blue" data-name="Batch Renamer" data-desc="Rename multiple files at once" data-category="General Utilities">
+                        <div class="tool-card-icon">✏️</div>
+                        <div class="tool-card-body">
+                            <div class="tool-card-name">Batch Renamer</div>
+                            <div class="tool-card-desc">Rename multiple files at once using patterns and rules.</div>
+                        </div>
+                        <div class="tool-card-arrow">→</div>
+                    </a>
+                    <a href="/tool/calculator" class="tool-card accent-blue" data-name="Calculator" data-desc="Scientific and programmer calculator" data-category="General Utilities">
+                        <div class="tool-card-icon">🧮</div>
+                        <div class="tool-card-body">
+                            <div class="tool-card-name">Calculator</div>
+                            <div class="tool-card-desc">Scientific and programmer calculator with expression parsing.</div>
+                        </div>
+                        <div class="tool-card-arrow">→</div>
+                    </a>
+                    <a href="/tool/unit-converter" class="tool-card accent-blue" data-name="Unit Converter" data-desc="Convert between measurement units" data-category="General Utilities">
+                        <div class="tool-card-icon">📏</div>
+                        <div class="tool-card-body">
+                            <div class="tool-card-name">Unit Converter</div>
+                            <div class="tool-card-desc">Convert between metric, imperial, digital, and other units.</div>
+                        </div>
+                        <div class="tool-card-arrow">→</div>
+                    </a>
+                    <a href="/tool/age-calc" class="tool-card accent-blue" data-name="Age Calculator" data-desc="Calculate age between two dates" data-category="General Utilities">
+                        <div class="tool-card-icon">🎂</div>
+                        <div class="tool-card-body">
+                            <div class="tool-card-name">Age Calculator</div>
+                            <div class="tool-card-desc">Calculate exact age, days between dates, and milestones.</div>
+                        </div>
+                        <div class="tool-card-arrow">→</div>
+                    </a>
+                    <a href="/tool/pomodoro" class="tool-card accent-blue" data-name="Pomodoro Timer" data-desc="Focus timer with work and break cycles" data-category="General Utilities">
+                        <div class="tool-card-icon">🍅</div>
+                        <div class="tool-card-body">
+                            <div class="tool-card-name">Pomodoro Timer</div>
+                            <div class="tool-card-desc">Focus timer with customizable work/break cycles and stats.</div>
+                        </div>
+                        <div class="tool-card-arrow">→</div>
+                    </a>
+                    <a href="/tool/countdown" class="tool-card accent-blue" data-name="Countdown Generator" data-desc="Create countdown timers for events" data-category="General Utilities">
+                        <div class="tool-card-icon">⏳</div>
+                        <div class="tool-card-body">
+                            <div class="tool-card-name">Countdown Generator</div>
+                            <div class="tool-card-desc">Create shareable countdown timers for any event or date.</div>
+                        </div>
+                        <div class="tool-card-arrow">→</div>
+                    </a>
+                    <a href="/tool/text-stats" class="tool-card accent-blue" data-name="Text Statistics" data-desc="Detailed text analysis metrics" data-category="General Utilities">
+                        <div class="tool-card-icon">📊</div>
+                        <div class="tool-card-body">
+                            <div class="tool-card-name">Text Statistics</div>
+                            <div class="tool-card-desc">Analyze text for readability scores, frequency, and complexity.</div>
+                        </div>
+                        <div class="tool-card-arrow">→</div>
+                    </a>
+                    <a href="/tool/number-converter" class="tool-card accent-blue" data-name="Number Converter" data-desc="Convert between number bases" data-category="General Utilities">
+                        <div class="tool-card-icon">🔢</div>
+                        <div class="tool-card-body">
+                            <div class="tool-card-name">Number Converter</div>
+                            <div class="tool-card-desc">Convert between binary, octal, decimal, and hexadecimal.</div>
+                        </div>
+                        <div class="tool-card-arrow">→</div>
+                    </a>
+                </div>
+            </section>
+
+            <!-- ==========================================
+                 CATEGORY 7: AI Tools (Offline)
+                 ========================================== -->
+            <section class="category-section" id="cat-ai" data-category="AI Tools (Offline)">
+                <div class="category-header category-accent pink">
+                    <div class="category-icon pink">🤖</div>
+                    <div class="category-title-group">
+                        <h2 class="category-title">AI Tools (Offline)</h2>
+                        <div class="category-count">10 tools powered by local AI — no API keys required</div>
+                    </div>
+                </div>
+                <div class="tool-grid">
+                    <a href="/tool/ai-summarizer" class="tool-card accent-pink" data-name="AI Summarizer" data-desc="Summarize long texts intelligently" data-category="AI Tools (Offline)">
+                        <div class="tool-card-icon">📄</div>
+                        <div class="tool-card-body">
+                            <div class="tool-card-name">AI Summarizer</div>
+                            <div class="tool-card-desc">Summarize long texts using extractive NLP — fully offline.</div>
+                        </div>
+                        <div class="tool-card-arrow">→</div>
+                    </a>
+                    <a href="/tool/code-explainer" class="tool-card accent-pink" data-name="Code Explainer" data-desc="Explain code snippets in plain English" data-category="AI Tools (Offline)">
+                        <div class="tool-card-icon">💡</div>
+                        <div class="tool-card-body">
+                            <div class="tool-card-name">Code Explainer</div>
+                            <div class="tool-card-desc">Explain code snippets in plain English with line-by-line detail.</div>
+                        </div>
+                        <div class="tool-card-arrow">→</div>
+                    </a>
+                    <a href="/tool/text-generator" class="tool-card accent-pink" data-name="Text Generator" data-desc="Generate text based on patterns" data-category="AI Tools (Offline)">
+                        <div class="tool-card-icon">✨</div>
+                        <div class="tool-card-body">
+                            <div class="tool-card-name">Text Generator</div>
+                            <div class="tool-card-desc">Generate text continuations and completions using local models.</div>
+                        </div>
+                        <div class="tool-card-arrow">→</div>
+                    </a>
+                    <a href="/tool/sentiment" class="tool-card accent-pink" data-name="Sentiment Analyzer" data-desc="Analyze text sentiment and tone" data-category="AI Tools (Offline)">
+                        <div class="tool-card-icon">😊</div>
+                        <div class="tool-card-body">
+                            <div class="tool-card-name">Sentiment Analyzer</div>
+                            <div class="tool-card-desc">Analyze text sentiment and tone — positive, negative, neutral.</div>
+                        </div>
+                        <div class="tool-card-arrow">→</div>
+                    </a>
+                    <a href="/tool/text-similarity" class="tool-card accent-pink" data-name="Text Similarity" data-desc="Compare text similarity between documents" data-category="AI Tools (Offline)">
+                        <div class="tool-card-icon">📉</div>
+                        <div class="tool-card-body">
+                            <div class="tool-card-name">Text Similarity</div>
+                            <div class="tool-card-desc">Compare two texts for similarity using cosine and Jaccard.</div>
+                        </div>
+                        <div class="tool-card-arrow">→</div>
+                    </a>
+                    <a href="/tool/keyword-extract" class="tool-card accent-pink" data-name="Keyword Extractor" data-desc="Extract keywords from text using NLP" data-category="AI Tools (Offline)">
+                        <div class="tool-card-icon">🔑</div>
+                        <div class="tool-card-body">
+                            <div class="tool-card-name">Keyword Extractor</div>
+                            <div class="tool-card-desc">Extract the most important keywords and phrases from text.</div>
+                        </div>
+                        <div class="tool-card-arrow">→</div>
+                    </a>
+                    <a href="/tool/grammar-check" class="tool-card accent-pink" data-name="Grammar Checker" data-desc="Check grammar and spelling" data-category="AI Tools (Offline)">
+                        <div class="tool-card-icon">✅</div>
+                        <div class="tool-card-body">
+                            <div class="tool-card-name">Grammar Checker</div>
+                            <div class="tool-card-desc">Check grammar, spelling, and punctuation with suggestions.</div>
+                        </div>
+                        <div class="tool-card-arrow">→</div>
+                    </a>
+                    <a href="/tool/plagiarism" class="tool-card accent-pink" data-name="Plagiarism Detector" data-desc="Detect plagiarism in text" data-category="AI Tools (Offline)">
+                        <div class="tool-card-icon">🔎</div>
+                        <div class="tool-card-body">
+                            <div class="tool-card-name">Plagiarism Detector</div>
+                            <div class="tool-card-desc">Detect potential plagiarism by comparing text fingerprints.</div>
+                        </div>
+                        <div class="tool-card-arrow">→</div>
+                    </a>
+                    <a href="/tool/text-translate" class="tool-card accent-pink" data-name="Text Translator" data-desc="Translate text between languages" data-category="AI Tools (Offline)">
+                        <div class="tool-card-icon">🌐</div>
+                        <div class="tool-card-body">
+                            <div class="tool-card-name">Text Translator</div>
+                            <div class="tool-card-desc">Translate text between languages using offline dictionary models.</div>
+                        </div>
+                        <div class="tool-card-arrow">→</div>
+                    </a>
+                    <a href="/tool/code-quality" class="tool-card accent-pink" data-name="Code Quality Scorer" data-desc="Score code quality and maintainability" data-category="AI Tools (Offline)">
+                        <div class="tool-card-icon">🏆</div>
+                        <div class="tool-card-body">
+                            <div class="tool-card-name">Code Quality Scorer</div>
+                            <div class="tool-card-desc">Score code quality, complexity, and maintainability metrics.</div>
+                        </div>
+                        <div class="tool-card-arrow">→</div>
+                    </a>
+                </div>
+            </section>
+
+        </main>
+
+        <!-- ============================================
+             FOOTER
+             ============================================ -->
+        <footer class="footer">
+            <div>Built by <span class="footer-brand">ECHO</span> — The Code Mind</div>
+            <div class="footer-tagline">From idea to executable. That's the whole job.</div>
+        </footer>
+
+    </div><!-- /main-content -->
+
+</div><!-- /app-layout -->
+
+<!-- Back to Top Button -->
+<button class="back-to-top" id="backToTop" onclick="window.scrollTo({top:0, behavior:'smooth'})" aria-label="Back to top" title="Back to top">↑</button>
+
+<script src="/static/js/app.js"></script>
+</body>
+</html>

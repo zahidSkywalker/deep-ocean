@@ -1,0 +1,92 @@
+[
+  {
+    "url": "https://pypi.org/project/zhipuai",
+    "name": "zhipuai - PyPI",
+    "snippet": "The official Python SDK for ZhipuAI's large model open interface, making it easier for developers to call ZhipuAI's open APIs.",
+    "host_name": "pypi.org",
+    "rank": 0,
+    "date": "",
+    "favicon": ""
+  },
+  {
+    "url": "https://github.com/zhipuai/zhipuai-sdk-python",
+    "name": "zhipuai/zhipuai-sdk-python - GitHub",
+    "snippet": "Contribute to zhipuai/zhipuai-sdk-python development by creating an account on GitHub.",
+    "host_name": "github.com",
+    "rank": 1,
+    "date": "",
+    "favicon": ""
+  },
+  {
+    "url": "https://pypistats.org/packages/zhipuai",
+    "name": "ZhipuAI - PyPI Download Stats",
+    "snippet": "Summary: A SDK library for accessing big model apis from ZhipuAI. Latest ... zhipuai package - Python Major Date Downloads.",
+    "host_name": "pypistats.org",
+    "rank": 2,
+    "date": "",
+    "favicon": ""
+  },
+  {
+    "url": "https://marketplace.dify.ai/plugin/langgenius/zhipuai_tool",
+    "name": "ZhipuAI - Dify Marketplace",
+    "snippet": "1. Ensure that you are allowed to use the BigModel service · 2. Get CogView tools from Plugin Marketplace · 3. Setup the CogView API in the Dify Tool page · 4.",
+    "host_name": "marketplace.dify.ai",
+    "rank": 3,
+    "date": "",
+    "favicon": ""
+  },
+  {
+    "url": "https://developers.llamaindex.ai/python/framework-api-reference/llms/zhipuai",
+    "name": "Zhipuai - LlamaIndex",
+    "snippet": "Examples: `pip install llama-index-llms-zhipuai` ```python from llama_index.llms.zhipuai import ZhipuAI llm = ZhipuAI(model=\"glm-4\", api_key=\"YOUR API KEY ...",
+    "host_name": "developers.llamaindex.ai",
+    "rank": 4,
+    "date": "",
+    "favicon": ""
+  },
+  {
+    "url": "https://developer.cisco.com/docs/sdwan/20-9/python-sdk-installation",
+    "name": "Installation - SD-WAN API, Release 20.9 - Cisco DevNet",
+    "snippet": "PIP Install. The Cisco SD-WAN Python SDK is available via PIP and the Python Package Index (PyPI). To install the SDK, simply run this command from your ...",
+    "host_name": "developer.cisco.com",
+    "rank": 5,
+    "date": "",
+    "favicon": ""
+  },
+  {
+    "url": "https://www.youtube.com/watch?v=dHQPNf75ViQ",
+    "name": "Install and Run Open-Source Text to Video Model CogVideo",
+    "snippet": "... install and run CogVideo text to video model locally in Python on Linux Ubuntu Machine. CogVideoX is an open-source video generation model ...",
+    "host_name": "www.youtube.com",
+    "rank": 6,
+    "date": "",
+    "favicon": ""
+  },
+  {
+    "url": "https://reference.langchain.com/python/langchain-community/embeddings/zhipuai",
+    "name": "zhipuai | langchain_community - LangChain Reference Docs",
+    "snippet": "Setup: To use, you should have the ``zhipuai`` python package installed, and the environment variable ``ZHIPU_API_KEY`` set with your API KEY. More ...",
+    "host_name": "reference.langchain.com",
+    "rank": 7,
+    "date": "",
+    "favicon": ""
+  },
+  {
+    "url": "https://docs.portkey.ai/docs/virtual_key_old/integrations/llms/zhipu",
+    "name": "ZhipuAI / ChatGLM / BigModel - Portkey Docs",
+    "snippet": "​. Portkey SDK Integration with ZhipuAI · ​. 1. Install the Portkey SDK · ​. 2. Initialize Portkey with the Virtual Key · ​. 3. Invoke Chat Completions.",
+    "host_name": "docs.portkey.ai",
+    "rank": 8,
+    "date": "",
+    "favicon": ""
+  },
+  {
+    "url": "https://docs.cloud.google.com/gemini-enterprise-agent-platform/machine-learning/start/install-sdk",
+    "name": "Install the Agent Platform SDK for Python",
+    "snippet": "Installation of the Agent Platform SDK for Python includes the following steps: Create an isolated Python environment; Install the Vertex AI SDK package ...",
+    "host_name": "docs.cloud.google.com",
+    "rank": 9,
+    "date": "",
+    "favicon": ""
+  }
+]

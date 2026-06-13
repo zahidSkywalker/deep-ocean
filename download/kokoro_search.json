@@ -1,0 +1,92 @@
+[
+  {
+    "url": "https://github.com/hexgrad/kokoro",
+    "name": "Kokoro - GitHub",
+    "snippet": "Kokoro is an open-weight TTS model with 82 million parameters. Despite its lightweight architecture, it delivers comparable quality to larger models.\nAn inference library for Kokoro-82M. You can pip install kokoro . Kokoro is an open-weight TTS model with 82 million parameters. Install kokoro !pip install",
+    "host_name": "github.com",
+    "rank": 0,
+    "date": "",
+    "favicon": ""
+  },
+  {
+    "url": "https://huggingface.co/hexgrad/Kokoro-82M",
+    "name": "hexgrad/Kokoro-82M - Hugging Face",
+    "snippet": "Kokoro is an open-weight TTS model with 82 million parameters. Despite its lightweight architecture, it delivers comparable quality to larger models.\nKokoro is an open-weight TTS model with 82 million parameters. You can run this basic cell on Google Colab. Human-Level Text-to-Speech",
+    "host_name": "huggingface.co",
+    "rank": 1,
+    "date": "",
+    "favicon": ""
+  },
+  {
+    "url": "https://github.com/PierrunoYT/Kokoro-TTS-Local",
+    "name": "PierrunoYT/Kokoro-TTS-Local - GitHub",
+    "snippet": "Local text-to-speech synthesis using the Kokoro-82M model · Multiple voice support with easy voice selection (54 voices available across 8 languages) · Automatic ...",
+    "host_name": "github.com",
+    "rank": 2,
+    "date": "",
+    "favicon": ""
+  },
+  {
+    "url": "https://www.youtube.com/watch?v=LVINm5vUSW8",
+    "name": "How to setup the BEST Free Text-to-Speech Locally Kokoro TTS",
+    "snippet": "Kokura TTS a new 82M Parameter model is the best open source TTS at the time of the recording and here we will learn how to run this!",
+    "host_name": "www.youtube.com",
+    "rank": 3,
+    "date": "",
+    "favicon": ""
+  },
+  {
+    "url": "https://www.facebook.com/groups/1427278127967900/posts/1729938264368550",
+    "name": "Kokoro text to speech installation guide - Facebook",
+    "snippet": "⭐ Best Free Text-To-Speech (TTS) ⭐ Kokoro TTS Installation Guide 🎙️ ... You can run the WebUI with: cd ~/Kokoro-82M-WebUI python app.py 5.",
+    "host_name": "www.facebook.com",
+    "rank": 4,
+    "date": "",
+    "favicon": ""
+  },
+  {
+    "url": "https://github.com/cheuerde/kokoro-tts-cli",
+    "name": "cheuerde/kokoro-tts-cli - GitHub",
+    "snippet": "A command-line interface for Kokoro TTS with streaming and voice mixing capabilities. Prerequisites. Install espeak-ng: # macOS brew install espeak-ng ...",
+    "host_name": "github.com",
+    "rank": 5,
+    "date": "",
+    "favicon": ""
+  },
+  {
+    "url": "https://gitea.com/nazdridoy/kokoro-tts",
+    "name": "nazdridoy/kokoro-tts - Gitea",
+    "snippet": "Kokoro TTS is an open-source CLI tool that delivers high-quality text-to-speech right from your terminal. Think of it as your personal voice studio, capable of ...",
+    "host_name": "gitea.com",
+    "rank": 6,
+    "date": "",
+    "favicon": ""
+  },
+  {
+    "url": "https://github.com/topics/local-tts?l=python",
+    "name": "local-tts · GitHub Topics",
+    "snippet": "Hyper-fast, local, high-quality TTS based on Kokoro-82M. PySide6 GUI included. text-to-speech offline tts speech-synthesis kokoro ai-voice pyside6 audio ...",
+    "host_name": "github.com",
+    "rank": 7,
+    "date": "",
+    "favicon": ""
+  },
+  {
+    "url": "https://medium.com/prompt-engineering/building-low-cost-text-to-speech-applications-with-kokoro-82m-and-streamlit-64861b52cdc6",
+    "name": "Building Low Cost Text-to-Speech Applications with Kokoro-82M",
+    "snippet": "Basic familiarity with Python and web applications. Installing Required Components. # Install Python dependencies pip install streamlit openai\nensure you have the following prerequisites installed: Python 3.8 or higher Docker. Install Python dependencies pip install streamlit openai",
+    "host_name": "medium.com",
+    "rank": 8,
+    "date": "",
+    "favicon": ""
+  },
+  {
+    "url": "https://github.com/gabrimatic/kokoro-mlx",
+    "name": "gabrimatic/kokoro-mlx: Kokoro-82M text-to-speech  - GitHub",
+    "snippet": "On-device via MLX. No server, no network during inference. No PyTorch or transformers dependency. 48 kHz output from native 24 kHz via FFT upsampling.",
+    "host_name": "github.com",
+    "rank": 9,
+    "date": "",
+    "favicon": ""
+  }
+]

@@ -1,0 +1,324 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Text Diff - ECHO Toolkit</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet">
+<style>
+        :root {
+            --bg-primary: #0a0e17; --bg-secondary: #111827; --bg-card: #1a2236;
+            --bg-input: #0f172a; --border-color: #1e293b; --border-hover: #334155;
+            --text-primary: #f1f5f9; --text-secondary: #94a3b8; --text-muted: #64748b;
+            --accent-cyan: #06b6d4; --accent-green: #10b981; --accent-yellow: #f59e0b;
+            --accent-red: #ef4444; --sidebar-width: 260px; --radius: 10px; --radius-sm: 6px;
+            --transition: .2s ease;
+            --diff-add-bg: rgba(16,185,129,.1); --diff-add-border: rgba(16,185,129,.3); --diff-add-text: #6ee7b7;
+            --diff-del-bg: rgba(239,68,68,.1); --diff-del-border: rgba(239,68,68,.3); --diff-del-text: #fca5a5;
+        }
+        *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+        html { scroll-behavior: smooth; }
+        body { font-family: 'Inter', -apple-system, BlinkMacSystemFont, sans-serif; background: var(--bg-primary); color: var(--text-primary); line-height: 1.6; min-height: 100vh; }
+        a { color: var(--accent-cyan); text-decoration: none; transition: color var(--transition); }
+        a:hover { color: #22d3ee; }
+        ::selection { background: var(--accent-cyan); color: var(--bg-primary); }
+        ::-webkit-scrollbar { width: 8px; height: 8px; }
+        ::-webkit-scrollbar-track { background: var(--bg-secondary); }
+        ::-webkit-scrollbar-thumb { background: var(--border-hover); border-radius: 4px; }
+        .app-layout { display: flex; min-height: 100vh; }
+
+        .sidebar { position: fixed; top: 0; left: 0; width: var(--sidebar-width); height: 100vh; background: var(--bg-secondary); border-right: 1px solid var(--border-color); display: flex; flex-direction: column; z-index: 1000; overflow-y: auto; }
+        .sidebar-brand { padding: 20px 16px; border-bottom: 1px solid var(--border-color); }
+        .brand-link { display: flex; align-items: center; gap: 8px; font-family: 'JetBrains Mono', monospace; font-size: 14px; font-weight: 600; color: var(--accent-cyan); }
+        .brand-link:hover { color: #22d3ee; }
+        .sidebar-nav { padding: 16px 12px; flex: 1; }
+        .nav-category { font-size: 10px; font-weight: 600; text-transform: uppercase; letter-spacing: 1px; color: var(--text-muted); padding: 8px 12px 4px; }
+        .nav-link { display: flex; align-items: center; gap: 10px; padding: 7px 12px; font-size: 13px; color: var(--text-secondary); border-radius: var(--radius-sm); transition: all var(--transition); cursor: pointer; }
+        .nav-link:hover { color: var(--text-primary); background: rgba(6,182,212,.05); }
+        .nav-link.active { color: var(--accent-cyan); background: rgba(6,182,212,.08); }
+        .nav-link-icon { width: 20px; text-align: center; font-size: 14px; }
+
+        .main-content { flex: 1; margin-left: var(--sidebar-width); display: flex; flex-direction: column; min-height: 100vh; }
+        .tool-container { max-width: 1100px; width: 100%; margin: 0 auto; padding: 32px 32px 48px; }
+        .tool-header { margin-bottom: 32px; }
+        .tool-header h1 { font-size: 24px; font-weight: 700; display: flex; align-items: center; gap: 12px; }
+        .tool-header-icon { width: 44px; height: 44px; border-radius: var(--radius); background: rgba(6,182,212,.12); border: 1px solid rgba(6,182,212,.2); display: flex; align-items: center; justify-content: center; font-size: 20px; }
+        .tool-header p { font-size: 14px; color: var(--text-secondary); margin-top: 8px; max-width: 640px; }
+
+        .tool-section { margin-bottom: 24px; }
+        .tool-section-title { font-size: 13px; font-weight: 600; color: var(--text-secondary); margin-bottom: 10px; display: flex; align-items: center; gap: 6px; text-transform: uppercase; letter-spacing: 0.5px; }
+        .tool-section-title::before { content: ''; width: 3px; height: 14px; background: var(--accent-cyan); border-radius: 2px; }
+
+        .textarea { width: 100%; padding: 10px 14px; background: var(--bg-input); border: 1px solid var(--border-color); border-radius: var(--radius-sm); color: var(--text-primary); font-family: 'JetBrains Mono', monospace; font-size: 13px; min-height: 200px; resize: vertical; transition: all var(--transition); outline: none; }
+        .textarea:focus { border-color: var(--accent-cyan); box-shadow: 0 0 0 3px rgba(6,182,212,.15); }
+
+        .btn-group { display: flex; gap: 8px; flex-wrap: wrap; margin-top: 12px; }
+        .btn { display: inline-flex; align-items: center; gap: 6px; padding: 8px 16px; font-size: 13px; font-weight: 600; border-radius: var(--radius-sm); cursor: pointer; transition: all var(--transition); border: 1px solid transparent; font-family: inherit; }
+        .btn:active { transform: scale(.97); }
+        .btn-primary { background: var(--accent-cyan); color: var(--bg-primary); border-color: var(--accent-cyan); }
+        .btn-primary:hover { background: #22d3ee; }
+        .btn-secondary { background: var(--bg-card); color: var(--text-secondary); border-color: var(--border-color); }
+        .btn-secondary:hover { color: var(--text-primary); border-color: var(--border-hover); }
+
+        .diff-panels { display: grid; grid-template-columns: 1fr 1fr; gap: 16px; }
+        .diff-panel { }
+        .diff-panel-label { font-size: 12px; font-weight: 600; color: var(--text-muted); text-transform: uppercase; letter-spacing: 0.5px; margin-bottom: 8px; }
+
+        .mode-selector { display: flex; gap: 8px; }
+        .mode-btn { padding: 6px 14px; font-size: 12px; font-weight: 600; border-radius: var(--radius-sm); cursor: pointer; transition: all var(--transition); border: 1px solid var(--border-color); background: var(--bg-card); color: var(--text-secondary); font-family: inherit; }
+        .mode-btn.active { background: var(--accent-cyan); color: var(--bg-primary); border-color: var(--accent-cyan); }
+        .mode-btn:hover:not(.active) { border-color: var(--border-hover); color: var(--text-primary); }
+
+        /* Stats */
+        .diff-stats { display: flex; gap: 16px; margin-bottom: 16px; }
+        .diff-stat { display: flex; align-items: center; gap: 6px; padding: 6px 14px; border-radius: var(--radius-sm); font-size: 12px; font-weight: 600; }
+        .diff-stat-added { background: rgba(16,185,129,.1); color: var(--accent-green); border: 1px solid rgba(16,185,129,.2); }
+        .diff-stat-removed { background: rgba(239,68,68,.1); color: var(--accent-red); border: 1px solid rgba(239,68,68,.2); }
+        .diff-stat-unchanged { background: rgba(148,163,184,.1); color: var(--text-secondary); border: 1px solid rgba(148,163,184,.2); }
+
+        /* Diff Output */
+        .diff-output { background: var(--bg-card); border: 1px solid var(--border-color); border-radius: var(--radius); overflow: hidden; font-family: 'JetBrains Mono', monospace; font-size: 12px; }
+        .diff-line { display: flex; border-bottom: 1px solid rgba(30,41,59,.5); }
+        .diff-line:last-child { border-bottom: none; }
+        .diff-line-num { width: 50px; text-align: right; padding: 4px 10px; color: var(--text-muted); font-size: 11px; border-right: 1px solid var(--border-color); user-select: none; flex-shrink: 0; }
+        .diff-line-content { flex: 1; padding: 4px 12px; white-space: pre-wrap; word-break: break-all; line-height: 1.6; }
+        .diff-line.added { background: var(--diff-add-bg); }
+        .diff-line.added .diff-line-num { background: rgba(16,185,129,.08); color: var(--accent-green); }
+        .diff-line.added .diff-line-content { color: var(--diff-add-text); }
+        .diff-line.removed { background: var(--diff-del-bg); }
+        .diff-line.removed .diff-line-num { background: rgba(239,68,68,.08); color: var(--accent-red); }
+        .diff-line.removed .diff-line-content { color: var(--diff-del-text); }
+        .diff-line.unchanged .diff-line-content { color: var(--text-secondary); }
+        .diff-line.header { background: rgba(6,182,212,.08); }
+        .diff-line.header .diff-line-num { background: rgba(6,182,212,.05); color: var(--accent-cyan); }
+        .diff-line.header .diff-line-content { color: var(--accent-cyan); font-weight: 600; }
+
+        /* Side by Side */
+        .diff-side-by-side { display: grid; grid-template-columns: 1fr 1fr; gap: 0; }
+        .diff-side { border-right: 1px solid var(--border-color); }
+        .diff-side:last-child { border-right: none; }
+
+        .loading { display: flex; align-items: center; gap: 8px; color: var(--text-muted); font-size: 13px; }
+        .spinner { width: 18px; height: 18px; border: 2px solid var(--border-color); border-top-color: var(--accent-cyan); border-radius: 50%; animation: spin .6s linear infinite; }
+        @keyframes spin { to { transform: rotate(360deg); } }
+
+        @media (max-width: 1024px) { .sidebar { transform: translateX(calc(var(--sidebar-width) * -1)); } .main-content { margin-left: 0; } }
+        @media (max-width: 768px) { .tool-container { padding: 20px 16px 32px; } .diff-panels { grid-template-columns: 1fr; } .diff-side-by-side { grid-template-columns: 1fr; } }
+    </style>
+</head>
+<body>
+    <div class="app-layout">
+        <aside class="sidebar">
+            <div class="sidebar-brand"><a href="/" class="brand-link">← ECHO Toolkit</a></div>
+            <nav class="sidebar-nav">
+                <div class="nav-category">Categories</div>
+                <a href="/#code-tools" class="nav-link active"><span class="nav-link-icon">{ }</span> Code Tools</a>
+                <a href="/#dev-utils" class="nav-link"><span class="nav-link-icon">⚙</span> Dev Utils</a>
+                <a href="/#writing" class="nav-link"><span class="nav-link-icon">✍</span> Writing</a>
+                <a href="/#media" class="nav-link"><span class="nav-link-icon">🎨</span> Media</a>
+                <a href="/#social-seo" class="nav-link"><span class="nav-link-icon">📊</span> Social/SEO</a>
+                <a href="/#utilities" class="nav-link"><span class="nav-link-icon">🛠</span> Utilities</a>
+                <a href="/#ai-tools" class="nav-link"><span class="nav-link-icon">🤖</span> AI Tools</a>
+            </nav>
+        </aside>
+
+        <main class="main-content">
+            <div class="tool-container">
+                <div class="tool-header">
+                    <h1><span class="tool-header-icon">↔</span> Text Diff</h1>
+                    <p>Compare two texts and see highlighted differences with line numbers. Supports unified and side-by-side views.</p>
+                </div>
+
+                <!-- Input Panels -->
+                <div class="tool-section">
+                    <div class="diff-panels">
+                        <div class="diff-panel">
+                            <div class="diff-panel-label">📄 Original Text</div>
+                            <textarea class="textarea" id="text1" placeholder="Paste the original text here..."></textarea>
+                        </div>
+                        <div class="diff-panel">
+                            <div class="diff-panel-label">✏️ Modified Text</div>
+                            <textarea class="textarea" id="text2" placeholder="Paste the modified text here..."></textarea>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Mode & Button -->
+                <div class="tool-section">
+                    <div class="mode-selector">
+                        <button class="mode-btn active" onclick="setMode('unified', this)">Unified</button>
+                        <button class="mode-btn" onclick="setMode('side_by_side', this)">Side by Side</button>
+                    </div>
+                    <div class="btn-group">
+                        <button class="btn btn-primary" onclick="compare()">🔍 Compare</button>
+                        <button class="btn btn-secondary" onclick="swapTexts()">⇄ Swap</button>
+                        <button class="btn btn-secondary" onclick="clearAll()">✕ Clear</button>
+                    </div>
+                </div>
+
+                <!-- Results -->
+                <div class="tool-section">
+                    <div class="tool-section-title">Differences</div>
+                    <div id="diffStats"></div>
+                    <div id="diffResult">
+                        <div style="color:var(--text-muted);font-style:italic;font-family:'Inter',sans-serif;padding:20px;text-align:center;">Differences will appear here after comparing texts.</div>
+                    </div>
+                </div>
+            </div>
+        </main>
+    </div>
+
+    <script src="/static/js/app.js"></script>
+    <script>
+        let currentMode = 'unified';
+
+        function setMode(mode, btn) {
+            currentMode = mode;
+            document.querySelectorAll('.mode-btn').forEach(b => b.classList.remove('active'));
+            btn.classList.add('active');
+        }
+
+        function swapTexts() {
+            const t1 = document.getElementById('text1');
+            const t2 = document.getElementById('text2');
+            const temp = t1.value;
+            t1.value = t2.value;
+            t2.value = temp;
+        }
+
+        function clearAll() {
+            document.getElementById('text1').value = '';
+            document.getElementById('text2').value = '';
+            document.getElementById('diffStats').innerHTML = '';
+            document.getElementById('diffResult').innerHTML = '<div style="color:var(--text-muted);font-style:italic;font-family:Inter,sans-serif;padding:20px;text-align:center;">Differences will appear here after comparing texts.</div>';
+        }
+
+        async function compare() {
+            const text1 = document.getElementById('text1').value;
+            const text2 = document.getElementById('text2').value;
+            const statsEl = document.getElementById('diffStats');
+            const resultEl = document.getElementById('diffResult');
+
+            if (!text1 && !text2) {
+                statsEl.innerHTML = '';
+                resultEl.innerHTML = '<div style="color:var(--accent-yellow);font-style:italic;font-family:Inter,sans-serif;padding:20px;text-align:center;">Please enter text in both panels.</div>';
+                return;
+            }
+
+            resultEl.innerHTML = '<div class="loading" style="padding:20px;justify-content:center;"><div class="spinner"></div> Comparing texts...</div>';
+            statsEl.innerHTML = '';
+
+            try {
+                const response = await fetch('/tools/dev/diff/compare', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({
+                        text1: text1,
+                        text2: text2,
+                        mode: currentMode
+                    })
+                });
+
+                const data = await response.json();
+
+                if (data.error) {
+                    resultEl.innerHTML = `<div style="color:var(--accent-red);padding:20px;text-align:center;">${escapeHtml(data.error)}</div>`;
+                    return;
+                }
+
+                // Stats
+                const added = data.added_count || data.additions || 0;
+                const removed = data.removed_count || data.deletions || 0;
+                const unchanged = data.unchanged_count || 0;
+
+                statsEl.innerHTML = `
+                    <div class="diff-stats">
+                        <div class="diff-stat diff-stat-added">+ ${added} added</div>
+                        <div class="diff-stat diff-stat-removed">- ${removed} removed</div>
+                        <div class="diff-stat diff-stat-unchanged">= ${unchanged} unchanged</div>
+                    </div>
+                `;
+
+                // Render diff
+                const lines = data.lines || data.diff || data.results || [];
+                if (lines.length === 0) {
+                    resultEl.innerHTML = '<div style="color:var(--accent-green);padding:20px;text-align:center;">✓ No differences found. Texts are identical.</div>';
+                    return;
+                }
+
+                if (currentMode === 'unified') {
+                    renderUnified(lines, resultEl);
+                } else {
+                    renderSideBySide(lines, resultEl);
+                }
+            } catch (err) {
+                resultEl.innerHTML = `<div style="color:var(--accent-red);padding:20px;text-align:center;">Request failed: ${escapeHtml(err.message)}</div>`;
+            }
+        }
+
+        function renderUnified(lines, container) {
+            let html = '<div class="diff-output">';
+            lines.forEach(line => {
+                const type = line.type || 'unchanged';
+                const leftNum = line.left_line !== undefined ? line.left_line : '';
+                const rightNum = line.right_line !== undefined ? line.right_line : '';
+                const content = line.content || line.text || '';
+
+                const cls = type === 'added' ? 'added' : type === 'removed' ? 'removed' : type === 'header' ? 'header' : 'unchanged';
+                html += `<div class="diff-line ${cls}">
+                    <div class="diff-line-num">${escapeHtml(String(leftNum))}</div>
+                    <div class="diff-line-num">${escapeHtml(String(rightNum))}</div>
+                    <div class="diff-line-content">${escapeHtml(content)}</div>
+                </div>`;
+            });
+            html += '</div>';
+            container.innerHTML = html;
+        }
+
+        function renderSideBySide(lines, container) {
+            const leftLines = lines.filter(l => l.type !== 'added');
+            const rightLines = lines.filter(l => l.type !== 'removed');
+
+            let html = '<div class="diff-side-by-side">';
+
+            // Left panel
+            html += '<div class="diff-side"><div class="diff-output">';
+            leftLines.forEach(line => {
+                const type = line.type || 'unchanged';
+                const cls = type === 'removed' ? 'removed' : 'unchanged';
+                const num = line.left_line !== undefined ? line.left_line : '';
+                const content = line.content || line.text || '';
+                html += `<div class="diff-line ${cls}">
+                    <div class="diff-line-num">${escapeHtml(String(num))}</div>
+                    <div class="diff-line-content">${escapeHtml(content)}</div>
+                </div>`;
+            });
+            html += '</div></div>';
+
+            // Right panel
+            html += '<div class="diff-side"><div class="diff-output">';
+            rightLines.forEach(line => {
+                const type = line.type || 'unchanged';
+                const cls = type === 'added' ? 'added' : 'unchanged';
+                const num = line.right_line !== undefined ? line.right_line : '';
+                const content = line.content || line.text || '';
+                html += `<div class="diff-line ${cls}">
+                    <div class="diff-line-num">${escapeHtml(String(num))}</div>
+                    <div class="diff-line-content">${escapeHtml(content)}</div>
+                </div>`;
+            });
+            html += '</div></div>';
+
+            html += '</div>';
+            container.innerHTML = html;
+        }
+
+        function escapeHtml(str) {
+            const map = { '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#039;' };
+            return String(str).replace(/[&<>"']/g, c => map[c]);
+        }
+    </script>
+</body>
+</html>

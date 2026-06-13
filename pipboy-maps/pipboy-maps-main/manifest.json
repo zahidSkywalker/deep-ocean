@@ -1,0 +1,22 @@
+{
+  "name": "PIP-BOY MAPS",
+  "short_name": "Pip-Boy Maps",
+  "description": "Interactive Fallout-style map with search, markers, routes, and distance measurement",
+  "start_url": "/pipboy-maps/",
+  "display": "standalone",
+  "background_color": "#0a0f0a",
+  "theme_color": "#0a0f0a",
+  "orientation": "portrait",
+  "icons": [
+    {
+      "src": "/pipboy-maps/icon-192.png",
+      "sizes": "192x192",
+      "type": "image/png"
+    },
+    {
+      "src": "/pipboy-maps/icon-512.png",
+      "sizes": "512x512",
+      "type": "image/png"
+    }
+  ]
+}
