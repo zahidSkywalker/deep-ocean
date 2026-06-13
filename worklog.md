@@ -34,3 +34,29 @@ Work Log:
 Stage Summary:
 - Deployed: https://farm-village-two.vercel.app
 - Features: auto-playing farmer routine, wandering animals, crop growth, day/night cycle, butterflies/fireflies, pond, house, fences, trees, pixel-perfect 3x rendering
+---
+Task ID: 2
+Agent: Main
+Task: Fix farm village design - deploy to existing farm-village-two.vercel.app
+
+Work Log:
+- Analyzed all sprite assets dimensions and tileset layout
+- Completely rewrote FarmScene.tsx with proper design:
+  - Every ground tile now uses tileset sprites (not flat colored rectangles)
+  - Animals use their actual sprite sheets (cow, chicken variants)
+  - Trees use Maple Tree sprite (32x48 per tree, 5 variants)
+  - Fences use fence sprite sheet
+  - Crops use Spring Crops sprite with growth stages
+  - Chest uses chest sprite
+  - Added sky color that changes with time of day
+  - Added mini-map showing full village layout with camera view rectangle
+  - Redesigned village layout: wider paths, better farm area, organic pond
+  - Added more flowers (23 spots), rocks (9 spots), scattered trees (16)
+  - Better UI panel with sun/moon animation
+- Deployed to existing farm-village Vercel project (aliased as farm-village-two.vercel.app)
+- Used --project flag to avoid creating new project
+
+Stage Summary:
+- Fixed version deployed at https://farm-village-two.vercel.app
+- Key design improvements: tileset ground rendering, sprite-based characters/objects, mini-map, sky color transitions
+- Deleted stray farm-village-deploy project
