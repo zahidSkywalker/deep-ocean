@@ -82,3 +82,22 @@ Stage Summary:
 - Key files: src/components/ImageGenerator.tsx, src/app/generate/route.ts, mini-services/image-gen-service/generate.py
 - Generation takes ~30 seconds (includes browser startup + image generation)
 - NOT yet deployed - waiting for user confirmation before pushing
+---
+Task ID: 1
+Agent: Main Agent
+Task: Build standalone AI Photo Generator and deploy to Vercel
+
+Work Log:
+- Created clean standalone Next.js 15 project at /home/z/image-generator
+- Replaced Playwright/Perchance approach with z-ai-web-dev-sdk for server-side image generation (works on Vercel serverless)
+- Ported ImageGenerator UI component with dark theme, prompt input, resolution picker, surprise me, history gallery
+- API route at /api/generate uses z-ai-web-dev-sdk's images.generations.create()
+- Built successfully locally, pushed to GitHub: https://github.com/zahidSkywalker/ai-photo-generator
+- Deployed to Vercel production
+
+Stage Summary:
+- Live URL: https://image-generator-seven-nu.vercel.app
+- GitHub: https://github.com/zahidSkywalker/ai-photo-generator
+- Key change from previous session: Replaced Playwright headless browser (won't work on Vercel) with z-ai-web-dev-sdk image generation
+- Build size: ~104kB first load JS
+- Max function duration: 120s for image generation
