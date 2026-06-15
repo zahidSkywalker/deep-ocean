@@ -193,3 +193,30 @@ Files Modified:
 - src/components/landing/Header.tsx (search navigation, cart count)
 - src/components/landing/CategoryGrid.tsx (Link wrapping)
 - src/components/landing/ProductSection.tsx (Link wrapping, cart/wishlist integration)
+
+## Task s3-1: Auth, Cart, Checkout & Order System
+
+### Files Created
+- `src/data/checkout.ts` — Payment methods, countries, US states, shipping config, order status config, checkout steps
+- `src/store/useAuthStore.ts` — Zustand store with persist for mock auth (login/register/logout/updateProfile)
+- `src/store/useOrderStore.ts` — Zustand store with persist for orders (addOrder/getOrderById/getOrdersByUser)
+- `src/components/auth/AuthForm.tsx` — Shared auth form card wrapper
+- `src/components/cart/CartItemRow.tsx` — Individual cart item row with qty controls and remove
+- `src/components/checkout/OrderSummary.tsx` — Reusable order summary (subtotal, shipping, tax, total, savings)
+- `src/components/checkout/ShippingForm.tsx` — Address form with validation, country/state selects
+- `src/components/checkout/PaymentForm.tsx` — Payment method radio cards with card detail fields
+- `src/components/checkout/ReviewOrder.tsx` — Order review summary before placement
+- `src/app/(auth)/login/page.tsx` — Login page with email/password, remember me, RHF+Zod
+- `src/app/(auth)/register/page.tsx` — Register page with name/email/password/confirm/terms
+- `src/app/cart/page.tsx` — Full cart page with items list, order summary sidebar, empty state
+- `src/app/checkout/page.tsx` — Multi-step checkout (Shipping → Payment → Review)
+- `src/app/order/[id]/page.tsx` — Order confirmation page with success banner and order details
+- `src/app/account/page.tsx` — Account overview with stats, recent orders, sign out
+
+### Files Modified
+- `src/types/index.ts` — Added User, AuthState, Address, Order, OrderItem, OrderStatus, CheckoutData, PaymentMethod, LoginFormValues, RegisterFormValues, AddressFormValues
+- `src/data/index.ts` — Added re-exports for checkout data
+- `src/components/landing/Header.tsx` — Cart icon → /cart, User icon → /login or /account, mobile nav auth links
+
+### Build Status
+✅ Build successful — all 34 pages generated, no errors

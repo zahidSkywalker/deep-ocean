@@ -2,6 +2,7 @@
 
 import { useState, useEffect } from 'react';
 import { useRouter } from 'next/navigation';
+import Link from 'next/link';
 import { Search, ShoppingCart, User, Menu } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
@@ -16,6 +17,7 @@ import {
   SheetClose,
 } from '@/components/ui/sheet';
 import { useCartStore, getTotalItems } from '@/store/useCartStore';
+import { useAuthStore } from '@/store/useAuthStore';
 import { navLinks } from './data';
 
 function AnnouncementBar() {
@@ -71,20 +73,7 @@ function MobileNav() {
               </a>
             </SheetClose>
           ))}
-          <div className="mt-4 pt-4 border-t border-ag-500/30 px-4">
-            <SheetClose asChild>
-              <Button className="w-full bg-ag-100 hover:bg-ag-200 text-white rounded-xl font-heading">
-                Sign In
-              </Button>
-            </SheetClose>
-          </div>
-          <div className="mt-3 px-4">
-            <SheetClose asChild>
-              <Button variant="outline" className="w-full border-ag-400 text-ag-200 hover:bg-ag-800/50 rounded-xl font-heading">
-                Register
-              </Button>
-            </SheetClose>
-          </div>
+          <MobileAuthButtons />
         </nav>
       </SheetContent>
     </Sheet>
@@ -118,24 +107,56 @@ function SearchBar() {
   );
 }
 
+function MobileAuthButtons() {
+  const isAuthenticated = useAuthStore((s) => s.isAuthenticated);
+
+  return (
+    <>
+      <div className="mt-4 pt-4 border-t border-ag-500/30 px-4">
+        <SheetClose asChild>
+          <Button asChild className="w-full bg-ag-100 hover:bg-ag-200 text-white rounded-xl font-heading">
+            <Link href={isAuthenticated ? '/account' : '/login'}>
+              {isAuthenticated ? 'My Account' : 'Sign In'}
+            </Link>
+          </Button>
+        </SheetClose>
+      </div>
+      {!isAuthenticated && (
+        <div className="mt-3 px-4">
+          <SheetClose asChild>
+            <Button asChild variant="outline" className="w-full border-ag-400 text-ag-200 hover:bg-ag-800/50 rounded-xl font-heading">
+              <Link href="/register">Register</Link>
+            </Button>
+          </SheetClose>
+        </div>
+      )}
+    </>
+  );
+}
+
 function HeaderIcons() {
   const items = useCartStore((s) => s.items);
   const totalItems = getTotalItems(items);
+  const isAuthenticated = useAuthStore((s) => s.isAuthenticated);
 
   return (
     <div className="flex items-center gap-1">
-      <Button variant="ghost" size="icon" className="relative text-ag-200 hover:text-ag-100 hover:bg-ag-800/50">
-        <ShoppingCart className="size-5" />
-        {totalItems > 0 && (
-          <Badge className="absolute -top-1 -right-1 h-5 w-5 flex items-center justify-center p-0 bg-fw-300 text-white text-[10px] font-bold rounded-full border-2 border-fw-500">
-            {totalItems > 99 ? '99+' : totalItems}
-          </Badge>
-        )}
-        <span className="sr-only">Cart</span>
+      <Button variant="ghost" size="icon" asChild className="relative text-ag-200 hover:text-ag-100 hover:bg-ag-800/50">
+        <Link href="/cart">
+          <ShoppingCart className="size-5" />
+          {totalItems > 0 && (
+            <Badge className="absolute -top-1 -right-1 h-5 w-5 flex items-center justify-center p-0 bg-fw-300 text-white text-[10px] font-bold rounded-full border-2 border-fw-500">
+              {totalItems > 99 ? '99+' : totalItems}
+            </Badge>
+          )}
+          <span className="sr-only">Cart</span>
+        </Link>
       </Button>
-      <Button variant="ghost" size="icon" className="text-ag-200 hover:text-ag-100 hover:bg-ag-800/50">
-        <User className="size-5" />
-        <span className="sr-only">Account</span>
+      <Button variant="ghost" size="icon" asChild className="text-ag-200 hover:text-ag-100 hover:bg-ag-800/50">
+        <Link href={isAuthenticated ? '/account' : '/login'}>
+          <User className="size-5" />
+          <span className="sr-only">Account</span>
+        </Link>
       </Button>
     </div>
   );

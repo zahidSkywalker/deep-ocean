@@ -94,3 +94,106 @@ export interface SearchResult {
   products: Product[];
   total: number;
 }
+
+// ============================================
+// Auth Types
+// ============================================
+
+export interface User {
+  id: string;
+  firstName: string;
+  lastName: string;
+  email: string;
+  phone?: string;
+  avatar?: string;
+  createdAt: string;
+}
+
+export interface AuthState {
+  user: User | null;
+  isAuthenticated: boolean;
+}
+
+// ============================================
+// Address Types
+// ============================================
+
+export interface Address {
+  id: string;
+  firstName: string;
+  lastName: string;
+  street: string;
+  apartment?: string;
+  city: string;
+  state: string;
+  zipCode: string;
+  country: string;
+  phone: string;
+  isDefault: boolean;
+}
+
+// ============================================
+// Order Types
+// ============================================
+
+export interface OrderItem {
+  product: Product;
+  quantity: number;
+  priceAtPurchase: number;
+}
+
+export interface Order {
+  id: string;
+  items: OrderItem[];
+  shippingAddress: Address;
+  paymentMethod: string;
+  subtotal: number;
+  shipping: number;
+  tax: number;
+  total: number;
+  status: OrderStatus;
+  createdAt: string;
+}
+
+export type OrderStatus = 'pending' | 'confirmed' | 'processing' | 'shipped' | 'delivered' | 'cancelled';
+
+// ============================================
+// Checkout Types
+// ============================================
+
+export interface CheckoutData {
+  shippingAddress: Address;
+  paymentMethod: PaymentMethod;
+  notes?: string;
+}
+
+export type PaymentMethod = 'credit-card' | 'debit-card' | 'paypal' | 'cod';
+
+// ============================================
+// Form Validation Types
+// ============================================
+
+export interface LoginFormValues {
+  email: string;
+  password: string;
+}
+
+export interface RegisterFormValues {
+  firstName: string;
+  lastName: string;
+  email: string;
+  password: string;
+  confirmPassword: string;
+}
+
+export interface AddressFormValues {
+  firstName: string;
+  lastName: string;
+  street: string;
+  apartment: string;
+  city: string;
+  state: string;
+  zipCode: string;
+  country: string;
+  phone: string;
+}
