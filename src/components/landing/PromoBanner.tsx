@@ -14,24 +14,24 @@ export default function PromoBanner() {
   return (
     <section id="promo" className="relative overflow-hidden">
       {/* Main Promo Banner */}
-      <div className="gradient-promo py-16 sm:py-20">
+      <div className="gradient-promo py-20 md:py-28">
         <div className="absolute inset-0 opacity-5" style={{
           backgroundImage: `url("data:image/svg+xml,%3Csvg width='40' height='40' viewBox='0 0 40 40' xmlns='http://www.w3.org/2000/svg'%3E%3Cpath d='M20 20.5V18H0v-2h20v-2l2 3.5-2 3z' fill='%23ffffff' fill-opacity='1' fill-rule='evenodd'/%3E%3C/svg%3E")`,
         }} />
         
-        <div className="relative max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+        <div className="relative max-w-7xl mx-auto px-5 md:px-8 lg:px-12">
           <div className="flex flex-col lg:flex-row items-center gap-10 lg:gap-16">
             {/* Left Content */}
             <div className="flex-1 text-center lg:text-left">
-              <div className="inline-flex items-center gap-2 bg-white/10 backdrop-blur-sm border border-white/10 rounded-full px-4 py-1.5 mb-6">
+              <div className="inline-flex items-center gap-2 bg-white/10 backdrop-blur-sm border border-white/10 rounded-full px-5 py-2 mb-8">
                 <Zap className="size-4 text-fw-300" />
                 <span className="text-sm font-medium text-fw-400 font-body">Limited Time Offer</span>
               </div>
-              <h2 className="font-heading text-3xl sm:text-4xl lg:text-5xl font-bold text-white mb-4 leading-tight">
+              <h2 className="font-heading text-4xl md:text-5xl lg:text-6xl font-bold text-white mb-6 leading-tight">
                 Summer Sale is
                 <span className="block text-fw-300">Here!</span>
               </h2>
-              <p className="text-lg text-ag-500 font-body mb-8 max-w-lg mx-auto lg:mx-0">
+              <p className="text-lg text-ag-500 font-body mb-10 max-w-lg mx-auto lg:mx-0 leading-relaxed">
                 Up to 50% off on thousands of products from top vendors. Don&apos;t miss out on the best deals this season.
               </p>
               <div className="flex flex-col sm:flex-row items-center justify-center lg:justify-start gap-3">
@@ -47,22 +47,22 @@ export default function PromoBanner() {
 
             {/* Right Visual */}
             <div className="flex-1 max-w-md w-full">
-              <div className="grid grid-cols-2 gap-4">
-                <div className="bg-white/10 backdrop-blur-sm rounded-2xl p-6 text-center border border-white/10">
+              <div className="grid grid-cols-2 gap-5 md:gap-6">
+                <div className="bg-white/10 backdrop-blur-sm rounded-2xl p-7 md:p-8 text-center border border-white/10">
                   <div className="font-heading text-4xl font-bold text-fw-300">50%</div>
-                  <div className="text-sm text-ag-500 font-body mt-1">Max Discount</div>
+                  <div className="text-sm text-ag-500 font-body mt-1.5">Max Discount</div>
                 </div>
-                <div className="bg-white/10 backdrop-blur-sm rounded-2xl p-6 text-center border border-white/10">
+                <div className="bg-white/10 backdrop-blur-sm rounded-2xl p-7 md:p-8 text-center border border-white/10">
                   <div className="font-heading text-4xl font-bold text-fw-300">5K+</div>
-                  <div className="text-sm text-ag-500 font-body mt-1">Items on Sale</div>
+                  <div className="text-sm text-ag-500 font-body mt-1.5">Items on Sale</div>
                 </div>
-                <div className="bg-white/10 backdrop-blur-sm rounded-2xl p-6 text-center border border-white/10">
+                <div className="bg-white/10 backdrop-blur-sm rounded-2xl p-7 md:p-8 text-center border border-white/10">
                   <div className="font-heading text-4xl font-bold text-fw-300">48h</div>
-                  <div className="text-sm text-ag-500 font-body mt-1">Flash Deals</div>
+                  <div className="text-sm text-ag-500 font-body mt-1.5">Flash Deals</div>
                 </div>
-                <div className="bg-white/10 backdrop-blur-sm rounded-2xl p-6 text-center border border-white/10">
+                <div className="bg-white/10 backdrop-blur-sm rounded-2xl p-7 md:p-8 text-center border border-white/10">
                   <div className="font-heading text-4xl font-bold text-fw-300">200+</div>
-                  <div className="text-sm text-ag-500 font-body mt-1">Brands</div>
+                  <div className="text-sm text-ag-500 font-body mt-1.5">Brands</div>
                 </div>
               </div>
             </div>
@@ -72,10 +72,10 @@ export default function PromoBanner() {
 
       {/* Trust Badges */}
       <div className="bg-white border-b border-ag-500/20">
-        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+        <div className="max-w-7xl mx-auto px-5 md:px-8 lg:px-12">
           <div className="grid grid-cols-2 lg:grid-cols-4 gap-4 lg:divide-x divide-ag-500/20">
             {features.map((feature) => (
-              <div key={feature.title} className="flex items-center gap-3 py-5 px-4 lg:px-8">
+              <div key={feature.title} className="flex items-center gap-3 py-6 px-4 lg:px-8">
                 <div className="w-10 h-10 rounded-xl bg-fw-500 flex items-center justify-center shrink-0">
                   <feature.icon className="size-5 text-fw-200" />
                 </div>

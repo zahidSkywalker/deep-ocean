@@ -45,11 +45,11 @@ export default async function ProductPage({ params }: { params: Promise<{ slug: 
   return (
     <div className="min-h-screen flex flex-col bg-fw-500">
       <main className="flex-1">
-        <div className="max-w-7xl mx-auto px-4 md:px-8 lg:px-16 py-8 md:py-12">
+        <div className="max-w-7xl mx-auto px-5 md:px-8 lg:px-12 py-10 md:py-16 lg:py-20">
           <Breadcrumb items={breadcrumbItems} />
 
           {/* Product Main Section */}
-          <div className="grid grid-cols-1 lg:grid-cols-2 gap-8 lg:gap-12 mb-16">
+          <div className="grid grid-cols-1 lg:grid-cols-2 gap-10 lg:gap-16 mt-6 mb-16 md:mb-20 lg:mb-24">
             {/* Image Gallery */}
             <ProductImageGallery
               images={product.images}
@@ -61,26 +61,26 @@ export default async function ProductPage({ params }: { params: Promise<{ slug: 
           </div>
 
           {/* Description Section */}
-          <section className="mb-16">
-            <h2 className="font-heading text-xl font-bold text-ag-100 mb-4">
+          <section className="mb-16 md:mb-20 lg:mb-24">
+            <h2 className="font-heading text-2xl md:text-3xl font-bold text-ag-100 mb-4">
               Description
             </h2>
-            <p className="text-ag-200 font-body leading-relaxed max-w-3xl">
+            <p className="text-ag-200 font-body leading-relaxed max-w-4xl text-sm md:text-base">
               {product.description}
             </p>
           </section>
 
           {/* Specifications */}
           {product.specifications.length > 0 && (
-            <section className="mb-16">
-              <h2 className="font-heading text-xl font-bold text-ag-100 mb-4">
+            <section className="mb-16 md:mb-20 lg:mb-24">
+              <h2 className="font-heading text-2xl md:text-3xl font-bold text-ag-100 mb-4">
                 Specifications
               </h2>
-              <div className="bg-fw-900 rounded-2xl border border-ag-500/20 overflow-hidden max-w-2xl">
+              <div className="bg-fw-900 rounded-2xl border border-ag-500/20 overflow-hidden max-w-3xl">
                 {product.specifications.map((spec, index) => (
                   <div
                     key={spec.name}
-                    className={`flex items-center px-6 py-3.5 ${
+                    className={`flex items-center px-6 md:px-8 py-4 md:py-5 ${
                       index % 2 === 0 ? 'bg-fw-900' : 'bg-ag-800/30'
                     }`}
                   >
@@ -98,9 +98,9 @@ export default async function ProductPage({ params }: { params: Promise<{ slug: 
 
           {/* Related Products */}
           {relatedProducts.length > 0 && (
-            <section className="mb-16">
-              <div className="flex items-center justify-between mb-8">
-                <h2 className="font-heading text-2xl font-bold text-ag-100">
+            <section className="mb-16 md:mb-20 lg:mb-24">
+              <div className="flex items-center justify-between mb-10">
+                <h2 className="font-heading text-2xl md:text-3xl font-bold text-ag-100">
                   Related Products
                 </h2>
                 {category && (
@@ -112,7 +112,7 @@ export default async function ProductPage({ params }: { params: Promise<{ slug: 
                   </Link>
                 )}
               </div>
-              <div className="grid grid-cols-2 md:grid-cols-4 gap-4 sm:gap-6">
+              <div className="grid grid-cols-2 md:grid-cols-4 gap-4 md:gap-6 lg:gap-8">
                 {relatedProducts.map((p) => (
                   <Link key={p.id} href={`/product/${p.slug}`}>
                     <ProductCardWrapper product={p} />
@@ -144,15 +144,15 @@ function ProductCardWrapper({ product }: { product: NonNullable<ReturnType<typeo
           </span>
         )}
       </div>
-      <div className="p-4">
-        <p className="text-xs text-fw-200 font-body font-medium mb-1 truncate">
+      <div className="p-5 md:p-6">
+        <p className="text-xs text-fw-200 font-body font-medium mb-1.5 truncate">
           {product.vendor}
         </p>
-        <h3 className="font-heading font-semibold text-sm text-ag-100 leading-snug mb-2 line-clamp-2 min-h-[2.5rem]">
+        <h3 className="font-heading font-semibold text-sm md:text-base text-ag-100 leading-snug mb-2 line-clamp-2 min-h-[2.5rem]">
           {product.name}
         </h3>
         <div className="flex items-center gap-2">
-          <span className="font-heading font-bold text-lg text-ag-100">
+          <span className="font-heading font-bold text-lg md:text-xl text-ag-100">
             ${product.price.toFixed(2)}
           </span>
           {product.originalPrice && (

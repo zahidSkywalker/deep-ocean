@@ -63,15 +63,15 @@ export default function CheckoutPage() {
   if (items.length === 0) {
     return (
       <div className="min-h-screen flex flex-col bg-fw-500">
-        <main className="flex-1 flex items-center justify-center py-12 px-4">
+        <main className="flex-1 flex items-center justify-center py-16 px-5">
           <div className="text-center">
-            <div className="w-20 h-20 bg-ag-800/30 rounded-full flex items-center justify-center mx-auto mb-6">
-              <ShoppingCart className="size-8 text-ag-400" />
+            <div className="w-24 h-24 bg-ag-800/30 rounded-full flex items-center justify-center mx-auto mb-8">
+              <ShoppingCart className="size-10 text-ag-400" />
             </div>
-            <h2 className="text-xl font-heading font-bold text-ag-100 mb-2">Your cart is empty</h2>
-            <p className="text-ag-300 font-body text-sm mb-6">Add some items before checking out.</p>
+            <h2 className="text-2xl font-heading font-bold text-ag-100 mb-3">Your cart is empty</h2>
+            <p className="text-ag-300 font-body text-sm md:text-base mb-8">Add some items before checking out.</p>
             <Link href="/">
-              <Button className="bg-ag-100 hover:bg-ag-200 text-white rounded-xl font-heading font-medium text-sm px-6 h-11 transition-colors">
+              <Button className="bg-ag-100 hover:bg-ag-200 text-white rounded-xl font-heading font-medium text-base px-8 h-12 transition-colors">
                 Start Shopping
               </Button>
             </Link>
@@ -140,7 +140,7 @@ export default function CheckoutPage() {
   return (
     <div className="min-h-screen flex flex-col bg-fw-500">
       <main className="flex-1">
-        <div className="max-w-7xl mx-auto px-4 md:px-8 lg:px-16 py-8 md:py-12">
+        <div className="max-w-7xl mx-auto px-5 md:px-8 lg:px-12 py-10 md:py-16 lg:py-20">
           <Breadcrumb
             items={[
               { label: 'Home', href: '/' },
@@ -149,20 +149,20 @@ export default function CheckoutPage() {
             ]}
           />
 
-          <h1 className="text-2xl md:text-3xl font-heading font-bold text-ag-100 mb-8">
+          <h1 className="text-3xl md:text-4xl font-heading font-bold text-ag-100 mb-10 mt-6">
             Checkout
           </h1>
 
           {/* Step Indicator */}
-          <div className="flex items-center justify-center mb-10">
+          <div className="flex items-center justify-center mb-12">
             {checkoutSteps.map((step, index) => {
               const isActive = currentStep === step.id;
               const isCompleted = currentStep > step.id;
               return (
                 <div key={step.id} className="flex items-center">
-                  <div className="flex items-center gap-2">
+                  <div className="flex items-center gap-2.5">
                     <div
-                      className={`w-8 h-8 rounded-full flex items-center justify-center text-sm font-heading font-bold transition-colors ${
+                      className={`w-9 h-9 rounded-full flex items-center justify-center text-sm font-heading font-bold transition-colors ${
                         isCompleted
                           ? 'bg-green-500 text-white'
                           : isActive
@@ -182,7 +182,7 @@ export default function CheckoutPage() {
                   </div>
                   {index < checkoutSteps.length - 1 && (
                     <div
-                      className={`w-12 sm:w-20 h-0.5 mx-2 sm:mx-4 rounded-full transition-colors ${
+                      className={`w-12 sm:w-20 h-0.5 mx-3 sm:mx-4 rounded-full transition-colors ${
                         currentStep > step.id ? 'bg-green-500' : 'bg-ag-500/30'
                       }`}
                     />
@@ -192,21 +192,21 @@ export default function CheckoutPage() {
             })}
           </div>
 
-          <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
+          <div className="grid grid-cols-1 lg:grid-cols-3 gap-8 lg:gap-10">
             {/* Main Content */}
             <div className="lg:col-span-2">
               {/* Step 1: Shipping */}
               {currentStep === 1 && (
                 <div className="bg-white rounded-2xl shadow-soft p-6 md:p-8">
-                  <h2 className="font-heading font-bold text-lg text-ag-100 mb-6">
+                  <h2 className="font-heading font-bold text-xl text-ag-100 mb-8">
                     Shipping Information
                   </h2>
                   <form onSubmit={shippingForm.handleSubmit(handleShippingSubmit)}>
                     <ShippingForm form={shippingForm} />
-                    <div className="mt-6 flex justify-end">
+                    <div className="mt-8 flex justify-end">
                       <Button
                         type="submit"
-                        className="bg-ag-100 hover:bg-ag-200 text-white rounded-xl font-heading font-medium text-sm px-8 h-11 transition-colors"
+                        className="bg-ag-100 hover:bg-ag-200 text-white rounded-xl font-heading font-medium text-sm px-8 h-12 transition-colors"
                       >
                         Continue to Payment
                       </Button>
@@ -218,16 +218,16 @@ export default function CheckoutPage() {
               {/* Step 2: Payment */}
               {currentStep === 2 && (
                 <div className="bg-white rounded-2xl shadow-soft p-6 md:p-8">
-                  <h2 className="font-heading font-bold text-lg text-ag-100 mb-6">
+                  <h2 className="font-heading font-bold text-xl text-ag-100 mb-8">
                     Payment Method
                   </h2>
                   <PaymentForm value={paymentMethod} onChange={setPaymentMethod} />
-                  <div className="mt-6 flex justify-between">
+                  <div className="mt-8 flex justify-between">
                     <Button
                       type="button"
                       variant="outline"
                       onClick={() => setCurrentStep(1)}
-                      className="border-ag-500/40 text-ag-200 hover:bg-ag-800/30 rounded-xl font-heading font-medium text-sm gap-2"
+                      className="border-ag-500/40 text-ag-200 hover:bg-ag-800/30 rounded-xl font-heading font-medium text-sm gap-2 h-12"
                     >
                       <ArrowLeft className="size-4" />
                       Back
@@ -235,7 +235,7 @@ export default function CheckoutPage() {
                     <Button
                       type="button"
                       onClick={() => setCurrentStep(3)}
-                      className="bg-ag-100 hover:bg-ag-200 text-white rounded-xl font-heading font-medium text-sm px-8 h-11 transition-colors"
+                      className="bg-ag-100 hover:bg-ag-200 text-white rounded-xl font-heading font-medium text-sm px-8 h-12 transition-colors"
                     >
                       Review Order
                     </Button>
@@ -251,12 +251,12 @@ export default function CheckoutPage() {
                     shippingAddress={shippingAddress}
                     paymentMethod={paymentMethod}
                   />
-                  <div className="mt-6 flex justify-between">
+                  <div className="mt-8 flex justify-between">
                     <Button
                       type="button"
                       variant="outline"
                       onClick={() => setCurrentStep(2)}
-                      className="border-ag-500/40 text-ag-200 hover:bg-ag-800/30 rounded-xl font-heading font-medium text-sm gap-2"
+                      className="border-ag-500/40 text-ag-200 hover:bg-ag-800/30 rounded-xl font-heading font-medium text-sm gap-2 h-12"
                     >
                       <ArrowLeft className="size-4" />
                       Back
@@ -265,7 +265,7 @@ export default function CheckoutPage() {
                       type="button"
                       onClick={handlePlaceOrder}
                       disabled={isPlacing}
-                      className="bg-ag-100 hover:bg-ag-200 text-white rounded-xl font-heading font-bold text-sm px-8 h-11 transition-colors"
+                      className="bg-ag-100 hover:bg-ag-200 text-white rounded-xl font-heading font-bold text-sm px-8 h-12 transition-colors"
                     >
                       {isPlacing ? (
                         <>
@@ -285,7 +285,7 @@ export default function CheckoutPage() {
             <div className="lg:col-span-1">
               <div className="sticky top-28">
                 <OrderSummary items={items} />
-                <div className="mt-3 bg-white rounded-xl border border-ag-500/20 p-3 text-center">
+                <div className="mt-4 bg-white rounded-xl border border-ag-500/20 p-4 text-center">
                   <p className="text-xs font-body text-ag-400">
                     {totalItems} {totalItems === 1 ? 'item' : 'items'} in your order
                   </p>

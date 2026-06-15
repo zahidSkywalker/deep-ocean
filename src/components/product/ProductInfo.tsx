@@ -34,7 +34,7 @@ export default function ProductInfo({ product, vendor }: ProductInfoProps) {
   }
 
   return (
-    <div className="flex flex-col gap-5">
+    <div className="flex flex-col gap-6">
       {/* Vendor */}
       {vendor && (
         <Link
@@ -46,7 +46,7 @@ export default function ProductInfo({ product, vendor }: ProductInfoProps) {
       )}
 
       {/* Name */}
-      <h1 className="font-heading text-2xl sm:text-3xl font-bold text-ag-100 leading-tight">
+      <h1 className="font-heading text-2xl md:text-3xl lg:text-4xl font-bold text-ag-100 leading-tight">
         {product.name}
       </h1>
 
@@ -73,12 +73,12 @@ export default function ProductInfo({ product, vendor }: ProductInfoProps) {
 
       {/* Price */}
       <div className="flex items-center gap-3 flex-wrap">
-        <span className="font-heading font-bold text-3xl text-ag-100">
+        <span className="font-heading font-bold text-3xl md:text-4xl text-ag-100">
           ${product.price.toFixed(2)}
         </span>
         {product.originalPrice && (
           <>
-            <span className="text-lg text-ag-400 font-body line-through">
+            <span className="text-base text-ag-400 font-body line-through">
               ${product.originalPrice.toFixed(2)}
             </span>
             <Badge className="bg-red-500 text-white text-xs font-body font-semibold px-2 py-0.5 rounded-md">
@@ -91,7 +91,7 @@ export default function ProductInfo({ product, vendor }: ProductInfoProps) {
       <Separator className="bg-ag-500/30" />
 
       {/* Short description */}
-      <p className="text-ag-200 font-body text-sm leading-relaxed">
+      <p className="text-ag-200 font-body text-sm md:text-base leading-relaxed">
         {product.description}
       </p>
 
@@ -121,7 +121,7 @@ export default function ProductInfo({ product, vendor }: ProductInfoProps) {
           <Button
             variant="ghost"
             size="icon"
-            className="h-10 w-10 rounded-none text-ag-200 hover:bg-ag-800"
+            className="h-12 w-12 rounded-none text-ag-200 hover:bg-ag-800"
             onClick={() => setQuantity((q) => Math.max(1, q - 1))}
             disabled={quantity <= 1}
           >
@@ -133,7 +133,7 @@ export default function ProductInfo({ product, vendor }: ProductInfoProps) {
           <Button
             variant="ghost"
             size="icon"
-            className="h-10 w-10 rounded-none text-ag-200 hover:bg-ag-800"
+            className="h-12 w-12 rounded-none text-ag-200 hover:bg-ag-800"
             onClick={() => setQuantity((q) => Math.min(product.stock, q + 1))}
             disabled={quantity >= product.stock}
           >
@@ -145,9 +145,9 @@ export default function ProductInfo({ product, vendor }: ProductInfoProps) {
         <Button
           onClick={handleAddToCart}
           disabled={!inStock}
-          className="flex-1 h-10 bg-ag-100 hover:bg-ag-200 text-white font-heading font-semibold rounded-xl"
+          className="flex-1 h-12 md:h-14 bg-ag-100 hover:bg-ag-200 text-white font-heading font-semibold rounded-xl text-base"
         >
-          <ShoppingCart className="size-4 mr-2" />
+          <ShoppingCart className="size-5 mr-2" />
           Add to Cart
         </Button>
       </div>
@@ -156,7 +156,7 @@ export default function ProductInfo({ product, vendor }: ProductInfoProps) {
       <Button
         variant="outline"
         onClick={() => toggleItem(product.id)}
-        className={`w-full h-10 rounded-xl font-heading font-medium border-ag-500/40 ${
+        className={`h-12 rounded-xl font-heading font-medium border-ag-500/40 ${
           wishlisted
             ? 'border-red-300 text-red-500 hover:bg-red-50'
             : 'text-ag-200 hover:bg-ag-800'

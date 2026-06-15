@@ -17,7 +17,7 @@ function VendorCard({ vendor }: { vendor: typeof vendors[0] }) {
   };
 
   return (
-    <div className="group flex-shrink-0 w-[280px] sm:w-[320px] bg-white rounded-2xl border border-ag-500/20 overflow-hidden hover-lift shadow-soft">
+    <div className="group flex-shrink-0 w-[300px] sm:w-[340px] md:w-[360px] bg-white rounded-2xl border border-ag-500/20 overflow-hidden hover-lift shadow-soft">
       {/* Cover Image */}
       <div className="relative h-28 overflow-hidden">
         <img
@@ -33,7 +33,7 @@ function VendorCard({ vendor }: { vendor: typeof vendors[0] }) {
       </div>
 
       {/* Vendor Info */}
-      <div className="p-4 pt-3 -mt-6 relative">
+      <div className="p-5 md:p-6 pt-3 -mt-6 relative">
         {/* Logo */}
         <div className="w-12 h-12 rounded-xl bg-white border-2 border-white shadow-soft-md overflow-hidden mb-3">
           <img
@@ -44,21 +44,21 @@ function VendorCard({ vendor }: { vendor: typeof vendors[0] }) {
           />
         </div>
 
-        <h3 className="font-heading font-semibold text-sm text-ag-100 mb-1 truncate">
+        <h3 className="font-heading font-semibold text-base text-ag-100 mb-1.5 truncate">
           {vendor.name}
         </h3>
-        <p className="text-xs text-ag-300 font-body line-clamp-2 mb-3 leading-relaxed">
+        <p className="text-xs md:text-sm text-ag-300 font-body line-clamp-2 mb-3 leading-relaxed">
           {vendor.description}
         </p>
 
         {/* Stats */}
         <div className="flex items-center justify-between">
-          <div className="flex items-center gap-1">
+          <div className="flex items-center gap-1.5">
             <Star className="size-3.5 fill-fw-300 text-fw-300" />
             <span className="text-sm font-semibold text-ag-100 font-heading">{vendor.rating}</span>
             <span className="text-xs text-ag-300 font-body">({vendor.productCount} products)</span>
           </div>
-          <Button variant="ghost" size="sm" className="text-fw-200 hover:text-fw-100 hover:bg-fw-500/50 text-xs font-heading font-medium h-7 px-2">
+          <Button variant="ghost" size="sm" className="text-fw-200 hover:text-fw-100 hover:bg-fw-500/50 text-xs font-heading font-medium h-8 px-3">
             Visit
             <ArrowRight className="size-3 ml-0.5" />
           </Button>
@@ -92,12 +92,12 @@ export default function VendorShowcase() {
   };
 
   return (
-    <section id="vendors" className="py-16 sm:py-20 bg-ag-900">
-      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+    <section id="vendors" className="py-20 md:py-28 bg-ag-900">
+      <div className="max-w-7xl mx-auto px-5 md:px-8 lg:px-12">
         {/* Section Header */}
         <div className="flex flex-col sm:flex-row sm:items-end sm:justify-between mb-10 gap-4">
           <div>
-            <h2 className="font-heading text-2xl sm:text-3xl font-bold text-ag-100 mb-2">
+            <h2 className="font-heading text-2xl md:text-3xl font-bold text-ag-100 mb-3">
               Featured Vendors
             </h2>
             <p className="text-ag-300 font-body max-w-md">

@@ -21,7 +21,7 @@ export default function ShippingForm({ form: { register, formState: { errors }, 
   const watchedCountry = watch('country');
 
   return (
-    <div className="space-y-4">
+    <div className="space-y-6">
       <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
         <div className="space-y-2">
           <Label htmlFor="firstName" className="font-body text-sm text-ag-200">
@@ -31,7 +31,7 @@ export default function ShippingForm({ form: { register, formState: { errors }, 
             id="firstName"
             placeholder="John"
             {...register('firstName')}
-            className="h-11 rounded-xl border-ag-500/40 bg-white font-body text-sm focus-visible:ring-fw-300/30 focus-visible:border-fw-300"
+            className="h-12 rounded-xl border-ag-500/40 bg-white font-body text-sm focus-visible:ring-fw-300/30 focus-visible:border-fw-300"
           />
           {errors.firstName && (
             <p className="text-red-500 text-sm font-body mt-1">{errors.firstName.message}</p>
@@ -46,7 +46,7 @@ export default function ShippingForm({ form: { register, formState: { errors }, 
             id="lastName"
             placeholder="Doe"
             {...register('lastName')}
-            className="h-11 rounded-xl border-ag-500/40 bg-white font-body text-sm focus-visible:ring-fw-300/30 focus-visible:border-fw-300"
+            className="h-12 rounded-xl border-ag-500/40 bg-white font-body text-sm focus-visible:ring-fw-300/30 focus-visible:border-fw-300"
           />
           {errors.lastName && (
             <p className="text-red-500 text-sm font-body mt-1">{errors.lastName.message}</p>
@@ -62,7 +62,7 @@ export default function ShippingForm({ form: { register, formState: { errors }, 
           id="street"
           placeholder="123 Main Street"
           {...register('street')}
-          className="h-11 rounded-xl border-ag-500/40 bg-white font-body text-sm focus-visible:ring-fw-300/30 focus-visible:border-fw-300"
+          className="h-12 rounded-xl border-ag-500/40 bg-white font-body text-sm focus-visible:ring-fw-300/30 focus-visible:border-fw-300"
         />
         {errors.street && (
           <p className="text-red-500 text-sm font-body mt-1">{errors.street.message}</p>
@@ -77,7 +77,7 @@ export default function ShippingForm({ form: { register, formState: { errors }, 
           id="apartment"
           placeholder="Apt 4B"
           {...register('apartment')}
-          className="h-11 rounded-xl border-ag-500/40 bg-white font-body text-sm focus-visible:ring-fw-300/30 focus-visible:border-fw-300"
+          className="h-12 rounded-xl border-ag-500/40 bg-white font-body text-sm focus-visible:ring-fw-300/30 focus-visible:border-fw-300"
         />
       </div>
 
@@ -90,7 +90,7 @@ export default function ShippingForm({ form: { register, formState: { errors }, 
             id="city"
             placeholder="New York"
             {...register('city')}
-            className="h-11 rounded-xl border-ag-500/40 bg-white font-body text-sm focus-visible:ring-fw-300/30 focus-visible:border-fw-300"
+            className="h-12 rounded-xl border-ag-500/40 bg-white font-body text-sm focus-visible:ring-fw-300/30 focus-visible:border-fw-300"
           />
           {errors.city && (
             <p className="text-red-500 text-sm font-body mt-1">{errors.city.message}</p>
@@ -101,7 +101,7 @@ export default function ShippingForm({ form: { register, formState: { errors }, 
           <Label className="font-body text-sm text-ag-200">State / Province *</Label>
           {watchedCountry === 'US' ? (
             <Select onValueChange={(val) => setValue('state', val)} defaultValue="NY">
-              <SelectTrigger className="h-11 rounded-xl border-ag-500/40 bg-white font-body text-sm focus:ring-fw-300/30 focus:border-fw-300">
+              <SelectTrigger className="h-12 rounded-xl border-ag-500/40 bg-white font-body text-sm focus:ring-fw-300/30 focus:border-fw-300">
                 <SelectValue placeholder="Select state" />
               </SelectTrigger>
               <SelectContent className="max-h-64">
@@ -116,7 +116,7 @@ export default function ShippingForm({ form: { register, formState: { errors }, 
             <Input
               placeholder="State / Province"
               {...register('state')}
-              className="h-11 rounded-xl border-ag-500/40 bg-white font-body text-sm focus-visible:ring-fw-300/30 focus-visible:border-fw-300"
+              className="h-12 rounded-xl border-ag-500/40 bg-white font-body text-sm focus-visible:ring-fw-300/30 focus-visible:border-fw-300"
             />
           )}
           {errors.state && (
@@ -134,7 +134,7 @@ export default function ShippingForm({ form: { register, formState: { errors }, 
             id="zipCode"
             placeholder="10001"
             {...register('zipCode')}
-            className="h-11 rounded-xl border-ag-500/40 bg-white font-body text-sm focus-visible:ring-fw-300/30 focus-visible:border-fw-300"
+            className="h-12 rounded-xl border-ag-500/40 bg-white font-body text-sm focus-visible:ring-fw-300/30 focus-visible:border-fw-300"
           />
           {errors.zipCode && (
             <p className="text-red-500 text-sm font-body mt-1">{errors.zipCode.message}</p>
@@ -144,7 +144,7 @@ export default function ShippingForm({ form: { register, formState: { errors }, 
         <div className="space-y-2">
           <Label className="font-body text-sm text-ag-200">Country *</Label>
           <Select defaultValue="US" onValueChange={(val) => setValue('country', val)}>
-            <SelectTrigger className="h-11 rounded-xl border-ag-500/40 bg-white font-body text-sm focus:ring-fw-300/30 focus:border-fw-300">
+            <SelectTrigger className="h-12 rounded-xl border-ag-500/40 bg-white font-body text-sm focus:ring-fw-300/30 focus:border-fw-300">
               <SelectValue placeholder="Select country" />
             </SelectTrigger>
             <SelectContent className="max-h-64">
@@ -170,7 +170,7 @@ export default function ShippingForm({ form: { register, formState: { errors }, 
           type="tel"
           placeholder="+1 (555) 123-4567"
           {...register('phone')}
-          className="h-11 rounded-xl border-ag-500/40 bg-white font-body text-sm focus-visible:ring-fw-300/30 focus-visible:border-fw-300"
+          className="h-12 rounded-xl border-ag-500/40 bg-white font-body text-sm focus-visible:ring-fw-300/30 focus-visible:border-fw-300"
         />
         {errors.phone && (
           <p className="text-red-500 text-sm font-body mt-1">{errors.phone.message}</p>

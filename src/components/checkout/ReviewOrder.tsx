@@ -25,12 +25,12 @@ export default function ReviewOrder({ items, shippingAddress, paymentMethod }: R
   return (
     <div className="space-y-6">
       {/* Order Items */}
-      <div className="bg-white rounded-2xl border border-ag-500/20 p-4 md:p-6">
-        <h3 className="font-heading font-bold text-base text-ag-100 mb-4">Order Items ({totalItems})</h3>
-        <div className="space-y-3 max-h-64 overflow-y-auto">
+      <div className="bg-white rounded-2xl border border-ag-500/20 p-5 md:p-6">
+        <h3 className="font-heading font-bold text-lg text-ag-100 mb-5">Order Items ({totalItems})</h3>
+        <div className="space-y-4 max-h-72 overflow-y-auto">
           {items.map((item) => (
-            <div key={item.product.id} className="flex items-center gap-3">
-              <div className="w-12 h-12 rounded-lg overflow-hidden bg-ag-800/30 shrink-0">
+            <div key={item.product.id} className="flex items-center gap-4">
+              <div className="w-14 h-14 rounded-lg overflow-hidden bg-ag-800/30 shrink-0">
                 <img
                   src={item.product.image}
                   alt={item.product.name}
@@ -39,7 +39,7 @@ export default function ReviewOrder({ items, shippingAddress, paymentMethod }: R
               </div>
               <div className="flex-1 min-w-0">
                 <p className="font-body text-sm text-ag-100 font-medium truncate">{item.product.name}</p>
-                <p className="text-xs font-body text-ag-400">Qty: {item.quantity}</p>
+                <p className="text-xs font-body text-ag-400 mt-0.5">Qty: {item.quantity}</p>
               </div>
               <p className="font-heading font-semibold text-sm text-ag-100 shrink-0">
                 {currencySymbol}{(item.product.price * item.quantity).toFixed(2)}
@@ -50,9 +50,9 @@ export default function ReviewOrder({ items, shippingAddress, paymentMethod }: R
       </div>
 
       {/* Shipping Address */}
-      <div className="bg-white rounded-2xl border border-ag-500/20 p-4 md:p-6">
-        <h3 className="font-heading font-bold text-base text-ag-100 mb-3">Shipping Address</h3>
-        <div className="text-sm font-body text-ag-200 space-y-1">
+      <div className="bg-white rounded-2xl border border-ag-500/20 p-5 md:p-6">
+        <h3 className="font-heading font-bold text-lg text-ag-100 mb-4">Shipping Address</h3>
+        <div className="text-sm font-body text-ag-200 space-y-1.5">
           <p className="font-medium text-ag-100">
             {shippingAddress.firstName} {shippingAddress.lastName}
           </p>
@@ -67,15 +67,15 @@ export default function ReviewOrder({ items, shippingAddress, paymentMethod }: R
       </div>
 
       {/* Payment Method */}
-      <div className="bg-white rounded-2xl border border-ag-500/20 p-4 md:p-6">
-        <h3 className="font-heading font-bold text-base text-ag-100 mb-3">Payment Method</h3>
+      <div className="bg-white rounded-2xl border border-ag-500/20 p-5 md:p-6">
+        <h3 className="font-heading font-bold text-lg text-ag-100 mb-4">Payment Method</h3>
         <p className="font-body text-sm text-ag-200">{paymentLabel}</p>
       </div>
 
       {/* Total Breakdown */}
-      <div className="bg-white rounded-2xl border border-ag-500/20 p-4 md:p-6">
-        <h3 className="font-heading font-bold text-base text-ag-100 mb-3">Order Total</h3>
-        <div className="space-y-2 text-sm font-body">
+      <div className="bg-white rounded-2xl border border-ag-500/20 p-5 md:p-6">
+        <h3 className="font-heading font-bold text-lg text-ag-100 mb-4">Order Total</h3>
+        <div className="space-y-3 text-sm font-body">
           <div className="flex justify-between text-ag-200">
             <span>Subtotal</span>
             <span>{currencySymbol}{subtotal.toFixed(2)}</span>
@@ -90,10 +90,10 @@ export default function ReviewOrder({ items, shippingAddress, paymentMethod }: R
             <span>Estimated Tax</span>
             <span>{currencySymbol}{tax.toFixed(2)}</span>
           </div>
-          <div className="border-t border-ag-500/20 pt-2 mt-2">
+          <div className="border-t border-ag-500/20 pt-3 mt-3">
             <div className="flex justify-between">
-              <span className="font-heading font-bold text-base text-ag-100">Total</span>
-              <span className="font-heading font-bold text-base text-ag-100">
+              <span className="font-heading font-bold text-xl text-ag-100">Total</span>
+              <span className="font-heading font-bold text-xl text-ag-100">
                 {currencySymbol}{total.toFixed(2)}
               </span>
             </div>

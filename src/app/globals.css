@@ -160,14 +160,87 @@ h1, h2, h3, h4, h5, h6 {
   box-shadow: 0 8px 32px rgba(43, 48, 39, 0.1), 0 4px 12px rgba(43, 48, 39, 0.06);
 }
 
-/* Hover lift animation */
+/* Smooth transitions for all interactive elements */
+a, button, input, select, textarea {
+  transition: all 0.2s ease;
+}
+
+/* Focus-visible styles (skipping shadcn ring elements) */
+*:focus-visible {
+  outline: 2px solid var(--fw-300);
+  outline-offset: 2px;
+  border-radius: 4px;
+}
+
+/* Override focus-visible for shadcn elements that use ring */
+button[role="switch"]:focus-visible,
+[data-radix-collection-item]:focus-visible,
+[role="checkbox"]:focus-visible,
+[role="radio"]:focus-visible,
+[role="combobox"]:focus-visible,
+[role="dialog"]:focus-visible {
+  outline: none;
+}
+
+/* Hover lift animation — smoother cubic-bezier */
 .hover-lift {
-  transition: transform 0.25s ease, box-shadow 0.25s ease;
+  transition: transform 0.3s cubic-bezier(0.4, 0, 0.2, 1), box-shadow 0.3s cubic-bezier(0.4, 0, 0.2, 1);
 }
 
 .hover-lift:hover {
   transform: translateY(-4px);
   box-shadow: 0 12px 40px rgba(43, 48, 39, 0.12), 0 4px 12px rgba(43, 48, 39, 0.06);
+}
+
+/* Section padding utility */
+.section-padding {
+  padding-top: 5rem;
+  padding-bottom: 5rem;
+}
+
+@media (min-width: 768px) {
+  .section-padding {
+    padding-top: 7rem;
+    padding-bottom: 7rem;
+  }
+}
+
+@media (min-width: 1024px) {
+  .section-padding {
+    padding-top: 8rem;
+    padding-bottom: 8rem;
+  }
+}
+
+/* Page container utility */
+.page-container {
+  max-width: 80rem;
+  margin-left: auto;
+  margin-right: auto;
+  padding-left: 1.25rem;
+  padding-right: 1.25rem;
+}
+
+@media (min-width: 768px) {
+  .page-container {
+    padding-left: 2rem;
+    padding-right: 2rem;
+  }
+}
+
+@media (min-width: 1024px) {
+  .page-container {
+    padding-left: 3rem;
+    padding-right: 3rem;
+  }
+}
+
+/* Golden text gradient */
+.text-gradient {
+  background: linear-gradient(135deg, var(--fw-200) 0%, var(--fw-300) 50%, var(--ac-300) 100%);
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+  background-clip: text;
 }
 
 /* Gradient overlays */

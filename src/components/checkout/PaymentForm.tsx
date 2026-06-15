@@ -39,8 +39,8 @@ export default function PaymentForm({ value, onChange }: PaymentFormProps) {
   const showCardFields = value === 'credit-card' || value === 'debit-card';
 
   return (
-    <div className="space-y-6">
-      <RadioGroup value={value} onValueChange={(v) => onChange(v as PaymentMethod)} className="grid grid-cols-1 sm:grid-cols-2 gap-3">
+    <div className="space-y-8">
+      <RadioGroup value={value} onValueChange={(v) => onChange(v as PaymentMethod)} className="grid grid-cols-1 sm:grid-cols-2 gap-4">
         {paymentMethods.map((method) => {
           const Icon = iconMap[method.icon] || CreditCard;
           const isSelected = value === method.id;
@@ -48,7 +48,7 @@ export default function PaymentForm({ value, onChange }: PaymentFormProps) {
             <label
               key={method.id}
               htmlFor={`payment-${method.id}`}
-              className={`flex items-center gap-3 p-4 rounded-xl border-2 cursor-pointer transition-all ${
+              className={`flex items-center gap-4 p-5 rounded-xl border-2 cursor-pointer transition-all ${
                 isSelected
                   ? 'border-ag-100 bg-ag-100/5 shadow-soft'
                   : 'border-ag-500/20 hover:border-ag-500/40 bg-white'
@@ -56,7 +56,7 @@ export default function PaymentForm({ value, onChange }: PaymentFormProps) {
             >
               <RadioGroupItem value={method.id} id={`payment-${method.id}`} className="sr-only" />
               <div
-                className={`w-10 h-10 rounded-lg flex items-center justify-center shrink-0 ${
+                className={`w-11 h-11 rounded-lg flex items-center justify-center shrink-0 ${
                   isSelected ? 'bg-ag-100 text-white' : 'bg-ag-800/30 text-ag-300'
                 }`}
               >
@@ -78,7 +78,7 @@ export default function PaymentForm({ value, onChange }: PaymentFormProps) {
       </RadioGroup>
 
       {showCardFields && (
-        <div className="bg-white rounded-xl border border-ag-500/20 p-4 space-y-4">
+        <div className="bg-white rounded-xl border border-ag-500/20 p-5 md:p-6 space-y-5">
           <h4 className="font-heading font-semibold text-sm text-ag-200">Card Details</h4>
           <div className="space-y-2">
             <Label htmlFor="cardNumber" className="font-body text-sm text-ag-200">
@@ -89,7 +89,7 @@ export default function PaymentForm({ value, onChange }: PaymentFormProps) {
               placeholder="1234 5678 9012 3456"
               value={cardNumber}
               onChange={(e) => setCardNumber(formatCardNumber(e.target.value))}
-              className="h-11 rounded-xl border-ag-500/40 bg-white font-body text-sm focus-visible:ring-fw-300/30 focus-visible:border-fw-300"
+              className="h-12 rounded-xl border-ag-500/40 bg-white font-body text-sm focus-visible:ring-fw-300/30 focus-visible:border-fw-300"
             />
           </div>
           <div className="grid grid-cols-2 gap-4">
@@ -102,7 +102,7 @@ export default function PaymentForm({ value, onChange }: PaymentFormProps) {
                 placeholder="MM/YY"
                 value={expiry}
                 onChange={(e) => setExpiry(formatExpiry(e.target.value))}
-                className="h-11 rounded-xl border-ag-500/40 bg-white font-body text-sm focus-visible:ring-fw-300/30 focus-visible:border-fw-300"
+                className="h-12 rounded-xl border-ag-500/40 bg-white font-body text-sm focus-visible:ring-fw-300/30 focus-visible:border-fw-300"
               />
             </div>
             <div className="space-y-2">
@@ -114,7 +114,7 @@ export default function PaymentForm({ value, onChange }: PaymentFormProps) {
                 placeholder="123"
                 value={cvv}
                 onChange={(e) => setCvv(e.target.value.replace(/\D/g, '').slice(0, 4))}
-                className="h-11 rounded-xl border-ag-500/40 bg-white font-body text-sm focus-visible:ring-fw-300/30 focus-visible:border-fw-300"
+                className="h-12 rounded-xl border-ag-500/40 bg-white font-body text-sm focus-visible:ring-fw-300/30 focus-visible:border-fw-300"
               />
             </div>
           </div>
@@ -122,16 +122,16 @@ export default function PaymentForm({ value, onChange }: PaymentFormProps) {
       )}
 
       {value === 'paypal' && (
-        <div className="bg-white rounded-xl border border-ag-500/20 p-4 text-center">
-          <p className="text-sm font-body text-ag-300">
+        <div className="bg-white rounded-xl border border-ag-500/20 p-5 md:p-6 text-center">
+          <p className="text-sm font-body text-ag-300 leading-relaxed">
             You will be redirected to PayPal to complete your payment after placing the order.
           </p>
         </div>
       )}
 
       {value === 'cod' && (
-        <div className="bg-white rounded-xl border border-ag-500/20 p-4 text-center">
-          <p className="text-sm font-body text-ag-300">
+        <div className="bg-white rounded-xl border border-ag-500/20 p-5 md:p-6 text-center">
+          <p className="text-sm font-body text-ag-300 leading-relaxed">
             Pay with cash when your order is delivered to your doorstep.
           </p>
         </div>

@@ -35,7 +35,7 @@ function RatingOption({
   return (
     <button
       onClick={onClick}
-      className={`flex items-center gap-2 w-full px-3 py-2 rounded-lg text-sm font-body transition-colors ${
+      className={`flex items-center gap-2.5 w-full px-3 py-2.5 rounded-lg text-sm font-body transition-colors ${
         selected
           ? 'bg-fw-500 text-fw-100'
           : 'text-ag-200 hover:bg-ag-800'
@@ -45,7 +45,7 @@ function RatingOption({
         {[1, 2, 3, 4, 5].map((star) => (
           <Star
             key={star}
-            className={`size-3.5 ${
+            className={`size-4 ${
               star <= rating
                 ? 'fill-fw-300 text-fw-300'
                 : 'fill-ag-500 text-ag-500'
@@ -71,16 +71,16 @@ export default function SearchFilters({
   hasActiveFilters,
 }: SearchFiltersProps) {
   return (
-    <div className="flex flex-col gap-6">
+    <div className="flex flex-col gap-8">
       {/* Header */}
       <div className="flex items-center justify-between">
-        <h3 className="font-heading font-semibold text-ag-100">Filters</h3>
+        <h3 className="font-heading font-bold text-base text-ag-100">Filters</h3>
         {hasActiveFilters && (
           <Button
             variant="ghost"
             size="sm"
             onClick={onClearAll}
-            className="text-xs text-ag-300 hover:text-ag-100 h-7 px-2"
+            className="text-xs text-ag-300 hover:text-ag-100 h-8 px-2"
           >
             <X className="size-3 mr-1" />
             Clear All
@@ -92,21 +92,21 @@ export default function SearchFilters({
 
       {/* Categories */}
       <div>
-        <h4 className="font-heading font-medium text-sm text-ag-100 mb-3">
+        <h4 className="font-heading font-semibold text-sm text-ag-100 mb-4">
           Category
         </h4>
-        <div className="flex flex-col gap-2 max-h-64 overflow-y-auto">
+        <div className="flex flex-col gap-2.5 max-h-64 overflow-y-auto">
           {categories.map((cat) => (
             <label
               key={cat.slug}
-              className="flex items-center gap-2.5 cursor-pointer group"
+              className="flex items-center gap-3 cursor-pointer group"
             >
               <Checkbox
                 checked={selectedCategories.includes(cat.slug)}
                 onCheckedChange={(checked) =>
                   onCategoryChange(cat.slug, !!checked)
                 }
-                className="border-ag-400 data-[state=checked]:bg-ag-100 data-[state=checked]:border-ag-100"
+                className="border-ag-400 data-[state=checked]:bg-ag-100 data-[state=checked]:border-ag-100 size-4"
               />
               <span className="text-sm font-body text-ag-200 group-hover:text-ag-100 transition-colors">
                 {cat.name}
@@ -123,29 +123,29 @@ export default function SearchFilters({
 
       {/* Price Range */}
       <div>
-        <h4 className="font-heading font-medium text-sm text-ag-100 mb-3">
+        <h4 className="font-heading font-semibold text-sm text-ag-100 mb-4">
           Price Range
         </h4>
-        <div className="flex items-center gap-2">
+        <div className="flex items-center gap-3">
           <div className="flex-1">
-            <Label className="text-xs text-ag-300 font-body mb-1">Min</Label>
+            <Label className="text-xs text-ag-300 font-body mb-1.5 block">Min</Label>
             <Input
               type="number"
               placeholder="$0"
               value={minPrice}
               onChange={(e) => onMinPriceChange(e.target.value)}
-              className="h-9 text-sm font-body bg-white border-ag-500/40"
+              className="h-11 text-sm font-body bg-white border-ag-500/40 rounded-xl"
             />
           </div>
           <span className="text-ag-400 mt-5">—</span>
           <div className="flex-1">
-            <Label className="text-xs text-ag-300 font-body mb-1">Max</Label>
+            <Label className="text-xs text-ag-300 font-body mb-1.5 block">Max</Label>
             <Input
               type="number"
               placeholder="Any"
               value={maxPrice}
               onChange={(e) => onMaxPriceChange(e.target.value)}
-              className="h-9 text-sm font-body bg-white border-ag-500/40"
+              className="h-11 text-sm font-body bg-white border-ag-500/40 rounded-xl"
             />
           </div>
         </div>
@@ -155,10 +155,10 @@ export default function SearchFilters({
 
       {/* Rating */}
       <div>
-        <h4 className="font-heading font-medium text-sm text-ag-100 mb-3">
+        <h4 className="font-heading font-semibold text-sm text-ag-100 mb-4">
           Rating
         </h4>
-        <div className="flex flex-col gap-1">
+        <div className="flex flex-col gap-1.5">
           {[4, 3, 2, 1].map((rating) => (
             <RatingOption
               key={rating}

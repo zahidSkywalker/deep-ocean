@@ -103,19 +103,19 @@ function ProductCard({ product }: { product: Product }) {
         </div>
 
         {/* Product Info */}
-        <div className="p-4">
+        <div className="p-5 md:p-6">
           {/* Vendor */}
-          <p className="text-xs text-fw-200 font-body font-medium mb-1 truncate">
+          <p className="text-xs text-fw-200 font-body font-medium mb-1.5 truncate">
             {product.vendor}
           </p>
 
           {/* Product Name */}
-          <h3 className="font-heading font-semibold text-sm text-ag-100 leading-snug mb-2 line-clamp-2 min-h-[2.5rem]">
+          <h3 className="font-heading font-semibold text-sm md:text-base text-ag-100 leading-snug mb-2 line-clamp-2 min-h-[2.5rem]">
             {product.name}
           </h3>
 
           {/* Rating */}
-          <div className="flex items-center gap-2 mb-3">
+          <div className="flex items-center gap-2 mb-2">
             <StarRating rating={product.rating} />
             <span className="text-xs text-ag-300 font-body">
               {product.rating} ({product.reviews})
@@ -124,7 +124,7 @@ function ProductCard({ product }: { product: Product }) {
 
           {/* Price */}
           <div className="flex items-center gap-2">
-            <span className="font-heading font-bold text-lg text-ag-100">
+            <span className="font-heading font-bold text-lg md:text-xl text-ag-100">
               ${product.price.toFixed(2)}
             </span>
             {product.originalPrice && (
@@ -156,12 +156,12 @@ function ProductSection({
   id?: string;
 }) {
   return (
-    <section id={id} className="py-16 sm:py-20 bg-white">
-      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+    <section id={id} className="py-20 md:py-28 bg-white">
+      <div className="max-w-7xl mx-auto px-5 md:px-8 lg:px-12">
         {/* Section Header */}
-        <div className="flex flex-col sm:flex-row sm:items-end sm:justify-between mb-10 gap-4">
+        <div className="flex flex-col sm:flex-row sm:items-end sm:justify-between mb-12 md:mb-14 gap-4">
           <div>
-            <h2 className="font-heading text-2xl sm:text-3xl font-bold text-ag-100 mb-2">
+            <h2 className="font-heading text-2xl md:text-3xl font-bold text-ag-100 mb-3">
               {title}
             </h2>
             <p className="text-ag-300 font-body max-w-md">
@@ -176,7 +176,7 @@ function ProductSection({
         </div>
 
         {/* Product Grid */}
-        <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-4 sm:gap-6">
+        <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-4 md:gap-6 lg:gap-8">
           {products.map((product) => (
             <ProductCard key={product.id} product={product} />
           ))}

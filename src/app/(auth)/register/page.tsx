@@ -80,38 +80,38 @@ export default function RegisterPage() {
 
   return (
     <div className="min-h-screen flex flex-col bg-fw-500">
-      <main className="flex-1 flex items-center justify-center py-12 px-4">
-        <div className="w-full max-w-md">
+      <main className="flex-1 flex items-center justify-center py-16 px-5">
+        <div className="w-full max-w-lg">
           <Breadcrumb
             items={[
               { label: 'Home', href: '/' },
               { label: 'Register' },
             ]}
           />
-          <div className="mt-4">
+          <div className="mt-6">
             <AuthForm
               title="Create Account"
               description="Join ArtisanMarket and start shopping"
               footer={
-                <p className="text-center text-sm font-body text-ag-300">
+                <p className="text-center text-sm md:text-base font-body text-ag-300">
                   Already have an account?{' '}
                   <Link
                     href="/login"
-                    className="text-fw-200 hover:text-fw-300 font-medium transition-colors"
+                    className="text-fw-200 hover:text-fw-300 font-semibold transition-colors"
                   >
                     Sign in
                   </Link>
                 </p>
               }
             >
-              <form onSubmit={handleSubmit(onSubmit)} className="space-y-4">
+              <form onSubmit={handleSubmit(onSubmit)} className="space-y-6">
                 {error && (
-                  <div className="bg-red-50 border border-red-200 text-red-700 text-sm font-body rounded-xl p-3">
+                  <div className="bg-red-50 border border-red-200 text-red-700 text-sm font-body rounded-xl p-4">
                     {error}
                   </div>
                 )}
 
-                <div className="grid grid-cols-2 gap-3">
+                <div className="grid grid-cols-2 gap-4">
                   <div className="space-y-2">
                     <Label htmlFor="firstName" className="font-body text-sm text-ag-200">
                       First Name
@@ -120,7 +120,7 @@ export default function RegisterPage() {
                       id="firstName"
                       placeholder="John"
                       {...register('firstName')}
-                      className="h-11 rounded-xl border-ag-500/40 bg-white font-body text-sm focus-visible:ring-fw-300/30 focus-visible:border-fw-300"
+                      className="h-12 rounded-xl border-ag-500/40 bg-white font-body text-sm focus-visible:ring-fw-300/30 focus-visible:border-fw-300"
                     />
                     {errors.firstName && (
                       <p className="text-red-500 text-sm font-body mt-1">{errors.firstName.message}</p>
@@ -134,7 +134,7 @@ export default function RegisterPage() {
                       id="lastName"
                       placeholder="Doe"
                       {...register('lastName')}
-                      className="h-11 rounded-xl border-ag-500/40 bg-white font-body text-sm focus-visible:ring-fw-300/30 focus-visible:border-fw-300"
+                      className="h-12 rounded-xl border-ag-500/40 bg-white font-body text-sm focus-visible:ring-fw-300/30 focus-visible:border-fw-300"
                     />
                     {errors.lastName && (
                       <p className="text-red-500 text-sm font-body mt-1">{errors.lastName.message}</p>
@@ -151,7 +151,7 @@ export default function RegisterPage() {
                     type="email"
                     placeholder="you@example.com"
                     {...register('email')}
-                    className="h-11 rounded-xl border-ag-500/40 bg-white font-body text-sm focus-visible:ring-fw-300/30 focus-visible:border-fw-300"
+                    className="h-12 rounded-xl border-ag-500/40 bg-white font-body text-sm focus-visible:ring-fw-300/30 focus-visible:border-fw-300"
                   />
                   {errors.email && (
                     <p className="text-red-500 text-sm font-body mt-1">{errors.email.message}</p>
@@ -168,7 +168,7 @@ export default function RegisterPage() {
                       type={showPassword ? 'text' : 'password'}
                       placeholder="At least 8 characters"
                       {...register('password')}
-                      className="h-11 rounded-xl border-ag-500/40 bg-white font-body text-sm pr-10 focus-visible:ring-fw-300/30 focus-visible:border-fw-300"
+                      className="h-12 rounded-xl border-ag-500/40 bg-white font-body text-sm pr-10 focus-visible:ring-fw-300/30 focus-visible:border-fw-300"
                     />
                     <button
                       type="button"
@@ -193,7 +193,7 @@ export default function RegisterPage() {
                       type={showConfirm ? 'text' : 'password'}
                       placeholder="Re-enter your password"
                       {...register('confirmPassword')}
-                      className="h-11 rounded-xl border-ag-500/40 bg-white font-body text-sm pr-10 focus-visible:ring-fw-300/30 focus-visible:border-fw-300"
+                      className="h-12 rounded-xl border-ag-500/40 bg-white font-body text-sm pr-10 focus-visible:ring-fw-300/30 focus-visible:border-fw-300"
                     />
                     <button
                       type="button"
@@ -210,19 +210,19 @@ export default function RegisterPage() {
                   )}
                 </div>
 
-                <div className="flex items-start gap-2 pt-1">
+                <div className="flex items-start gap-2.5 pt-1">
                   <Checkbox
                     id="terms"
                     {...register('terms')}
-                    className="rounded-[4px] border-ag-500/40 mt-0.5"
+                    className="rounded-[4px] border-ag-500/40 mt-0.5 size-4"
                   />
                   <Label htmlFor="terms" className="text-sm font-body text-ag-300 cursor-pointer leading-snug">
                     I agree to the{' '}
-                    <Link href="#" className="text-fw-200 hover:text-fw-300 transition-colors">
+                    <Link href="#" className="text-fw-200 hover:text-fw-300 font-medium transition-colors">
                       Terms of Service
                     </Link>{' '}
                     and{' '}
-                    <Link href="#" className="text-fw-200 hover:text-fw-300 transition-colors">
+                    <Link href="#" className="text-fw-200 hover:text-fw-300 font-medium transition-colors">
                       Privacy Policy
                     </Link>
                   </Label>
@@ -234,7 +234,7 @@ export default function RegisterPage() {
                 <Button
                   type="submit"
                   disabled={isLoading}
-                  className="w-full h-11 bg-ag-100 hover:bg-ag-200 text-white rounded-xl font-heading font-medium text-sm transition-colors"
+                  className="w-full h-12 md:h-13 bg-ag-100 hover:bg-ag-200 text-white rounded-xl font-heading font-medium text-base transition-colors"
                 >
                   {isLoading ? (
                     <>

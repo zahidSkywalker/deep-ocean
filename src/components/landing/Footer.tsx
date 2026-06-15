@@ -32,14 +32,14 @@ export default function Footer() {
   return (
     <footer className="bg-ag-100 text-white mt-auto">
       {/* Main Footer */}
-      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-12 sm:py-16">
-        <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-6 gap-8">
+      <div className="max-w-7xl mx-auto px-5 md:px-8 lg:px-12 py-16 md:py-20">
+        <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-6 gap-8 md:gap-12">
           {/* Brand Column */}
           <div className="col-span-2">
             {/* Logo */}
-            <a href="/" className="flex items-center gap-2 mb-4">
-              <div className="w-8 h-8 bg-white/10 rounded-lg flex items-center justify-center">
-                <span className="text-white font-heading font-bold text-sm">A</span>
+            <a href="/" className="flex items-center gap-2.5 mb-5">
+              <div className="w-9 h-9 bg-white/10 rounded-lg flex items-center justify-center">
+                <span className="text-white font-heading font-bold text-base">A</span>
               </div>
               <span className="font-heading font-bold text-xl tracking-tight">
                 Artisan<span className="text-fw-300">Market</span>
@@ -68,15 +68,15 @@ export default function Footer() {
           {/* Link Columns */}
           {footerSections.map((section) => (
             <div key={section.title}>
-              <h3 className="font-heading font-semibold text-sm text-white mb-4">
+              <h3 className="font-heading font-semibold text-sm md:text-base text-white mb-4">
                 {section.title}
               </h3>
-              <ul className="space-y-2.5">
+              <ul className="space-y-3">
                 {section.links.map((link) => (
                   <li key={link}>
                     <a
                       href="#"
-                      className="text-sm text-ag-400 hover:text-white transition-colors font-body"
+                      className="text-sm text-ag-400 hover:text-white hover:underline underline-offset-4 transition-colors font-body"
                     >
                       {link}
                     </a>
@@ -90,7 +90,7 @@ export default function Footer() {
 
       {/* Bottom Bar */}
       <div className="border-t border-white/10">
-        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-6">
+        <div className="max-w-7xl mx-auto px-5 md:px-8 lg:px-12 py-6">
           <div className="flex flex-col sm:flex-row items-center justify-between gap-4">
             {/* Copyright */}
             <p className="text-xs text-ag-500 font-body">

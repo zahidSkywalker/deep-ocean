@@ -99,21 +99,21 @@ function ProductCardGrid({ product }: { product: Product }) {
           )}
         </div>
         {/* Info */}
-        <div className="p-4">
-          <p className="text-xs text-fw-200 font-body font-medium mb-1 truncate">
+        <div className="p-5 md:p-6">
+          <p className="text-xs text-fw-200 font-body font-medium mb-1.5 truncate">
             {product.vendor}
           </p>
-          <h3 className="font-heading font-semibold text-sm text-ag-100 leading-snug mb-2 line-clamp-2 min-h-[2.5rem]">
+          <h3 className="font-heading font-semibold text-sm md:text-base text-ag-100 leading-snug mb-2 line-clamp-2 min-h-[2.5rem]">
             {product.name}
           </h3>
-          <div className="flex items-center gap-2 mb-3">
+          <div className="flex items-center gap-2 mb-2">
             <StarRating rating={product.rating} />
             <span className="text-xs text-ag-300 font-body">
               {product.rating} ({product.reviews})
             </span>
           </div>
           <div className="flex items-center gap-2">
-            <span className="font-heading font-bold text-lg text-ag-100">
+            <span className="font-heading font-bold text-lg md:text-xl text-ag-100">
               ${product.price.toFixed(2)}
             </span>
             {product.originalPrice && (
@@ -138,11 +138,11 @@ function ProductCardGrid({ product }: { product: Product }) {
 
 function ProductGridSkeleton() {
   return (
-    <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-3 xl:grid-cols-4 gap-4 sm:gap-6">
+    <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-3 xl:grid-cols-4 gap-4 md:gap-6 lg:gap-8">
       {Array.from({ length: 8 }).map((_, i) => (
         <div key={i} className="bg-white rounded-2xl border border-ag-500/20 overflow-hidden">
           <Skeleton className="aspect-square w-full" />
-          <div className="p-4 space-y-2">
+          <div className="p-5 space-y-2">
             <Skeleton className="h-3 w-20" />
             <Skeleton className="h-4 w-full" />
             <Skeleton className="h-4 w-3/4" />
@@ -277,7 +277,7 @@ function SearchContent() {
   return (
     <div className="min-h-screen flex flex-col bg-fw-500">
       <main className="flex-1">
-        <div className="max-w-7xl mx-auto px-4 md:px-8 lg:px-16 py-8 md:py-12">
+        <div className="max-w-7xl mx-auto px-5 md:px-8 lg:px-12 py-10 md:py-16 lg:py-20">
           {/* Breadcrumb */}
           <nav className="mb-6" aria-label="Breadcrumb">
             <ol className="flex items-center gap-1.5 text-sm font-body">
@@ -294,17 +294,17 @@ function SearchContent() {
           </nav>
 
           {/* Page Title */}
-          <div className="mb-8">
-            <h1 className="font-heading text-2xl sm:text-3xl font-bold text-ag-100 mb-2">
+          <div className="mb-10">
+            <h1 className="font-heading text-3xl md:text-4xl font-bold text-ag-100 mb-3">
               {query ? `Results for "${query}"` : 'Browse Products'}
             </h1>
-            <p className="text-ag-300 font-body">
+            <p className="text-ag-300 font-body text-sm md:text-base">
               Showing {displayResults.products.length} of {displayResults.total} products
             </p>
           </div>
 
           {/* Search Bar (top) */}
-          <form onSubmit={handleSearch} className="mb-8">
+          <form onSubmit={handleSearch} className="mb-10">
             <div className="relative max-w-2xl">
               <Search className="absolute left-4 top-1/2 -translate-y-1/2 size-5 text-ag-300 pointer-events-none" />
               <Input
@@ -319,23 +319,31 @@ function SearchContent() {
 
           {/* Active Filters */}
           {activeFilterBadges.length > 0 && (
-            <div className="flex items-center gap-2 flex-wrap mb-6">
+            <div className="flex items-center gap-2 flex-wrap mb-8">
               <span className="text-xs text-ag-300 font-body">Active:</span>
               {activeFilterBadges.map((badge) => (
                 <button
                   key={`${badge.type}-${badge.value}`}
                   onClick={() => removeFilter(badge.type, badge.value)}
-                  className="flex items-center gap-1 px-2.5 py-1 bg-ag-100 text-white text-xs font-body rounded-lg hover:bg-ag-200 transition-colors"
+                  className="flex items-center gap-1 px-3 py-1.5 bg-ag-100 text-white text-xs font-body rounded-lg hover:bg-ag-200 transition-colors"
                 >
                   {badge.label}
                   <X className="size-3" />
                 </button>
               ))}
+              <Button
+                variant="ghost"
+                size="sm"
+                onClick={clearAll}
+                className="text-xs text-ag-300 hover:text-ag-100 font-body h-8"
+              >
+                Clear All
+              </Button>
             </div>
           )}
 
           {/* Toolbar: Sort + Mobile Filter Button */}
-          <div className="flex items-center justify-between mb-6">
+          <div className="flex items-center justify-between mb-8">
             <div className="flex items-center gap-3">
               {/* Mobile filter trigger */}
               <Sheet>
@@ -370,7 +378,7 @@ function SearchContent() {
                 value={sortBy}
                 onValueChange={(v) => setSortBy(v as SortOption)}
               >
-                <SelectTrigger className="w-[200px] bg-white border-ag-500/40 rounded-xl font-body text-sm h-10">
+                <SelectTrigger className="w-[220px] bg-white border-ag-500/40 rounded-xl font-body text-sm h-11">
                   <SelectValue placeholder="Sort by" />
                 </SelectTrigger>
                 <SelectContent>
@@ -388,7 +396,7 @@ function SearchContent() {
                 variant="ghost"
                 size="sm"
                 onClick={clearAll}
-                className="text-xs text-ag-300 hover:text-ag-100 font-body h-8"
+                className="text-xs text-ag-300 hover:text-ag-100 font-body h-8 hidden lg:flex"
               >
                 Clear All Filters
               </Button>
@@ -396,10 +404,10 @@ function SearchContent() {
           </div>
 
           {/* Main Content: Sidebar + Grid */}
-          <div className="flex gap-8">
+          <div className="flex gap-8 lg:gap-10">
             {/* Desktop Sidebar */}
-            <aside className="hidden lg:block w-64 shrink-0">
-              <div className="sticky top-24 bg-fw-900 rounded-2xl border border-ag-500/20 p-6">
+            <aside className="hidden lg:block w-72 shrink-0">
+              <div className="sticky top-28 bg-fw-900 rounded-2xl border border-ag-500/20 p-6">
                 {filterContent}
               </div>
             </aside>
@@ -407,26 +415,26 @@ function SearchContent() {
             {/* Product Grid */}
             <div className="flex-1 min-w-0">
               {displayResults.products.length > 0 ? (
-                <div className="grid grid-cols-2 md:grid-cols-3 xl:grid-cols-4 gap-4 sm:gap-6">
+                <div className="grid grid-cols-2 md:grid-cols-3 xl:grid-cols-4 gap-4 md:gap-6 lg:gap-8">
                   {displayResults.products.map((product) => (
                     <ProductCardGrid key={product.id} product={product} />
                   ))}
                 </div>
               ) : (
-                <div className="flex flex-col items-center justify-center py-20">
-                  <div className="w-20 h-20 rounded-full bg-ag-800 flex items-center justify-center mb-6">
-                    <PackageSearch className="size-10 text-ag-300" />
+                <div className="flex flex-col items-center justify-center py-24 md:py-32">
+                  <div className="w-24 h-24 rounded-full bg-ag-800/50 flex items-center justify-center mb-8">
+                    <PackageSearch className="size-12 text-ag-300" />
                   </div>
-                  <h3 className="font-heading text-xl font-bold text-ag-100 mb-2">
+                  <h3 className="font-heading text-xl md:text-2xl font-bold text-ag-100 mb-3">
                     No products found
                   </h3>
-                  <p className="text-ag-300 font-body text-center max-w-sm mb-6">
+                  <p className="text-ag-300 font-body text-center max-w-md mb-8 text-sm md:text-base leading-relaxed">
                     Try adjusting your search or filter criteria to find what you&apos;re looking for.
                   </p>
                   <Button
                     onClick={clearAll}
                     variant="outline"
-                    className="border-ag-400 text-ag-200 hover:bg-ag-800/50 font-heading font-medium rounded-xl"
+                    className="border-ag-400 text-ag-200 hover:bg-ag-800/50 font-heading font-medium rounded-xl px-8"
                   >
                     Clear All Filters
                   </Button>
@@ -444,11 +452,11 @@ export default function SearchPage() {
   return (
     <Suspense
       fallback={
-        <div className="min-h-screen bg-fw-500 py-8 md:py-12">
-          <div className="max-w-7xl mx-auto px-4 md:px-8 lg:px-16">
+        <div className="min-h-screen bg-fw-500 py-10 md:py-16">
+          <div className="max-w-7xl mx-auto px-5 md:px-8 lg:px-12">
             <Skeleton className="h-8 w-64 mb-2" />
-            <Skeleton className="h-5 w-40 mb-8" />
-            <Skeleton className="h-12 w-full max-w-2xl mb-8" />
+            <Skeleton className="h-5 w-40 mb-10" />
+            <Skeleton className="h-12 w-full max-w-2xl mb-10" />
             <ProductGridSkeleton />
           </div>
         </div>

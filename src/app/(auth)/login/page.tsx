@@ -55,33 +55,33 @@ export default function LoginPage() {
 
   return (
     <div className="min-h-screen flex flex-col bg-fw-500">
-      <main className="flex-1 flex items-center justify-center py-12 px-4">
-        <div className="w-full max-w-md">
+      <main className="flex-1 flex items-center justify-center py-16 px-5">
+        <div className="w-full max-w-lg">
           <Breadcrumb
             items={[
               { label: 'Home', href: '/' },
               { label: 'Login' },
             ]}
           />
-          <div className="mt-4">
+          <div className="mt-6">
             <AuthForm
               title="Welcome Back"
               description="Sign in to your ArtisanMarket account"
               footer={
-                <p className="text-center text-sm font-body text-ag-300">
+                <p className="text-center text-sm md:text-base font-body text-ag-300">
                   Don&apos;t have an account?{' '}
                   <Link
                     href="/register"
-                    className="text-fw-200 hover:text-fw-300 font-medium transition-colors"
+                    className="text-fw-200 hover:text-fw-300 font-semibold transition-colors"
                   >
                     Register
                   </Link>
                 </p>
               }
             >
-              <form onSubmit={handleSubmit(onSubmit)} className="space-y-4">
+              <form onSubmit={handleSubmit(onSubmit)} className="space-y-6">
                 {error && (
-                  <div className="bg-red-50 border border-red-200 text-red-700 text-sm font-body rounded-xl p-3">
+                  <div className="bg-red-50 border border-red-200 text-red-700 text-sm font-body rounded-xl p-4">
                     {error}
                   </div>
                 )}
@@ -95,7 +95,7 @@ export default function LoginPage() {
                     type="email"
                     placeholder="you@example.com"
                     {...register('email')}
-                    className="h-11 rounded-xl border-ag-500/40 bg-white font-body text-sm focus-visible:ring-fw-300/30 focus-visible:border-fw-300"
+                    className="h-12 rounded-xl border-ag-500/40 bg-white font-body text-sm focus-visible:ring-fw-300/30 focus-visible:border-fw-300"
                   />
                   {errors.email && (
                     <p className="text-red-500 text-sm font-body mt-1">{errors.email.message}</p>
@@ -112,7 +112,7 @@ export default function LoginPage() {
                       type={showPassword ? 'text' : 'password'}
                       placeholder="Enter your password"
                       {...register('password')}
-                      className="h-11 rounded-xl border-ag-500/40 bg-white font-body text-sm pr-10 focus-visible:ring-fw-300/30 focus-visible:border-fw-300"
+                      className="h-12 rounded-xl border-ag-500/40 bg-white font-body text-sm pr-10 focus-visible:ring-fw-300/30 focus-visible:border-fw-300"
                     />
                     <button
                       type="button"
@@ -129,14 +129,14 @@ export default function LoginPage() {
 
                 <div className="flex items-center justify-between">
                   <div className="flex items-center gap-2">
-                    <Checkbox id="remember" className="rounded-[4px] border-ag-500/40" />
+                    <Checkbox id="remember" className="rounded-[4px] border-ag-500/40 size-4" />
                     <Label htmlFor="remember" className="text-sm font-body text-ag-300 cursor-pointer">
                       Remember me
                     </Label>
                   </div>
                   <Link
                     href="#"
-                    className="text-sm font-body text-fw-200 hover:text-fw-300 transition-colors"
+                    className="text-sm font-body text-fw-200 hover:text-fw-300 font-medium transition-colors"
                   >
                     Forgot password?
                   </Link>
@@ -145,7 +145,7 @@ export default function LoginPage() {
                 <Button
                   type="submit"
                   disabled={isLoading}
-                  className="w-full h-11 bg-ag-100 hover:bg-ag-200 text-white rounded-xl font-heading font-medium text-sm transition-colors"
+                  className="w-full h-12 md:h-13 bg-ag-100 hover:bg-ag-200 text-white rounded-xl font-heading font-medium text-base transition-colors"
                 >
                   {isLoading ? (
                     <>

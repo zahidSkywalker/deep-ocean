@@ -11,17 +11,14 @@ interface AuthFormProps {
 
 export default function AuthForm({ title, description, children, footer }: AuthFormProps) {
   return (
-    <div className="w-full max-w-md mx-auto">
-      <div className="bg-white rounded-2xl shadow-soft p-8 md:p-10">
-        <div className="text-center mb-8">
-          <div className="w-12 h-12 bg-ag-100 rounded-xl flex items-center justify-center mx-auto mb-4">
-            <span className="text-white font-heading font-bold text-lg">A</span>
-          </div>
-          <h1 className="text-2xl font-heading font-bold text-ag-100">{title}</h1>
-          <p className="text-ag-300 text-sm font-body mt-1">{description}</p>
+    <div className="w-full max-w-lg mx-auto">
+      <div className="bg-white rounded-2xl shadow-soft p-10 md:p-12">
+        <div className="text-center mb-10">
+          <h1 className="text-2xl md:text-3xl font-heading font-bold text-ag-100">{title}</h1>
+          <p className="text-ag-300 text-sm md:text-base font-body mt-2">{description}</p>
         </div>
         {children}
-        {footer && <div className="mt-6 pt-6 border-t border-ag-500/20">{footer}</div>}
+        {footer && <div className="mt-8 pt-8 border-t border-ag-500/20">{footer}</div>}
       </div>
     </div>
   );

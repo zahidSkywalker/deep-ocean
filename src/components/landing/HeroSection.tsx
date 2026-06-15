@@ -26,37 +26,37 @@ export default function HeroSection() {
       <div className="absolute top-20 left-10 w-72 h-72 bg-fw-300/10 rounded-full blur-3xl" />
       <div className="absolute bottom-10 right-10 w-96 h-96 bg-ac-300/10 rounded-full blur-3xl" />
 
-      <div className="relative max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-16 sm:py-20 lg:py-28">
+      <div className="relative max-w-7xl mx-auto px-5 md:px-8 lg:px-12 py-24 md:py-32 lg:py-40">
         <div className="text-center max-w-3xl mx-auto">
           {/* Badge */}
-          <div className="inline-flex items-center gap-2 bg-white/60 backdrop-blur-sm border border-ag-500/30 rounded-full px-4 py-1.5 mb-6">
+          <div className="inline-flex items-center gap-2 bg-white/60 backdrop-blur-sm border border-ag-500/30 rounded-full px-5 py-2 mb-8">
             <Sparkles className="size-4 text-fw-300" />
             <span className="text-sm font-medium text-ag-200 font-body">Discover curated products from 850+ vendors</span>
           </div>
 
           {/* Heading */}
-          <h1 className="font-heading text-4xl sm:text-5xl lg:text-6xl font-bold text-ag-100 leading-tight mb-6">
+          <h1 className="font-heading text-5xl md:text-6xl lg:text-7xl font-bold text-ag-100 leading-tight mb-4">
             Your Marketplace for
             <span className="block text-fw-200 mt-1">Unique Finds</span>
           </h1>
 
           {/* Subtext */}
-          <p className="text-lg sm:text-xl text-ag-200 mb-8 font-body leading-relaxed max-w-2xl mx-auto">
+          <p className="text-lg md:text-xl text-ag-200 mb-10 font-body leading-relaxed max-w-2xl mx-auto">
             Explore handcrafted goods, premium products, and exclusive items from trusted vendors around the world.
           </p>
 
           {/* Search Bar */}
-          <div className="relative max-w-2xl mx-auto mb-10">
+          <div className="relative max-w-2xl mx-auto mb-12">
             <div className="flex items-center bg-white rounded-2xl shadow-soft-lg border border-ag-500/30 overflow-hidden">
-              <Search className="size-5 text-ag-400 ml-4 shrink-0" />
+              <Search className="size-5 text-ag-400 ml-5 shrink-0" />
               <Input
                 type="text"
                 placeholder="What are you looking for?"
                 value={searchQuery}
                 onChange={(e) => setSearchQuery(e.target.value)}
-                className="flex-1 h-14 px-3 border-0 rounded-none shadow-none text-base font-body placeholder:text-ag-400 focus-visible:ring-0 focus-visible:border-0"
+                className="flex-1 h-16 px-4 border-0 rounded-none shadow-none text-base font-body placeholder:text-ag-400 focus-visible:ring-0 focus-visible:border-0"
               />
-              <Button className="m-2 bg-ag-100 hover:bg-ag-200 text-white rounded-xl px-6 h-10 font-heading font-semibold shrink-0">
+              <Button className="m-2 bg-ag-100 hover:bg-ag-200 text-white rounded-xl px-6 h-12 font-heading font-semibold shrink-0">
                 Search
               </Button>
             </div>
@@ -89,11 +89,11 @@ export default function HeroSection() {
         </div>
 
         {/* Stats */}
-        <div className="mt-16 sm:mt-20 grid grid-cols-2 lg:grid-cols-4 gap-4 sm:gap-8 max-w-3xl mx-auto">
+        <div className="mt-20 sm:mt-24 grid grid-cols-2 lg:grid-cols-4 gap-4 md:gap-6 lg:gap-8 max-w-3xl mx-auto">
           {stats.map((stat) => (
-            <div key={stat.label} className="text-center p-4 bg-white/50 backdrop-blur-sm rounded-2xl border border-ag-500/20">
-              <div className="font-heading text-2xl sm:text-3xl font-bold text-ag-100">{stat.value}</div>
-              <div className="text-sm text-ag-300 font-body mt-1">{stat.label}</div>
+            <div key={stat.label} className="text-center p-6 md:p-8 bg-white/50 backdrop-blur-sm rounded-2xl border border-ag-500/20">
+              <div className="font-heading text-2xl md:text-3xl font-bold text-ag-100">{stat.value}</div>
+              <div className="text-sm text-ag-300 font-body mt-1.5">{stat.label}</div>
             </div>
           ))}
         </div>

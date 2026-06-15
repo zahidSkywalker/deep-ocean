@@ -30,15 +30,15 @@ export default function ProductImageGallery({
 
       {/* Thumbnails */}
       {images.length > 1 && (
-        <div className="flex gap-3">
+        <div className="flex gap-3 md:gap-4 pt-4">
           {images.map((image, index) => (
             <button
               key={index}
               onClick={() => setSelectedIndex(index)}
-              className={`relative w-20 h-20 rounded-xl overflow-hidden border-2 transition-all duration-200 ${
+              className={`relative w-20 h-20 md:w-24 md:h-24 rounded-xl overflow-hidden border-2 transition-all duration-200 ${
                 index === selectedIndex
-                  ? 'border-fw-300 ring-2 ring-fw-300/30'
-                  : 'border-ag-500/30 hover:border-ag-400'
+                  ? 'border-fw-300 ring-2 ring-fw-300/30 bg-fw-500/30'
+                  : 'border-ag-500/30 hover:border-ag-400 bg-transparent'
               }`}
             >
               <Image
@@ -46,7 +46,7 @@ export default function ProductImageGallery({
                 alt={`${productName} thumbnail ${index + 1}`}
                 fill
                 className="object-cover"
-                sizes="80px"
+                sizes="96px"
               />
             </button>
           ))}

@@ -34,12 +34,12 @@ function AnnouncementBar() {
 
 function DesktopNav() {
   return (
-    <nav className="hidden lg:flex items-center gap-1">
+    <nav className="hidden lg:flex items-center gap-2">
       {navLinks.map((link) => (
         <a
           key={link.label}
           href={link.href}
-          className="px-3 py-2 text-sm font-medium text-ag-200 hover:text-ag-100 hover:bg-ag-800/50 rounded-lg transition-colors font-heading"
+          className="px-4 py-2 text-sm font-medium text-ag-200 hover:text-ag-100 hover:bg-ag-800/50 rounded-lg transition-colors font-heading"
         >
           {link.label}
         </a>
@@ -92,7 +92,7 @@ function SearchBar() {
   };
 
   return (
-    <form onSubmit={handleSubmit} className="relative flex-1 max-w-xl mx-4 lg:mx-8">
+    <form onSubmit={handleSubmit} className="relative flex-1 max-w-xl mx-6 lg:mx-8">
       <div className="relative">
         <Search className="absolute left-3 top-1/2 -translate-y-1/2 size-4 text-ag-300 pointer-events-none" />
         <Input
@@ -100,7 +100,7 @@ function SearchBar() {
           placeholder="Search products, vendors, categories..."
           value={query}
           onChange={(e) => setQuery(e.target.value)}
-          className="w-full h-10 pl-10 pr-4 bg-white border-ag-500/60 rounded-xl text-sm font-body placeholder:text-ag-400 focus-visible:ring-fw-300/30 focus-visible:border-fw-300"
+          className="w-full h-11 pl-11 pr-4 bg-white border-ag-500/60 rounded-xl text-sm font-body placeholder:text-ag-400 focus-visible:ring-fw-300/30 focus-visible:border-fw-300"
         />
       </div>
     </form>
@@ -140,7 +140,7 @@ function HeaderIcons() {
   const isAuthenticated = useAuthStore((s) => s.isAuthenticated);
 
   return (
-    <div className="flex items-center gap-1">
+    <div className="flex items-center gap-2">
       <Button variant="ghost" size="icon" asChild className="relative text-ag-200 hover:text-ag-100 hover:bg-ag-800/50">
         <Link href="/cart">
           <ShoppingCart className="size-5" />
@@ -183,12 +183,12 @@ export default function Header() {
             : 'bg-white shadow-sm'
         }`}
       >
-        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-          <div className="flex items-center justify-between h-16">
+        <div className="max-w-7xl mx-auto px-5 md:px-8 lg:px-12">
+          <div className="flex items-center justify-between h-18 md:h-20">
             {/* Logo */}
-            <a href="/" className="flex items-center gap-2 shrink-0">
-              <div className="w-8 h-8 bg-ag-100 rounded-lg flex items-center justify-center">
-                <span className="text-white font-heading font-bold text-sm">A</span>
+            <a href="/" className="flex items-center gap-2.5 shrink-0">
+              <div className="w-9 h-9 bg-ag-100 rounded-lg flex items-center justify-center">
+                <span className="text-white font-heading font-bold text-base">A</span>
               </div>
               <span className="font-heading font-bold text-xl text-ag-100 tracking-tight hidden sm:block">
                 Artisan<span className="text-fw-300">Market</span>
@@ -211,7 +211,7 @@ export default function Header() {
           </div>
 
           {/* Mobile Search */}
-          <div className="md:hidden pb-3">
+          <div className="md:hidden pb-4">
             <SearchBar />
           </div>
         </div>
