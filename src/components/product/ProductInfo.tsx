@@ -34,7 +34,7 @@ export default function ProductInfo({ product, vendor }: ProductInfoProps) {
   }
 
   return (
-    <div className="flex flex-col gap-6">
+    <div className="flex flex-col gap-5 md:gap-6 lg:gap-7">
       {/* Vendor */}
       {vendor && (
         <Link
@@ -51,12 +51,12 @@ export default function ProductInfo({ product, vendor }: ProductInfoProps) {
       </h1>
 
       {/* Rating */}
-      <div className="flex items-center gap-2">
+      <div className="flex items-center gap-2.5">
         <div className="flex items-center gap-0.5">
           {[1, 2, 3, 4, 5].map((star) => (
             <Star
               key={star}
-              className={`size-4 ${
+              className={`size-[18px] ${
                 star <= Math.floor(product.rating)
                   ? 'fill-fw-300 text-fw-300'
                   : star <= product.rating
@@ -66,7 +66,7 @@ export default function ProductInfo({ product, vendor }: ProductInfoProps) {
             />
           ))}
         </div>
-        <span className="text-sm text-ag-300 font-body">
+        <span className="text-sm md:text-base text-ag-300 font-body">
           {product.rating} ({product.reviews} reviews)
         </span>
       </div>
@@ -91,7 +91,7 @@ export default function ProductInfo({ product, vendor }: ProductInfoProps) {
       <Separator className="bg-ag-500/30" />
 
       {/* Short description */}
-      <p className="text-ag-200 font-body text-sm md:text-base leading-relaxed">
+      <p className="text-ag-200 font-body text-base leading-relaxed">
         {product.description}
       </p>
 
@@ -115,7 +115,7 @@ export default function ProductInfo({ product, vendor }: ProductInfoProps) {
       </div>
 
       {/* Quantity + Add to Cart */}
-      <div className="flex items-center gap-4">
+      <div className="flex items-center gap-4 md:gap-5">
         {/* Quantity Selector */}
         <div className="flex items-center border border-ag-500/40 rounded-xl overflow-hidden">
           <Button
@@ -127,7 +127,7 @@ export default function ProductInfo({ product, vendor }: ProductInfoProps) {
           >
             <Minus className="size-4" />
           </Button>
-          <span className="w-12 text-center font-heading font-semibold text-ag-100">
+          <span className="w-14 text-center font-heading font-semibold text-lg text-ag-100">
             {quantity}
           </span>
           <Button
@@ -156,14 +156,14 @@ export default function ProductInfo({ product, vendor }: ProductInfoProps) {
       <Button
         variant="outline"
         onClick={() => toggleItem(product.id)}
-        className={`h-12 rounded-xl font-heading font-medium border-ag-500/40 ${
+        className={`w-full h-12 rounded-xl font-heading font-medium border-ag-500/40 transition-all ${
           wishlisted
-            ? 'border-red-300 text-red-500 hover:bg-red-50'
-            : 'text-ag-200 hover:bg-ag-800'
+            ? 'border-red-300 text-red-500 hover:bg-red-50 hover:border-red-400'
+            : 'text-ag-200 hover:bg-ag-800 hover:border-ag-400'
         }`}
       >
         <Heart
-          className={`size-4 mr-2 ${
+          className={`size-5 mr-2 ${
             wishlisted ? 'fill-red-500 text-red-500' : ''
           }`}
         />

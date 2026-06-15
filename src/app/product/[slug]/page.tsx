@@ -62,10 +62,10 @@ export default async function ProductPage({ params }: { params: Promise<{ slug: 
 
           {/* Description Section */}
           <section className="mb-16 md:mb-20 lg:mb-24">
-            <h2 className="font-heading text-2xl md:text-3xl font-bold text-ag-100 mb-4">
+            <h2 className="font-heading text-2xl md:text-3xl font-bold text-ag-100 mb-6">
               Description
             </h2>
-            <p className="text-ag-200 font-body leading-relaxed max-w-4xl text-sm md:text-base">
+            <p className="text-ag-200 font-body leading-relaxed max-w-4xl text-base md:text-lg">
               {product.description}
             </p>
           </section>
