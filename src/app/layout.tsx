@@ -1,9 +1,10 @@
 import type { Metadata } from "next";
 import "./globals.css";
+import { Toaster } from "@/components/ui/sonner";
 
 export const metadata: Metadata = {
-  title: "Farm Village — A Pixel Life",
-  description: "A cozy auto-playing slice-of-life farm village built with pixel art",
+  title: "Artisan Market — Discover Unique Products from Top Vendors",
+  description: "A premium multi-vendor marketplace connecting you with curated products from the world's finest artisans and brands.",
 };
 
 export default function RootLayout({
@@ -13,8 +14,14 @@ export default function RootLayout({
 }>) {
   return (
     <html lang="en">
-      <body className="m-0 p-0 overflow-hidden bg-black w-screen h-screen">
+      <head>
+        <link rel="preconnect" href="https://fonts.googleapis.com" />
+        <link rel="preconnect" href="https://fonts.gstatic.com" crossOrigin="anonymous" />
+        <link href="https://fonts.googleapis.com/css2?family=Ranade:wght@400;500;600;700&family=Nunito:wght@300;400;500;600;700&display=swap" rel="stylesheet" />
+      </head>
+      <body className="min-h-screen flex flex-col font-body antialiased">
         {children}
+        <Toaster />
       </body>
     </html>
   );
