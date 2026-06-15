@@ -141,3 +141,55 @@ Stage Summary:
 - Responsive: mobile hamburger menu, responsive grids
 - File: src/app/page.tsx (main), src/components/landing/ (11 component files)
 - Ready for Session 2: product detail pages, cart, checkout
+---
+Task ID: s2-1
+Agent: Main
+Task: Build product detail, search pages, data layer, and stores
+
+Work Log:
+- Created comprehensive TypeScript types in src/types/index.ts (Product, CartItem, Category, Vendor, SearchFilters, SortOption, SearchResult)
+- Created data layer with 4 config files:
+  - src/data/categories.ts: 8 categories with slugs, descriptions + categorySlugMap
+  - src/data/products.ts: 20 products (16 original + 4 new) with full data: slug, description, images array (4 each), stock, sku, tags, specifications, createdAt
+  - src/data/vendors.ts: 16 vendors with slugs, joinDate, location, totalSales, verificationStatus, coverImages
+  - src/data/navigation.ts: navLinks + siteConfig with contact, social links, currency
+  - src/data/index.ts: re-exports
+- Created src/lib/product-service.ts: 7 data access functions (getProductBySlug, getProductsByCategory, getProductsByVendor, getRelatedProducts, searchProducts, getVendorBySlug, getCategoryBySlug, getCategories)
+- Created Zustand cart store (src/store/useCartStore.ts): addItem, removeItem, updateQuantity, clearCart + getTotalItems, getSubtotal, getTotalSavings helpers + localStorage persistence
+- Created Zustand wishlist store (src/store/useWishlistStore.ts): toggleItem, isWishlisted + localStorage persistence
+- Created shared Breadcrumb component (src/components/shared/Breadcrumb.tsx)
+- Created ProductImageGallery component (src/components/product/ProductImageGallery.tsx): main image + thumbnail navigation using next/image
+- Created ProductInfo component (src/components/product/ProductInfo.tsx): vendor link, rating stars, price/sale display, quantity selector, Add to Cart, Wishlist toggle, stock status, tags
+- Created SearchFilters component (src/components/search/SearchFilters.tsx): category checkboxes, price range inputs, rating filter, clear all
+- Created Product Detail Page (src/app/product/[slug]/page.tsx): generateStaticParams for all 20 products, breadcrumb, image gallery, product info, description, specifications table, related products section
+- Created custom not-found page (src/app/product/[slug]/not-found.tsx): proper "Product Not Found" UI
+- Created Search Page (src/app/search/page.tsx): full client-side search with filters sidebar (desktop), Sheet mobile filters, sort dropdown, search bar, active filter badges, empty state, product grid with linked cards
+- Updated src/components/landing/data.ts: added slug fields to categories and products (backward compatible with optional slug)
+- Updated src/components/landing/Header.tsx: search bar now navigates to /search?q=... on submit, cart icon shows live item count from useCartStore
+- Updated src/components/landing/CategoryGrid.tsx: category cards wrapped in Link to /search?category=slug
+- Updated src/components/landing/ProductSection.tsx: product cards wrapped in Link to /product/[slug], Add to Cart wired to useCartStore, wishlist wired to useWishlistStore, "View All Products" links to /search
+- Build verified: compiled successfully with all 20 product pages statically generated
+
+Files Created:
+- src/types/index.ts
+- src/data/categories.ts
+- src/data/products.ts
+- src/data/vendors.ts
+- src/data/navigation.ts
+- src/data/index.ts
+- src/lib/product-service.ts
+- src/store/useCartStore.ts
+- src/store/useWishlistStore.ts
+- src/components/shared/Breadcrumb.tsx
+- src/components/product/ProductImageGallery.tsx
+- src/components/product/ProductInfo.tsx
+- src/components/search/SearchFilters.tsx
+- src/app/product/[slug]/page.tsx
+- src/app/product/[slug]/not-found.tsx
+- src/app/search/page.tsx
+
+Files Modified:
+- src/components/landing/data.ts (added slug fields)
+- src/components/landing/Header.tsx (search navigation, cart count)
+- src/components/landing/CategoryGrid.tsx (Link wrapping)
+- src/components/landing/ProductSection.tsx (Link wrapping, cart/wishlist integration)

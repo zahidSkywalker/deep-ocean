@@ -1,0 +1,902 @@
+     1→'use client';
+     2→
+     3→import React, {
+     4→  useState,
+     5→  useRef,
+     6→  useEffect,
+     7→  useCallback,
+     8→  type FormEvent,
+     9→  type KeyboardEvent,
+    10→} from 'react';
+    11→import ReactMarkdown from 'react-markdown';
+    12→import remarkGfm from 'remark-gfm';
+    13→import { motion, AnimatePresence } from 'framer-motion';
+    14→import {
+    15→  Send,
+    16→  Square,
+    17→  Settings2,
+    18→  Copy,
+    19→  Check,
+    20→  Bot,
+    21→  ChevronDown,
+    22→  X,
+    23→  Sparkles,
+    24→  ArrowDown,
+    25→  RotateCcw,
+    26→  AlertCircle,
+    27→} from 'lucide-react';
+    28→import { AI_CONFIG, EXAMPLE_PROMPTS } from '@/lib/ai-config';
+    29→
+    30→// ─── Types ────────────────────────────────────────────────────────────────────
+    31→
+    32→type Message = {
+    33→  id: string;
+    34→  role: 'user' | 'assistant';
+    35→  content: string;
+    36→};
+    37→
+    38→// ─── Helper ──────────────────────────────────────────────────────────────────
+    39→
+    40→function generateId(): string {
+    41→  return `${Date.now()}-${Math.random().toString(36).slice(2, 9)}`;
+    42→}
+    43→
+    44→// ─── Code Block Component ───────────────────────────────────────────────────
+    45→
+    46→function CodeBlock({
+    47→  children,
+    48→  className,
+    49→}: {
+    50→  children: React.ReactNode;
+    51→  className?: string;
+    52→}) {
+    53→  const [copied, setCopied] = useState(false);
+    54→  const match = /language-(\w+)/.exec(className || '');
+    55→  const language = match ? match[1] : '';
+    56→  const codeRef = useRef<HTMLDivElement>(null);
+    57→
+    58→  const handleCopy = () => {
+    59→    const text = codeRef.current?.innerText || '';
+    60→    navigator.clipboard.writeText(text).then(() => {
+    61→      setCopied(true);
+    62→      setTimeout(() => setCopied(false), 2000);
+    63→    });
+    64→  };
+    65→
+    66→  return (
+    67→    <div className="group relative my-4 rounded-xl overflow-hidden border border-white/[0.08] bg-[#0d1117]">
+    68→      {/* Language label and copy */}
+    69→      <div className="flex items-center justify-between px-4 py-2 bg-white/[0.04] border-b border-white/[0.06]">
+    70→        <span className="text-xs text-zinc-500 font-mono uppercase tracking-wider">
+    71→          {language || 'code'}
+    72→        </span>
+    73→        <button
+    74→          onClick={handleCopy}
+    75→          className="flex items-center gap-1.5 text-xs text-zinc-500 hover:text-zinc-300 transition-colors px-2 py-1 rounded-md hover:bg-white/[0.06]"
+    76→        >
+    77→          {copied ? (
+    78→            <>
+    79→              <Check size={12} /> Copied
+    80→            </>
+    81→          ) : (
+    82→            <>
+    83→              <Copy size={12} /> Copy
+    84→            </>
+    85→          )}
+    86→        </button>
+    87→      </div>
+    88→      <div ref={codeRef} className="overflow-x-auto p-4">
+    89→        <pre className="text-sm leading-relaxed">
+    90→          <code className={className}>{children}</code>
+    91→        </pre>
+    92→      </div>
+    93→    </div>
+    94→  );
+    95→}
+    96→
+    97→// ─── Markdown Renderer ────────────────────────────────────────────────────────
+    98→
+    99→function MarkdownContent({ content }: { content: string }) {
+   100→  return (
+   101→    <div className="prose-chat">
+   102→      <ReactMarkdown
+   103→        remarkPlugins={[remarkGfm]}
+   104→        components={{
+   105→          code({ className, children, ...props }) {
+   106→            const isInline = !className;
+   107→            if (isInline) {
+   108→              return (
+   109→                <code
+   110→                  className="px-1.5 py-0.5 rounded-md bg-white/[0.08] text-purple-300 text-[0.875em] font-mono"
+   111→                  {...props}
+   112→                >
+   113→                  {children}
+   114→                </code>
+   115→              );
+   116→            }
+   117→            return (
+   118→              <CodeBlock className={className}>{children}</CodeBlock>
+   119→            );
+   120→          },
+   121→          a({ href, children }) {
+   122→            return (
+   123→              <a
+   124→                href={href}
+   125→                target="_blank"
+   126→                rel="noopener noreferrer"
+   127→                className="text-purple-400 hover:text-purple-300 underline underline-offset-2 decoration-purple-400/30 hover:decoration-purple-400 transition-colors"
+   128→              >
+   129→                {children}
+   130→              </a>
+   131→            );
+   132→          },
+   133→          table({ children }) {
+   134→            return (
+   135→              <div className="overflow-x-auto my-4 rounded-xl border border-white/[0.08]">
+   136→                <table className="w-full text-sm">{children}</table>
+   137→              </div>
+   138→            );
+   139→          },
+   140→          th({ children }) {
+   141→            return (
+   142→              <th className="px-4 py-2.5 text-left bg-white/[0.04] font-semibold text-zinc-200 border-b border-white/[0.08]">
+   143→                {children}
+   144→              </th>
+   145→            );
+   146→          },
+   147→          td({ children }) {
+   148→            return (
+   149→              <td className="px-4 py-2.5 text-zinc-300 border-b border-white/[0.06]">
+   150→                {children}
+   151→              </td>
+   152→            );
+   153→          },
+   154→          blockquote({ children }) {
+   155→            return (
+   156→              <blockquote className="my-4 pl-4 border-l-2 border-purple-500/40 text-zinc-400 italic">
+   157→                {children}
+   158→              </blockquote>
+   159→            );
+   160→          },
+   161→          ul({ children }) {
+   162→            return <ul className="my-2 space-y-1 list-disc list-outside ml-5 text-zinc-300">{children}</ul>;
+   163→          },
+   164→          ol({ children }) {
+   165→            return <ol className="my-2 space-y-1 list-decimal list-outside ml-5 text-zinc-300">{children}</ol>;
+   166→          },
+   167→          li({ children }) {
+   168→            return <li className="leading-relaxed pl-1">{children}</li>;
+   169→          },
+   170→          h1({ children }) {
+   171→            return <h1 className="text-xl font-bold text-white mt-6 mb-3">{children}</h1>;
+   172→          },
+   173→          h2({ children }) {
+   174→            return <h2 className="text-lg font-bold text-white mt-5 mb-2">{children}</h2>;
+   175→          },
+   176→          h3({ children }) {
+   177→            return <h3 className="text-base font-semibold text-white mt-4 mb-2">{children}</h3>;
+   178→          },
+   179→          hr() {
+   180→            return <hr className="my-6 border-white/[0.08]" />;
+   181→          },
+   182→          p({ children }) {
+   183→            return <p className="my-2 leading-relaxed text-zinc-300">{children}</p>;
+   184→          },
+   185→          strong({ children }) {
+   186→            return <strong className="font-semibold text-white">{children}</strong>;
+   187→          },
+   188→        }}
+   189→      >
+   190→        {content}
+   191→      </ReactMarkdown>
+   192→    </div>
+   193→  );
+   194→}
+   195→
+   196→// ─── Typing Indicator ────────────────────────────────────────────────────────
+   197→
+   198→function TypingIndicator() {
+   199→  return (
+   200→    <div className="flex items-center gap-1 px-1 py-2">
+   201→      {[0, 1, 2].map((i) => (
+   202→        <motion.div
+   203→          key={i}
+   204→          className="w-2 h-2 rounded-full bg-purple-400/60"
+   205→          animate={{ y: [0, -6, 0] }}
+   206→          transition={{
+   207→            duration: 0.6,
+   208→            repeat: Infinity,
+   209→            delay: i * 0.15,
+   210→            ease: 'easeInOut',
+   211→          }}
+   212→        />
+   213→      ))}
+   214→    </div>
+   215→  );
+   216→}
+   217→
+   218→// ─── Welcome Screen ──────────────────────────────────────────────────────────
+   219→
+   220→function WelcomeScreen({ onSendPrompt }: { onSendPrompt: (text: string) => void }) {
+   221→  return (
+   222→    <motion.div
+   223→      initial={{ opacity: 0, y: 20 }}
+   224→      animate={{ opacity: 1, y: 0 }}
+   225→      transition={{ duration: 0.5, ease: 'easeOut' }}
+   226→      className="flex flex-col items-center justify-center min-h-[60vh] px-4 text-center"
+   227→    >
+   228→      {/* Logo / Icon */}
+   229→      <div className="relative mb-8">
+   230→        <div className="w-20 h-20 rounded-2xl bg-gradient-to-br from-purple-500 to-blue-500 flex items-center justify-center shadow-lg shadow-purple-500/20">
+   231→          <Sparkles size={36} className="text-white" />
+   232→        </div>
+   233→        <div className="absolute -inset-2 rounded-2xl bg-gradient-to-br from-purple-500/20 to-blue-500/20 blur-xl -z-10" />
+   234→      </div>
+   235→
+   236→      {/* Title */}
+   237→      <h1 className="text-3xl sm:text-4xl font-bold mb-3 bg-gradient-to-r from-purple-400 via-purple-300 to-blue-400 bg-clip-text text-transparent">
+   238→        Free AI Chat
+   239→      </h1>
+   240→      <p className="text-zinc-400 text-base sm:text-lg max-w-md mb-10 leading-relaxed">
+   241→        Ask me anything — coding, writing, analysis, brainstorming, and more. Powered by leading open-source models.
+   242→      </p>
+   243→
+   244→      {/* Example prompts */}
+   245→      <div className="grid grid-cols-1 sm:grid-cols-2 gap-3 w-full max-w-2xl">
+   246→        {EXAMPLE_PROMPTS.map((prompt, index) => (
+   247→          <motion.button
+   248→            key={index}
+   249→            initial={{ opacity: 0, y: 10 }}
+   250→            animate={{ opacity: 1, y: 0 }}
+   251→            transition={{ delay: 0.2 + index * 0.08, duration: 0.4 }}
+   252→            onClick={() => onSendPrompt(prompt.text)}
+   253→            className="group flex items-start gap-3 p-4 rounded-xl bg-white/[0.03] border border-white/[0.06] hover:bg-white/[0.06] hover:border-purple-500/20 transition-all duration-200 text-left"
+   254→          >
+   255→            <span className="text-xl shrink-0 mt-0.5">{prompt.icon}</span>
+   256→            <div>
+   257→              <div className="text-sm font-medium text-zinc-200 group-hover:text-white transition-colors">
+   258→                {prompt.title}
+   259→              </div>
+   260→              <div className="text-xs text-zinc-500 mt-0.5 line-clamp-2">{prompt.text}</div>
+   261→            </div>
+   262→          </motion.button>
+   263→        ))}
+   264→      </div>
+   265→    </motion.div>
+   266→  );
+   267→}
+   268→
+   269→// ─── Message Bubble ─────────────────────────────────────────────────────────
+   270→
+   271→function MessageBubble({
+   272→  message,
+   273→  isStreaming,
+   274→}: {
+   275→  message: Message;
+   276→  isStreaming?: boolean;
+   277→}) {
+   278→  const [copied, setCopied] = useState(false);
+   279→  const isUser = message.role === 'user';
+   280→
+   281→  const handleCopy = () => {
+   282→    navigator.clipboard.writeText(message.content).then(() => {
+   283→      setCopied(true);
+   284→      setTimeout(() => setCopied(false), 2000);
+   285→    });
+   286→  };
+   287→
+   288→  return (
+   289→    <motion.div
+   290→      initial={{ opacity: 0, y: 12 }}
+   291→      animate={{ opacity: 1, y: 0 }}
+   292→      transition={{ duration: 0.3, ease: 'easeOut' }}
+   293→      className={`flex gap-3 ${isUser ? 'justify-end' : 'justify-start'}`}
+   294→    >
+   295→      {/* AI Avatar */}
+   296→      {!isUser && (
+   297→        <div className="shrink-0 mt-1">
+   298→          <div className="w-8 h-8 rounded-lg bg-gradient-to-br from-purple-500 to-blue-500 flex items-center justify-center shadow-md shadow-purple-500/10">
+   299→            <Bot size={16} className="text-white" />
+   300→          </div>
+   301→        </div>
+   302→      )}
+   303→
+   304→      {/* Bubble */}
+   305→      <div className={`max-w-[85%] sm:max-w-[75%] ${isUser ? 'order-first' : ''}`}>
+   306→        <div
+   307→          className={`relative px-4 py-3 rounded-2xl ${
+   308→            isUser
+   309→              ? 'bg-gradient-to-br from-purple-600 to-blue-600 text-white rounded-br-md'
+   310→              : 'bg-white/[0.04] border border-white/[0.08] rounded-bl-md'
+   311→          }`}
+   312→        >
+   313→          {isUser ? (
+   314→            <p className="text-[0.935rem] leading-relaxed whitespace-pre-wrap">{message.content}</p>
+   315→          ) : (
+   316→            <>
+   317→              {message.content ? (
+   318→                <MarkdownContent content={message.content} />
+   319→              ) : isStreaming ? (
+   320→                <TypingIndicator />
+   321→              ) : null}
+   322→            </>
+   323→          )}
+   324→        </div>
+   325→
+   326→        {/* Actions (AI only) */}
+   327→        {!isUser && message.content && !isStreaming && (
+   328→          <div className="flex items-center gap-1 mt-1.5 ml-1">
+   329→            <button
+   330→              onClick={handleCopy}
+   331→              className="flex items-center gap-1 text-xs text-zinc-600 hover:text-zinc-400 transition-colors px-2 py-1 rounded-md hover:bg-white/[0.04]"
+   332→            >
+   333→              {copied ? <Check size={12} /> : <Copy size={12} />}
+   334→              {copied ? 'Copied' : 'Copy'}
+   335→            </button>
+   336→          </div>
+   337→        )}
+   338→      </div>
+   339→    </motion.div>
+   340→  );
+   341→}
+   342→
+   343→// ─── Model Selector ─────────────────────────────────────────────────────────
+   344→
+   345→function ModelSelector({
+   346→  selectedModel,
+   347→  onModelChange,
+   348→}: {
+   349→  selectedModel: string;
+   350→  onModelChange: (model: string) => void;
+   351→}) {
+   352→  const [isOpen, setIsOpen] = useState(false);
+   353→  const dropdownRef = useRef<HTMLDivElement>(null);
+   354→  const currentModel = AI_CONFIG.models.find((m) => m.id === selectedModel);
+   355→
+   356→  useEffect(() => {
+   357→    function handleClickOutside(e: MouseEvent) {
+   358→      if (dropdownRef.current && !dropdownRef.current.contains(e.target as Node)) {
+   359→        setIsOpen(false);
+   360→      }
+   361→    }
+   362→    document.addEventListener('mousedown', handleClickOutside);
+   363→    return () => document.removeEventListener('mousedown', handleClickOutside);
+   364→  }, []);
+   365→
+   366→  return (
+   367→    <div ref={dropdownRef} className="relative">
+   368→      <button
+   369→        onClick={() => setIsOpen(!isOpen)}
+   370→        className="flex items-center gap-2 px-3 py-2 rounded-xl bg-white/[0.04] border border-white/[0.08] hover:bg-white/[0.07] transition-all duration-200 text-sm"
+   371→      >
+   372→        <div className="w-2 h-2 rounded-full bg-emerald-400 shrink-0" />
+   373→        <span className="hidden sm:inline text-zinc-300 max-w-[160px] truncate">
+   374→          {currentModel?.name || selectedModel}
+   375→        </span>
+   376→        <ChevronDown
+   377→          size={14}
+   378→          className={`text-zinc-500 transition-transform duration-200 ${isOpen ? 'rotate-180' : ''}`}
+   379→        />
+   380→      </button>
+   381→
+   382→      <AnimatePresence>
+   383→        {isOpen && (
+   384→          <motion.div
+   385→            initial={{ opacity: 0, y: -4, scale: 0.98 }}
+   386→            animate={{ opacity: 1, y: 0, scale: 1 }}
+   387→            exit={{ opacity: 0, y: -4, scale: 0.98 }}
+   388→            transition={{ duration: 0.15 }}
+   389→            className="absolute right-0 top-full mt-2 w-72 rounded-xl bg-[#1a1d27] border border-white/[0.1] shadow-2xl shadow-black/40 z-50 overflow-hidden"
+   390→          >
+   391→            <div className="p-2">
+   392→              <div className="px-3 py-2 text-xs font-semibold text-zinc-500 uppercase tracking-wider">
+   393→                Select Model
+   394→              </div>
+   395→              {AI_CONFIG.models.map((model) => (
+   396→                <button
+   397→                  key={model.id}
+   398→                  onClick={() => {
+   399→                    onModelChange(model.id);
+   400→                    setIsOpen(false);
+   401→                  }}
+   402→                  className={`w-full flex items-center gap-3 px-3 py-2.5 rounded-lg text-left transition-colors ${
+   403→                    selectedModel === model.id
+   404→                      ? 'bg-purple-500/10 text-purple-300'
+   405→                      : 'hover:bg-white/[0.04] text-zinc-300'
+   406→                  }`}
+   407→                >
+   408→                  <div
+   409→                    className={`w-2 h-2 rounded-full shrink-0 ${
+   410→                      selectedModel === model.id ? 'bg-purple-400' : 'bg-zinc-600'
+   411→                    }`}
+   412→                  />
+   413→                  <div className="min-w-0">
+   414→                    <div className="text-sm font-medium truncate">{model.name}</div>
+   415→                    <div className="text-xs text-zinc-500 truncate">{model.description}</div>
+   416→                  </div>
+   417→                </button>
+   418→              ))}
+   419→            </div>
+   420→          </motion.div>
+   421→        )}
+   422→      </AnimatePresence>
+   423→    </div>
+   424→  );
+   425→}
+   426→
+   427→// ─── Settings Modal ─────────────────────────────────────────────────────────
+   428→
+   429→function SettingsModalInner({
+   430→  onClose,
+   431→  apiKey,
+   432→  baseUrl,
+   433→  onSave,
+   434→}: {
+   435→  onClose: () => void;
+   436→  apiKey: string;
+   437→  baseUrl: string;
+   438→  onSave: (key: string, url: string) => void;
+   439→}) {
+   440→  const [localApiKey, setLocalApiKey] = useState(apiKey);
+   441→  const [localBaseUrl, setLocalBaseUrl] = useState(baseUrl);
+   442→
+   443→  const handleSave = () => {
+   444→    onSave(localApiKey.trim(), localBaseUrl.trim());
+   445→    onClose();
+   446→  };
+   447→
+   448→  return (
+   449→    <motion.div
+   450→      initial={{ opacity: 0 }}
+   451→      animate={{ opacity: 1 }}
+   452→      exit={{ opacity: 0 }}
+   453→      className="fixed inset-0 z-50 flex items-center justify-center p-4"
+   454→      onClick={onClose}
+   455→    >
+   456→      {/* Backdrop */}
+   457→      <div className="absolute inset-0 bg-black/60 backdrop-blur-sm" />
+   458→
+   459→      {/* Modal */}
+   460→      <motion.div
+   461→        initial={{ opacity: 0, scale: 0.95, y: 10 }}
+   462→        animate={{ opacity: 1, scale: 1, y: 0 }}
+   463→        exit={{ opacity: 0, scale: 0.95, y: 10 }}
+   464→        transition={{ duration: 0.2 }}
+   465→        className="relative w-full max-w-lg rounded-2xl bg-[#1a1d27] border border-white/[0.1] shadow-2xl shadow-black/50 overflow-hidden"
+   466→        onClick={(e) => e.stopPropagation()}
+   467→      >
+   468→        {/* Header */}
+   469→        <div className="flex items-center justify-between px-6 py-4 border-b border-white/[0.06]">
+   470→          <h2 className="text-lg font-semibold text-white">Settings</h2>
+   471→          <button
+   472→            onClick={onClose}
+   473→            className="text-zinc-500 hover:text-zinc-300 transition-colors p-1 rounded-lg hover:bg-white/[0.06]"
+   474→          >
+   475→            <X size={18} />
+   476→          </button>
+   477→        </div>
+   478→
+   479→        {/* Body */}
+   480→        <div className="p-6 space-y-5">
+   481→          <div>
+   482→            <label className="block text-sm font-medium text-zinc-300 mb-2">API Key</label>
+   483→            <input
+   484→              type="password"
+   485→              value={localApiKey}
+   486→              onChange={(e) => setLocalApiKey(e.target.value)}
+   487→              className="w-full px-4 py-2.5 rounded-xl bg-white/[0.04] border border-white/[0.08] text-white placeholder-zinc-600 focus:outline-none focus:ring-2 focus:ring-purple-500/40 focus:border-purple-500/40 transition-all text-sm font-mono"
+   488→              placeholder="sk-..."
+   489→            />
+   490→            <p className="text-xs text-zinc-600 mt-1.5">
+   491→              Your API key stays in your browser and is never sent to any server.
+   492→            </p>
+   493→          </div>
+   494→
+   495→          <div>
+   496→            <label className="block text-sm font-medium text-zinc-300 mb-2">Base URL</label>
+   497→            <input
+   498→              type="text"
+   499→              value={localBaseUrl}
+   500→              onChange={(e) => setLocalBaseUrl(e.target.value)}
+   501→              className="w-full px-4 py-2.5 rounded-xl bg-white/[0.04] border border-white/[0.08] text-white placeholder-zinc-600 focus:outline-none focus:ring-2 focus:ring-purple-500/40 focus:border-purple-500/40 transition-all text-sm font-mono"
+   502→              placeholder="https://api.routeway.ai/v1"
+   503→            />
+   504→          </div>
+   505→        </div>
+   506→
+   507→        {/* Footer */}
+   508→        <div className="flex items-center justify-end gap-3 px-6 py-4 border-t border-white/[0.06]">
+   509→          <button
+   510→            onClick={onClose}
+   511→            className="px-4 py-2 rounded-xl text-sm text-zinc-400 hover:text-zinc-200 hover:bg-white/[0.04] transition-colors"
+   512→          >
+   513→            Cancel
+   514→          </button>
+   515→          <button
+   516→            onClick={handleSave}
+   517→            className="px-5 py-2 rounded-xl text-sm font-medium bg-gradient-to-r from-purple-600 to-blue-600 text-white hover:from-purple-500 hover:to-blue-500 transition-all shadow-md shadow-purple-500/20"
+   518→          >
+   519→            Save Changes
+   520→          </button>
+   521→        </div>
+   522→      </motion.div>
+   523→    </motion.div>
+   524→  );
+   525→}
+   526→
+   527→function SettingsModal(props: {
+   528→  isOpen: boolean;
+   529→  onClose: () => void;
+   530→  apiKey: string;
+   531→  baseUrl: string;
+   532→  onSave: (key: string, url: string) => void;
+   533→}) {
+   534→  if (!props.isOpen) return null;
+   535→  return <SettingsModalInner key={props.apiKey + props.baseUrl} {...props} />;
+   536→}
+   537→
+   538→// ─── Main Chat App ───────────────────────────────────────────────────────────
+   539→
+   540→export default function ChatApp() {
+   541→  const [messages, setMessages] = useState<Message[]>([]);
+   542→  const [inputValue, setInputValue] = useState('');
+   543→  const [isLoading, setIsLoading] = useState(false);
+   544→  const [selectedModel, setSelectedModel] = useState(AI_CONFIG.defaultModel);
+   545→  const [apiKey, setApiKey] = useState(AI_CONFIG.apiKey);
+   546→  const [baseUrl, setBaseUrl] = useState(AI_CONFIG.baseUrl);
+   547→  const [isSettingsOpen, setIsSettingsOpen] = useState(false);
+   548→  const [error, setError] = useState<string | null>(null);
+   549→  const [showScrollBtn, setShowScrollBtn] = useState(false);
+   550→
+   551→  const chatEndRef = useRef<HTMLDivElement>(null);
+   552→  const chatContainerRef = useRef<HTMLDivElement>(null);
+   553→  const textareaRef = useRef<HTMLTextAreaElement>(null);
+   554→  const abortControllerRef = useRef<AbortController | null>(null);
+   555→
+   556→  // Auto-scroll to bottom
+   557→  const scrollToBottom = useCallback(() => {
+   558→    chatEndRef.current?.scrollIntoView({ behavior: 'smooth' });
+   559→  }, []);
+   560→
+   561→  useEffect(() => {
+   562→    if (messages.length > 0) {
+   563→      scrollToBottom();
+   564→    }
+   565→  }, [messages, scrollToBottom]);
+   566→
+   567→  // Track scroll position for "scroll to bottom" button
+   568→  useEffect(() => {
+   569→    const container = chatContainerRef.current;
+   570→    if (!container) return;
+   571→
+   572→    const handleScroll = () => {
+   573→      const { scrollTop, scrollHeight, clientHeight } = container;
+   574→      const isNearBottom = scrollHeight - scrollTop - clientHeight < 100;
+   575→      setShowScrollBtn(!isNearBottom);
+   576→    };
+   577→
+   578→    container.addEventListener('scroll', handleScroll);
+   579→    return () => container.removeEventListener('scroll', handleScroll);
+   580→  }, []);
+   581→
+   582→  // Auto-resize textarea
+   583→  useEffect(() => {
+   584→    const textarea = textareaRef.current;
+   585→    if (!textarea) return;
+   586→    textarea.style.height = 'auto';
+   587→    textarea.style.height = `${Math.min(textarea.scrollHeight, 200)}px`;
+   588→  }, [inputValue]);
+   589→
+   590→  // ─── Stream Response ─────────────────────────────────────────────────
+   591→
+   592→  const sendMessage = useCallback(
+   593→    async (text: string) => {
+   594→      if (!text.trim() || isLoading) return;
+   595→
+   596→      const userMessage: Message = {
+   597→        id: generateId(),
+   598→        role: 'user',
+   599→        content: text.trim(),
+   600→      };
+   601→
+   602→      const assistantMessage: Message = {
+   603→        id: generateId(),
+   604→        role: 'assistant',
+   605→        content: '',
+   606→      };
+   607→
+   608→      setMessages((prev) => [...prev, userMessage, assistantMessage]);
+   609→      setInputValue('');
+   610→      setIsLoading(true);
+   611→      setError(null);
+   612→
+   613→      // Reset textarea height
+   614→      if (textareaRef.current) {
+   615→        textareaRef.current.style.height = 'auto';
+   616→      }
+   617→
+   618→      const controller = new AbortController();
+   619→      abortControllerRef.current = controller;
+   620→
+   621→      const apiMessages = [
+   622→        ...messages.map((m) => ({ role: m.role, content: m.content })),
+   623→        { role: userMessage.role, content: userMessage.content },
+   624→      ];
+   625→
+   626→      try {
+   627→        const response = await fetch(`${baseUrl}/chat/completions`, {
+   628→          method: 'POST',
+   629→          headers: {
+   630→            'Content-Type': 'application/json',
+   631→            Authorization: `Bearer ${apiKey}`,
+   632→          },
+   633→          body: JSON.stringify({
+   634→            model: selectedModel,
+   635→            messages: apiMessages,
+   636→            stream: true,
+   637→          }),
+   638→          signal: controller.signal,
+   639→        });
+   640→
+   641→        if (!response.ok) {
+   642→          const errBody = await response.text().catch(() => 'Unknown error');
+   643→          throw new Error(
+   644→            `API returned ${response.status}: ${errBody}`
+   645→          );
+   646→        }
+   647→
+   648→        const reader = response.body?.getReader();
+   649→        if (!reader) throw new Error('Failed to get response stream');
+   650→
+   651→        const decoder = new TextDecoder();
+   652→        let fullContent = '';
+   653→        let buffer = '';
+   654→
+   655→        while (true) {
+   656→          const { done, value } = await reader.read();
+   657→          if (done) break;
+   658→
+   659→          buffer += decoder.decode(value, { stream: true });
+   660→          const lines = buffer.split('\n');
+   661→          buffer = lines.pop() || ''; // Keep incomplete line in buffer
+   662→
+   663→          for (const line of lines) {
+   664→            const trimmed = line.trim();
+   665→            if (!trimmed || !trimmed.startsWith('data: ')) continue;
+   666→
+   667→            const data = trimmed.slice(6);
+   668→            if (data === '[DONE]') continue;
+   669→
+   670→            try {
+   671→              const parsed = JSON.parse(data);
+   672→              const delta = parsed.choices?.[0]?.delta?.content;
+   673→              if (delta) {
+   674→                fullContent += delta;
+   675→                setMessages((prev) =>
+   676→                  prev.map((m) =>
+   677→                    m.id === assistantMessage.id
+   678→                      ? { ...m, content: fullContent }
+   679→                      : m
+   680→                  )
+   681→                );
+   682→              }
+   683→            } catch {
+   684→              // Skip malformed JSON
+   685→            }
+   686→          }
+   687→        }
+   688→      } catch (err: unknown) {
+   689→        if (err instanceof Error && err.name === 'AbortError') {
+   690→          // User stopped generation — keep partial content
+   691→        } else {
+   692→          const errorMsg =
+   693→            err instanceof Error ? err.message : 'An unexpected error occurred';
+   694→          setError(errorMsg);
+   695→          // Remove empty assistant message
+   696→          setMessages((prev) =>
+   697→            prev.filter((m) => m.id !== assistantMessage.id)
+   698→          );
+   699→        }
+   700→      } finally {
+   701→        setIsLoading(false);
+   702→        abortControllerRef.current = null;
+   703→      }
+   704→    },
+   705→    [messages, isLoading, selectedModel, apiKey, baseUrl]
+   706→  );
+   707→
+   708→  const stopGenerating = () => {
+   709→    abortControllerRef.current?.abort();
+   710→  };
+   711→
+   712→  const handleFormSubmit = (e: FormEvent) => {
+   713→    e.preventDefault();
+   714→    sendMessage(inputValue);
+   715→  };
+   716→
+   717→  const handleKeyDown = (e: KeyboardEvent<HTMLTextAreaElement>) => {
+   718→    if (e.key === 'Enter' && !e.shiftKey) {
+   719→      e.preventDefault();
+   720→      sendMessage(inputValue);
+   721→    }
+   722→  };
+   723→
+   724→  const clearChat = () => {
+   725→    setMessages([]);
+   726→    setError(null);
+   727→    abortControllerRef.current?.abort();
+   728→    setIsLoading(false);
+   729→  };
+   730→
+   731→  const handleSaveSettings = (newKey: string, newUrl: string) => {
+   732→    setApiKey(newKey);
+   733→    setBaseUrl(newUrl);
+   734→  };
+   735→
+   736→  return (
+   737→    <div className="h-[100dvh] flex flex-col bg-[#0b0d14]">
+   738→      {/* ─── Header ───────────────────────────────────────────────────── */}
+   739→      <header className="shrink-0 border-b border-white/[0.06] bg-[#0b0d14]/80 backdrop-blur-xl z-10">
+   740→        <div className="max-w-4xl mx-auto px-4 sm:px-6 h-16 flex items-center justify-between">
+   741→          {/* Left: Logo */}
+   742→          <div className="flex items-center gap-2.5">
+   743→            <div className="w-8 h-8 rounded-lg bg-gradient-to-br from-purple-500 to-blue-500 flex items-center justify-center shadow-md shadow-purple-500/20">
+   744→              <Sparkles size={16} className="text-white" />
+   745→            </div>
+   746→            <h1 className="text-lg font-bold text-white hidden sm:block">
+   747→              Free AI Chat
+   748→            </h1>
+   749→          </div>
+   750→
+   751→          {/* Right: Controls */}
+   752→          <div className="flex items-center gap-2">
+   753→            {messages.length > 0 && !isLoading && (
+   754→              <button
+   755→                onClick={clearChat}
+   756→                className="flex items-center gap-1.5 px-3 py-2 rounded-xl bg-white/[0.04] border border-white/[0.08] hover:bg-white/[0.07] transition-all text-sm text-zinc-400 hover:text-zinc-200"
+   757→                title="New chat"
+   758→              >
+   759→                <RotateCcw size={14} />
+   760→                <span className="hidden sm:inline">New chat</span>
+   761→              </button>
+   762→            )}
+   763→            <ModelSelector
+   764→              selectedModel={selectedModel}
+   765→              onModelChange={setSelectedModel}
+   766→            />
+   767→            <button
+   768→              onClick={() => setIsSettingsOpen(true)}
+   769→              className="flex items-center justify-center w-9 h-9 rounded-xl bg-white/[0.04] border border-white/[0.08] hover:bg-white/[0.07] transition-all text-zinc-400 hover:text-zinc-200"
+   770→              title="Settings"
+   771→            >
+   772→              <Settings2 size={16} />
+   773→            </button>
+   774→          </div>
+   775→        </div>
+   776→      </header>
+   777→
+   778→      {/* ─── Chat Area ───────────────────────────────────────────────── */}
+   779→      <main
+   780→        ref={chatContainerRef}
+   781→        className="flex-1 overflow-y-auto relative"
+   782→      >
+   783→        <div className="max-w-4xl mx-auto px-4 sm:px-6 py-6">
+   784→          {messages.length === 0 ? (
+   785→            <WelcomeScreen onSendPrompt={sendMessage} />
+   786→          ) : (
+   787→            <div className="space-y-6 pb-4">
+   788→              <AnimatePresence>
+   789→                {messages.map((message) => (
+   790→                  <MessageBubble
+   791→                    key={message.id}
+   792→                    message={message}
+   793→                    isStreaming={
+   794→                      isLoading &&
+   795→                      message.role === 'assistant' &&
+   796→                      message === messages[messages.length - 1]
+   797→                    }
+   798→                  />
+   799→                ))}
+   800→              </AnimatePresence>
+   801→
+   802→              {/* Error */}
+   803→              {error && (
+   804→                <motion.div
+   805→                  initial={{ opacity: 0, y: 8 }}
+   806→                  animate={{ opacity: 1, y: 0 }}
+   807→                  className="flex items-start gap-2 p-4 rounded-xl bg-red-500/10 border border-red-500/20 text-red-300 text-sm"
+   808→                >
+   809→                  <AlertCircle size={16} className="shrink-0 mt-0.5" />
+   810→                  <div>
+   811→                    <p className="font-medium">Error</p>
+   812→                    <p className="text-red-400/80 mt-0.5">{error}</p>
+   813→                  </div>
+   814→                </motion.div>
+   815→              )}
+   816→
+   817→              <div ref={chatEndRef} />
+   818→            </div>
+   819→          )}
+   820→        </div>
+   821→
+   822→        {/* Scroll to bottom button */}
+   823→        <AnimatePresence>
+   824→          {showScrollBtn && messages.length > 0 && (
+   825→            <motion.button
+   826→              initial={{ opacity: 0, scale: 0.8 }}
+   827→              animate={{ opacity: 1, scale: 1 }}
+   828→              exit={{ opacity: 0, scale: 0.8 }}
+   829→              onClick={scrollToBottom}
+   830→              className="absolute bottom-4 left-1/2 -translate-x-1/2 p-2 rounded-full bg-[#1a1d27] border border-white/[0.1] text-zinc-400 hover:text-white shadow-lg hover:bg-white/[0.06] transition-all"
+   831→            >
+   832→              <ArrowDown size={16} />
+   833→            </motion.button>
+   834→          )}
+   835→        </AnimatePresence>
+   836→      </main>
+   837→
+   838→      {/* ─── Input Area ────────────────────────────────────────────────── */}
+   839→      <footer className="shrink-0 border-t border-white/[0.06] bg-[#0b0d14]/80 backdrop-blur-xl">
+   840→        <div className="max-w-4xl mx-auto px-4 sm:px-6 py-4">
+   841→          <form onSubmit={handleFormSubmit} className="relative">
+   842→            <div className="flex items-end gap-3 p-2 rounded-2xl bg-white/[0.03] border border-white/[0.08] focus-within:border-purple-500/30 focus-within:ring-2 focus-within:ring-purple-500/10 transition-all">
+   843→              <textarea
+   844→                ref={textareaRef}
+   845→                value={inputValue}
+   846→                onChange={(e) => setInputValue(e.target.value)}
+   847→                onKeyDown={handleKeyDown}
+   848→                placeholder="Send a message..."
+   849→                rows={1}
+   850→                className="flex-1 resize-none bg-transparent text-white placeholder-zinc-600 focus:outline-none py-2.5 px-3 text-[0.935rem] leading-relaxed max-h-[200px] scrollbar-thin"
+   851→                disabled={isLoading}
+   852→              />
+   853→              {isLoading ? (
+   854→                <button
+   855→                  type="button"
+   856→                  onClick={stopGenerating}
+   857→                  className="shrink-0 flex items-center justify-center w-10 h-10 rounded-xl bg-red-500/80 hover:bg-red-500 text-white transition-all shadow-md shadow-red-500/20"
+   858→                  title="Stop generating"
+   859→                >
+   860→                  <Square size={14} fill="currentColor" />
+   861→                </button>
+   862→              ) : (
+   863→                <button
+   864→                  type="submit"
+   865→                  disabled={!inputValue.trim()}
+   866→                  className="shrink-0 flex items-center justify-center w-10 h-10 rounded-xl bg-gradient-to-r from-purple-600 to-blue-600 hover:from-purple-500 hover:to-blue-500 text-white transition-all shadow-md shadow-purple-500/20 disabled:opacity-30 disabled:cursor-not-allowed disabled:shadow-none"
+   867→                  title="Send message"
+   868→                >
+   869→                  <Send size={16} />
+   870→                </button>
+   871→              )}
+   872→            </div>
+   873→          </form>
+   874→
+   875→          {/* Powered by */}
+   876→          <p className="text-center text-[11px] text-zinc-600 mt-3">
+   877→            Powered by{' '}
+   878→            <a
+   879→              href="https://routeway.ai"
+   880→              target="_blank"
+   881→              rel="noopener noreferrer"
+   882→              className="text-zinc-500 hover:text-purple-400 transition-colors"
+   883→            >
+   884→              RouteWay AI
+   885→            </a>{' '}
+   886→            · Free models may have rate limits · Responses are not stored
+   887→          </p>
+   888→        </div>
+   889→      </footer>
+   890→
+   891→      {/* ─── Settings Modal ────────────────────────────────────────────── */}
+   892→      <SettingsModal
+   893→        isOpen={isSettingsOpen}
+   894→        onClose={() => setIsSettingsOpen(false)}
+   895→        apiKey={apiKey}
+   896→        baseUrl={baseUrl}
+   897→        onSave={handleSaveSettings}
+   898→      />
+   899→    </div>
+   900→  );
+   901→}
+   902→

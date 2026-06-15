@@ -1,6 +1,7 @@
 'use client';
 
 import { useState, useEffect } from 'react';
+import { useRouter } from 'next/navigation';
 import { Search, ShoppingCart, User, Menu } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
@@ -14,6 +15,7 @@ import {
   SheetTrigger,
   SheetClose,
 } from '@/components/ui/sheet';
+import { useCartStore, getTotalItems } from '@/store/useCartStore';
 import { navLinks } from './data';
 
 function AnnouncementBar() {
@@ -90,11 +92,18 @@ function MobileNav() {
 }
 
 function SearchBar() {
+  const router = useRouter();
   const [query, setQuery] = useState('');
-  const [isExpanded, setIsExpanded] = useState(false);
+
+  const handleSubmit = (e: React.FormEvent) => {
+    e.preventDefault();
+    if (query.trim()) {
+      router.push(`/search?q=${encodeURIComponent(query.trim())}`);
+    }
+  };
 
   return (
-    <div className="relative flex-1 max-w-xl mx-4 lg:mx-8">
+    <form onSubmit={handleSubmit} className="relative flex-1 max-w-xl mx-4 lg:mx-8">
       <div className="relative">
         <Search className="absolute left-3 top-1/2 -translate-y-1/2 size-4 text-ag-300 pointer-events-none" />
         <Input
@@ -105,18 +114,23 @@ function SearchBar() {
           className="w-full h-10 pl-10 pr-4 bg-white border-ag-500/60 rounded-xl text-sm font-body placeholder:text-ag-400 focus-visible:ring-fw-300/30 focus-visible:border-fw-300"
         />
       </div>
-    </div>
+    </form>
   );
 }
 
 function HeaderIcons() {
+  const items = useCartStore((s) => s.items);
+  const totalItems = getTotalItems(items);
+
   return (
     <div className="flex items-center gap-1">
       <Button variant="ghost" size="icon" className="relative text-ag-200 hover:text-ag-100 hover:bg-ag-800/50">
         <ShoppingCart className="size-5" />
-        <Badge className="absolute -top-1 -right-1 h-5 w-5 flex items-center justify-center p-0 bg-fw-300 text-white text-[10px] font-bold rounded-full border-2 border-fw-500">
-          3
-        </Badge>
+        {totalItems > 0 && (
+          <Badge className="absolute -top-1 -right-1 h-5 w-5 flex items-center justify-center p-0 bg-fw-300 text-white text-[10px] font-bold rounded-full border-2 border-fw-500">
+            {totalItems > 99 ? '99+' : totalItems}
+          </Badge>
+        )}
         <span className="sr-only">Cart</span>
       </Button>
       <Button variant="ghost" size="icon" className="text-ag-200 hover:text-ag-100 hover:bg-ag-800/50">

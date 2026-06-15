@@ -1,5 +1,6 @@
 'use client';
 
+import Link from 'next/link';
 import { categories } from './data';
 import {
   Monitor,
@@ -19,37 +20,39 @@ const iconMap: Record<string, React.ElementType> = {
 
 function CategoryCard({ category, index }: { category: typeof categories[0]; index: number }) {
   const Icon = iconMap[category.icon] || Sparkles;
+  const href = category.slug ? `/search?category=${category.slug}` : '#';
 
   return (
-    <a
-      href="#"
-      className="group relative flex flex-col items-center text-center p-6 bg-white rounded-2xl border border-ag-500/20 hover-lift shadow-soft cursor-pointer"
-      style={{ animationDelay: `${index * 50}ms` }}
-    >
-      {/* Icon container */}
-      <div className={`w-16 h-16 rounded-2xl flex items-center justify-center mb-4 transition-colors duration-300 ${
-        index % 3 === 0 ? 'bg-fw-500' : index % 3 === 1 ? 'bg-ag-800' : 'bg-ac-800'
-      }`}
+    <Link href={href}>
+      <div
+        className="group relative flex flex-col items-center text-center p-6 bg-white rounded-2xl border border-ag-500/20 hover-lift shadow-soft cursor-pointer h-full"
+        style={{ animationDelay: `${index * 50}ms` }}
       >
-        <Icon
-          className={`size-7 transition-colors duration-300 ${
-            index % 3 === 0 ? 'text-fw-300' : index % 3 === 1 ? 'text-ag-300' : 'text-ac-300'
-          }`}
-        />
-      </div>
+        {/* Icon container */}
+        <div className={`w-16 h-16 rounded-2xl flex items-center justify-center mb-4 transition-colors duration-300 ${
+          index % 3 === 0 ? 'bg-fw-500' : index % 3 === 1 ? 'bg-ag-800' : 'bg-ac-800'
+        }`}
+        >
+          <Icon
+            className={`size-7 transition-colors duration-300 ${
+              index % 3 === 0 ? 'text-fw-300' : index % 3 === 1 ? 'text-ag-300' : 'text-ac-300'
+            }`}
+          />
+        </div>
 
-      <h3 className="font-heading font-semibold text-ag-100 text-sm mb-1 group-hover:text-fw-200 transition-colors">
-        {category.name}
-      </h3>
-      <p className="text-xs text-ag-300 font-body">
-        {category.count.toLocaleString()} products
-      </p>
+        <h3 className="font-heading font-semibold text-ag-100 text-sm mb-1 group-hover:text-fw-200 transition-colors">
+          {category.name}
+        </h3>
+        <p className="text-xs text-ag-300 font-body">
+          {category.count.toLocaleString()} products
+        </p>
 
-      {/* Hover arrow */}
-      <div className="absolute top-4 right-4 opacity-0 group-hover:opacity-100 transition-opacity duration-200">
-        <ArrowRight className="size-4 text-fw-300" />
+        {/* Hover arrow */}
+        <div className="absolute top-4 right-4 opacity-0 group-hover:opacity-100 transition-opacity duration-200">
+          <ArrowRight className="size-4 text-fw-300" />
+        </div>
       </div>
-    </a>
+    </Link>
   );
 }
 

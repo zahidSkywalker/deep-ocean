@@ -1,0 +1,1006 @@
+     1→'use client';
+     2→import { useEffect, useRef } from 'react';
+     3→
+     4→// ═══════════════════════════════════════════════════
+     5→// CONSTANTS
+     6→// ═══════════════════════════════════════════════════
+     7→const T = 16;         // tile size in pixels
+     8→const S = 3;          // scale factor
+     9→const ST = T * S;     // scaled tile = 48px
+    10→const MW = 50;        // map width in tiles
+    11→const MH = 45;        // map height in tiles
+    12→const DAY_SEC = 180;  // 3 real minutes = 1 game day
+    13→const TS_COLS = 12;   // tileset columns
+    14→
+    15→// ═══════════════════════════════════════════════════
+    16→// SEEDED RANDOM
+    17→// ═══════════════════════════════════════════════════
+    18→function mkRng(seed: number) {
+    19→  let s = seed;
+    20→  return () => { s = (s * 16807) % 2147483647; return (s - 1) / 2147483646; };
+    21→}
+    22→
+    23→// ═══════════════════════════════════════════════════
+    24→// TILE ASSIGNMENT
+    25→// Pre-assign tileset indices for visual variety
+    26→// ═══════════════════════════════════════════════════
+    27→// Light grass tiles (rows 0-3, cols 8-11 of tileset)
+    28→const GRASS = [8, 10, 11, 20, 21, 33, 34, 35, 44, 45, 47];
+    29→// Darker grass (rows 4-7)
+    30→const GRASS_DARK = [56, 58, 59, 68, 69, 82, 83, 92, 93, 95];
+    31→// Dirt / path tiles (rows 8-15)
+    32→const DIRT = [104, 106, 107, 116, 117, 129, 130, 131, 140, 141, 143, 152, 154, 155, 164, 165, 177, 178, 179, 188, 189, 191];
+    33→// Farmland / tilled soil
+    34→const SOIL = [104, 106, 107, 116, 129, 130, 140, 141];
+    35→// Water tiles (rows 16-19)
+    36→const WATER = [192, 193, 194, 196, 197, 204, 205, 206, 208, 209, 210];
+    37→// Sand tiles
+    38→const SAND = [216, 217, 218, 228, 229, 230];
+    39→
+    40→function pick(arr: number[], rng: () => number) { return arr[(rng() * arr.length) | 0]; }
+    41→
+    42→// ═══════════════════════════════════════════════════
+    43→// MAP GENERATION
+    44→// terrain: 0=grass, 1=path, 2=farmland, 3=pond edge, 4=sand, 5=water
+    45→// ═══════════════════════════════════════════════════
+    46→function generateMap() {
+    47→  const rng = mkRng(777);
+    48→  const map: number[][] = [];
+    49→  // Tile index map (which tileset tile to draw)
+    50→  const tiles: number[][] = [];
+    51→
+    52→  for (let y = 0; y < MH; y++) {
+    53→    map[y] = [];
+    54→    tiles[y] = [];
+    55→    for (let x = 0; x < MW; x++) {
+    56→      map[y][x] = 0;
+    57→      tiles[y][x] = pick(GRASS, rng);
+    58→    }
+    59→  }
+    60→
+    61→  const set = (x: number, y: number, v: number) => {
+    62→    if (x >= 0 && x < MW && y >= 0 && y < MH) map[y][x] = v;
+    63→  };
+    64→  const setTile = (x: number, y: number, v: number) => {
+    65→    if (x >= 0 && x < MW && y >= 0 && y < MH) tiles[y][x] = v;
+    66→  };
+    67→
+    68→  // ── PATHS (3 tiles wide for a nice road feel) ──
+    69→  const pathH = (x1: number, x2: number, y: number) => {
+    70→    for (let x = Math.min(x1, x2); x <= Math.max(x1, x2); x++) {
+    71→      set(x, y, 1); set(x, y + 1, 1);
+    72→    }
+    73→  };
+    74→  const pathV = (y1: number, y2: number, x: number) => {
+    75→    for (let y = Math.min(y1, y2); y <= Math.max(y1, y2); y++) {
+    76→      set(x, y, 1); set(x + 1, y, 1);
+    77→    }
+    78→  };
+    79→  const setPathTiles = () => {
+    80→    for (let y = 0; y < MH; y++)
+    81→      for (let x = 0; x < MW; x++)
+    82→        if (map[y][x] === 1) tiles[y][x] = pick(DIRT, rng);
+    83→  };
+    84→
+    85→  // Main north-south road through center
+    86→  pathV(4, 40, 23);
+    87→  pathV(4, 40, 24);
+    88→
+    89→  // East-west road
+    90→  pathH(5, 45, 18);
+    91→  pathH(5, 45, 19);
+    92→
+    93→  // Branch west to farm
+    94→  pathV(18, 30, 11);
+    95→  pathH(11, 18, 22);
+    96→
+    97→  // Branch east to animals
+    98→  pathV(18, 30, 36);
+    99→  pathH(24, 36, 22);
+   100→
+   101→  // Branch south to pond
+   102→  pathV(20, 35, 10);
+   103→
+   104→  setPathTiles();
+   105→
+   106→  // ── FARM AREA (west side) ──
+   107→  for (let y = 23; y <= 32; y++)
+   108→    for (let x = 5; x <= 17; x++)
+   109→      if (map[y][x] === 0) {
+   110→        map[y][x] = 2;
+   111→        tiles[y][x] = pick(SOIL, rng);
+   112→      }
+   113→
+   114→  // ── POND (southwest, organic ellipse) ──
+   115→  for (let y = 33; y <= 42; y++)
+   116→    for (let x = 3; x <= 14; x++) {
+   117→      const dx = (x - 8.5) / 5.5, dy = (y - 37.5) / 5;
+   118→      if (dx * dx + dy * dy <= 1) {
+   119→        map[y][x] = 5;
+   120→        tiles[y][x] = pick(WATER, rng);
+   121→      }
+   122→    }
+   123→  // Sandy edges
+   124→  for (let y = 32; y <= 43; y++)
+   125→    for (let x = 2; x <= 15; x++) {
+   126→      if (map[y][x] === 5) continue;
+   127→      let adj = false;
+   128→      for (let dy2 = -1; dy2 <= 1; dy2++)
+   129→        for (let dx2 = -1; dx2 <= 1; dx2++) {
+   130→          const ny = y + dy2, nx = x + dx2;
+   131→          if (ny >= 0 && ny < MH && nx >= 0 && nx < MW && map[ny][nx] === 5) adj = true;
+   132→        }
+   133→      if (adj && map[y][x] === 0) {
+   134→        map[y][x] = 4;
+   135→        tiles[y][x] = pick(SAND, rng);
+   136→      }
+   137→    }
+   138→
+   139→  // Add grass variation to remaining grass tiles
+   140→  for (let y = 0; y < MH; y++)
+   141→    for (let x = 0; x < MW; x++)
+   142→      if (map[y][x] === 0 && rng() < 0.35)
+   143→        tiles[y][x] = pick(GRASS_DARK, rng);
+   144→
+   145→  return { map, tiles };
+   146→}
+   147→
+   148→// ═══════════════════════════════════════════════════
+   149→// OBJECTS (trees, flowers, rocks, etc.)
+   150→// ═══════════════════════════════════════════════════
+   151→interface Obj { type: string; x: number; y: number; v: number; sortY: number; }
+   152→
+   153→function generateObjects(): Obj[] {
+   154→  const rng = mkRng(42);
+   155→  const objs: Obj[] = [];
+   156→  const addTree = (x: number, y: number, v: number) => {
+   157→    objs.push({ type: 'tree', x, y, v: v % 5, sortY: y + 2.5 });
+   158→  };
+   159→
+   160→  // ── Dense border trees ──
+   161→  for (let x = 0; x < MW; x++) {
+   162→    if (x % 2 === 0) addTree(x, 0, rng() * 5 | 0);
+   163→    if (x % 3 === 0) addTree(x, 1, rng() * 5 | 0);
+   164→    if (x % 3 === 0) addTree(x, MH - 2, rng() * 5 | 0);
+   165→    if (x % 2 === 0) addTree(x, MH - 1, rng() * 5 | 0);
+   166→  }
+   167→  for (let y = 2; y < MH - 2; y++) {
+   168→    if (y % 2 === 0) addTree(0, y, rng() * 5 | 0);
+   169→    if (y % 3 === 0) addTree(1, y, rng() * 5 | 0);
+   170→    if (y % 3 === 0) addTree(MW - 2, y, rng() * 5 | 0);
+   171→    if (y % 2 === 0) addTree(MW - 1, y, rng() * 5 | 0);
+   172→  }
+   173→
+   174→  // ── Tree clusters (forested areas) ──
+   175→  const clusters: [number, number, number, number][] = [
+   176→    [3, 2, 5, 3],     // NW corner
+   177→    [42, 2, 6, 3],    // NE corner
+   178→    [2, 40, 4, 3],    // SW corner
+   179→    [40, 38, 7, 5],   // SE corner
+   180→    [28, 32, 4, 3],   // SE interior
+   181→  ];
+   182→  for (const [cx, cy, w, h] of clusters)
+   183→    for (let dy = 0; dy < h; dy++)
+   184→      for (let dx = 0; dx < w; dx++)
+   185→        if (rng() < 0.55) addTree(cx + dx, cy + dy, rng() * 5 | 0);
+   186→
+   187→  // ── Scattered individual trees ──
+   188→  const treePositions = [
+   189→    [7, 10], [35, 8], [44, 12], [20, 36], [30, 5], [15, 14],
+   190→    [46, 22], [4, 28], [48, 30], [32, 10], [18, 8], [38, 6],
+   191→    [8, 20], [42, 18], [20, 5], [35, 35],
+   192→  ];
+   193→  for (const [x, y] of treePositions) addTree(x, y, rng() * 5 | 0);
+   194→
+   195→  // ── Flower patches (near house, along paths, near pond) ──
+   196→  const flowerSpots = [
+   197→    // Near house
+   198→    [18, 13], [19, 13], [31, 13], [32, 13],
+   199→    [17, 14], [33, 14],
+   200→    // Along paths
+   201→    [22, 16], [27, 16], [22, 21], [27, 21],
+   202→    [21, 25], [28, 25], [21, 30], [28, 30],
+   203→    // Near pond
+   204→    [15, 34], [16, 36], [15, 38], [2, 36], [3, 38],
+   205→    // Scattered
+   206→    [38, 10], [42, 14], [8, 15], [45, 25],
+   207→  ];
+   208→  for (const [x, y] of flowerSpots)
+   209→    objs.push({ type: 'flower', x, y, v: rng() * 4 | 0, sortY: y + 0.3 });
+   210→
+   211→  // ── Rocks ──
+   212→  const rockSpots = [[16, 12], [38, 14], [5, 30], [45, 20], [30, 8], [40, 32], [10, 16], [35, 6], [12, 38]];
+   213→  for (const [x, y] of rockSpots)
+   214→    objs.push({ type: 'rock', x, y, v: rng() * 3 | 0, sortY: y + 0.5 });
+   215→
+   216→  // ── Chest near house ──
+   217→  objs.push({ type: 'chest', x: 32, y: 12, v: 0, sortY: 12.5 });
+   218→
+   219→  return objs;
+   220→}
+   221→
+   222→// ═══════════════════════════════════════════════════
+   223→// MAIN COMPONENT
+   224→// ═══════════════════════════════════════════════════
+   225→export default function FarmScene() {
+   226→  const canvasRef = useRef<HTMLCanvasElement>(null);
+   227→
+   228→  useEffect(() => {
+   229→    let running = true;
+   230→    let rafId = 0;
+   231→
+   232→    async function init() {
+   233→      const load = (src: string) => new Promise<HTMLImageElement>((ok) => {
+   234→        const img = new Image();
+   235→        img.onload = () => ok(img);
+   236→        img.onerror = () => { img.src = ''; ok(img); }; // return blank on error
+   237→        img.src = src;
+   238→      });
+   239→
+   240→      const [tileset, walkImg, idleImg, treeImg, houseImg, chestImg, cropImg, fenceImg,
+   241→             cowMImg, cowFImg, chickenRImg, chickenBImg, chickenYImg] = await Promise.all([
+   242→        load('/assets/tileset/Tileset Spring.png'),
+   243→        load('/assets/sprites/Walk.png'),
+   244→        load('/assets/sprites/Idle.png'),
+   245→        load('/assets/objects/Maple Tree.png'),
+   246→        load('/assets/objects/House.png'),
+   247→        load('/assets/objects/chest.png'),
+   248→        load('/assets/objects/Spring Crops.png'),
+   249→        load("/assets/objects/Fence's copiar.png"),
+   250→        load('/assets/sprites/Male Cow Brown.png'),
+   251→        load('/assets/sprites/Female Cow Brown.png'),
+   252→        load('/assets/sprites/Chicken Red.png'),
+   253→        load('/assets/sprites/Chicken Blonde  Green.png'),
+   254→        load('/assets/sprites/Baby Chicken Yellow.png'),
+   255→      ]);
+   256→
+   257→      if (!running || !canvasRef.current) return;
+   258→      const canvas = canvasRef.current;
+   259→      const ctx = canvas.getContext('2d')!;
+   260→
+   261→      const resize = () => { canvas.width = window.innerWidth; canvas.height = window.innerHeight; };
+   262→      resize();
+   263→      window.addEventListener('resize', resize);
+   264→
+   265→      // Generate world
+   266→      const { map, tiles } = generateMap();
+   267→      const objects = generateObjects();
+   268→
+   269→      // Camera
+   270→      let camX = 24 * ST - canvas.width / 2;
+   271→      let camY = 12 * ST - canvas.height / 2;
+   272→
+   273→      // Time
+   274→      let gameTime = 6.0;
+   275→      let dayCount = 1;
+   276→
+   277→      // Farmer
+   278→      const farmer = { x: 24, y: 10, tx: 24, ty: 10, dir: 0, frame: 0, ft: 0, moving: false, state: 'idle', st: 0 };
+   279→      const SPEED = 2.5;
+   280→
+   281→      // Waypoints
+   282→      interface WP { x: number; y: number; action?: string; wait: number; }
+   283→      const routines: { hour: number; wps: WP[] }[] = [
+   284→        { hour: 5, wps: [{ x: 24, y: 10, wait: 4 }, { x: 11, y: 23, action: 'farm', wait: 80 }] },
+   285→        { hour: 8, wps: [{ x: 11, y: 23, wait: 2 }, { x: 24, y: 19, wait: 2 }, { x: 38, y: 25, action: 'animals', wait: 80 }] },
+   286→        { hour: 10, wps: [{ x: 38, y: 19, wait: 3 }, { x: 32, y: 12, wait: 8 }, { x: 20, y: 14, wait: 8 }, { x: 24, y: 16, wait: 8 }] },
+   287→        { hour: 14, wps: [{ x: 24, y: 19, wait: 2 }, { x: 10, y: 25, wait: 2 }, { x: 8, y: 37, action: 'pond', wait: 60 }] },
+   288→        { hour: 17, wps: [{ x: 10, y: 20, wait: 2 }, { x: 24, y: 19, wait: 2 }, { x: 24, y: 10, wait: 100 }] },
+   289→        { hour: 19, wps: [{ x: 24, y: 10, action: 'sleep', wait: 600 }] },
+   290→      ];
+   291→      let rIdx = 0, wIdx = 0, waiting = false;
+   292→      const getRoutine = () => { let best = routines[0]; for (const r of routines) if (gameTime >= r.hour) best = r; return best; };
+   293→
+   294→      // Animals
+   295→      interface Animal { x: number; y: number; tx: number; ty: number; type: string; img: HTMLImageElement; v: number; dir: number; frame: number; ft: number; st: number; moving: boolean; cols: number; }
+   296→      const animalBounds = { x1: 37, x2: 44, y1: 23, y2: 31 };
+   297→      const animals: Animal[] = [
+   298→        { x: 39, y: 25, tx: 39, ty: 25, type: 'chicken', img: chickenRImg, v: 0, dir: 0, frame: 0, ft: 0, st: 2, moving: false, cols: 4 },
+   299→        { x: 41, y: 27, tx: 41, ty: 27, type: 'chicken', img: chickenBImg, v: 1, dir: 1, frame: 0, ft: 0, st: 3, moving: false, cols: 4 },
+   300→        { x: 43, y: 24, tx: 43, ty: 24, type: 'chicken', img: chickenYImg, v: 2, dir: 0, frame: 0, ft: 0, st: 1, moving: false, cols: 4 },
+   301→        { x: 39, y: 29, tx: 39, ty: 29, type: 'cow', img: cowMImg, v: 0, dir: 0, frame: 0, ft: 0, st: 4, moving: false, cols: 8 },
+   302→        { x: 42, y: 27, tx: 42, ty: 27, type: 'cow', img: cowFImg, v: 1, dir: 1, frame: 0, ft: 0, st: 2, moving: false, cols: 8 },
+   303→      ];
+   304→
+   305→      // Stars
+   306→      const starRng = mkRng(999);
+   307→      const stars = Array.from({ length: 100 }, () => ({
+   308→        x: starRng() * MW * ST, y: starRng() * MH * ST,
+   309→        b: 0.3 + starRng() * 0.7, sp: 1 + starRng() * 3,
+   310→      }));
+   311→
+   312→      // Particles
+   313→      interface Ptc { x: number; y: number; vx: number; vy: number; life: number; max: number; type: string; color: string; sz: number; ph: number; }
+   314→      const ptcs: Ptc[] = [];
+   315→      const ptcRng = mkRng(123);
+   316→
+   317→      // Crops state
+   318→      const cropStages: Map<string, number> = new Map();
+   319→
+   320→      // ── DRAWING HELPERS ──
+   321→
+   322→      // Draw a tile from tileset
+   323→      function drawTile(tileIdx: number, px: number, py: number) {
+   324→        if (!tileset || !tileset.width) return;
+   325→        const col = tileIdx % TS_COLS;
+   326→        const row = (tileIdx / TS_COLS) | 0;
+   327→        ctx.drawImage(tileset, col * T, row * T, T, T, px, py, ST, ST);
+   328→      }
+   329→
+   330→      // Draw a character sprite from a sheet
+   331→      function drawCharSprite(sheet: HTMLImageElement, dir: number, frame: number, cols: number, maxFrames: number, px: number, py: number) {
+   332→        if (!sheet || !sheet.width) return false;
+   333→        const f = frame % maxFrames;
+   334→        const d = dir % 4;
+   335→        const idx = d * cols + f;
+   336→        const sc = idx % cols;
+   337→        const sr = (idx / cols) | 0;
+   338→        const sw = Math.floor(sheet.width / cols);
+   339→        const sh = Math.floor(sheet.height / Math.ceil((4 * cols) / cols));
+   340→        const actualSh = Math.floor(sheet.height / 4); // 4 direction rows
+   341→        ctx.drawImage(sheet, sc * T, d * actualSh, T, actualSh, px, py, ST, actualSh * S);
+   342→        return true;
+   343→      }
+   344→
+   345→      // Draw farmer from walk/idle sheet
+   346→      function drawFarmerSprite(px: number, py: number) {
+   347→        const sheet = farmer.moving ? walkImg : idleImg;
+   348→        if (!sheet || !sheet.width) return false;
+   349→        const cols = farmer.moving ? 12 : 8;
+   350→        const maxFrames = farmer.moving ? 3 : 2;
+   351→        const f = farmer.frame % maxFrames;
+   352→        const d = farmer.dir % 4;
+   353→        const idx = d * cols + f;
+   354→        const srcCol = idx % cols;
+   355→        const srcRow = (idx / cols) | 0;
+   356→        const sheetW = sheet.width;
+   357→        const rows = Math.floor(sheet.height / T);
+   358→        const actualSrcRow = Math.min(srcRow, rows - 1);
+   359→        ctx.drawImage(sheet, srcCol * T, actualSrcRow * T, T, T, px, py, ST, ST);
+   360→        return true;
+   361→      }
+   362→
+   363→      // Draw animal from its sprite sheet
+   364→      function drawAnimalSprite(a: Animal, px: number, py: number) {
+   365→        if (!a.img || !a.img.width) return false;
+   366→        const cols = a.cols;
+   367→        const maxFrames = 2;
+   368→        const f = a.frame % maxFrames;
+   369→        const d = a.dir % 4;
+   370→        const idx = d * cols + f;
+   371→        const srcCol = idx % cols;
+   372→        const srcRow = (idx / cols) | 0;
+   373→        const sheetRows = Math.floor(a.img.height / T);
+   374→        const actualSrcRow = Math.min(srcRow, sheetRows - 1);
+   375→        const srcX = srcCol * T;
+   376→        const srcY = actualSrcRow * T;
+   377→        ctx.drawImage(a.img, srcX, srcY, T, T, px, py, ST, ST);
+   378→        return true;
+   379→      }
+   380→
+   381→      // ── UPDATE ──
+   382→      function moveToward(e: { x: number; y: number; tx: number; ty: number; dir: number; frame: number; ft: number; moving: boolean }, spd: number, dt: number) {
+   383→        if (!e.moving) return;
+   384→        const dx = e.tx - e.x, dy = e.ty - e.y;
+   385→        const d = Math.sqrt(dx * dx + dy * dy);
+   386→        if (d < 0.15) { e.x = e.tx; e.y = e.ty; e.moving = false; return; }
+   387→        const ms = spd * dt;
+   388→        e.x += (dx / d) * ms;
+   389→        e.y += (dy / d) * ms;
+   390→        e.dir = Math.abs(dx) > Math.abs(dy) * 0.5 ? (dx > 0 ? 2 : 1) : (dy > 0 ? 0 : 3);
+   391→        e.ft += dt;
+   392→        if (e.ft > 0.15) { e.ft -= 0.15; e.frame = (e.frame + 1) % 4; }
+   393→      }
+   394→
+   395→      function updateFarmer(dt: number) {
+   396→        const newR = getRoutine();
+   397→        if (routines.indexOf(newR) !== rIdx) { rIdx = routines.indexOf(newR); wIdx = 0; waiting = false; }
+   398→        if (waiting) {
+   399→          farmer.ft += dt;
+   400→          if (farmer.ft > 0.5) { farmer.ft -= 0.5; farmer.frame = (farmer.frame + 1) % 2; }
+   401→          farmer.st -= dt;
+   402→          if (farmer.st <= 0) { wIdx++; waiting = false; }
+   403→          return;
+   404→        }
+   405→        const routine = routines[rIdx];
+   406→        const wp = routine.wps[Math.min(wIdx, routine.wps.length - 1)];
+   407→        if (!farmer.moving) { farmer.tx = wp.x; farmer.ty = wp.y; farmer.moving = true; }
+   408→        moveToward(farmer, SPEED, dt);
+   409→        if (!farmer.moving) {
+   410→          farmer.state = wp.action || 'idle';
+   411→          waiting = true;
+   412→          farmer.st = wp.wait;
+   413→          farmer.ft = 0;
+   414→          farmer.dir = 0;
+   415→          farmer.frame = 0;
+   416→        }
+   417→        if (farmer.moving && ptcRng() < 0.08) {
+   418→          ptcs.push({ x: farmer.x + (ptcRng() - 0.5), y: farmer.y + 0.5, vx: (ptcRng() - 0.5) * 0.3, vy: -0.2 - ptcRng() * 0.2, life: 0, max: 0.4 + ptcRng() * 0.3, type: 'dust', color: '#c9a96e', sz: 1 + ptcRng(), ph: 0 });
+   419→        }
+   420→      }
+   421→
+   422→      function updateAnimal(a: Animal, dt: number) {
+   423→        a.st -= dt;
+   424→        if (!a.moving) {
+   425→          if (a.st <= 0) {
+   426→            if (ptcRng() < 0.6) {
+   427→              a.tx = animalBounds.x1 + 1 + ptcRng() * (animalBounds.x2 - animalBounds.x1 - 2);
+   428→              a.ty = animalBounds.y1 + 1 + ptcRng() * (animalBounds.y2 - animalBounds.y1 - 2);
+   429→              a.moving = true;
+   430→              a.st = 3 + ptcRng() * 5;
+   431→            } else { a.st = 2 + ptcRng() * 4; }
+   432→          }
+   433→          a.ft += dt;
+   434→          if (a.ft > 0.6) { a.ft -= 0.6; a.frame = (a.frame + 1) % 2; }
+   435→        } else {
+   436→          moveToward(a, a.type === 'cow' ? 0.6 : 1.2, dt);
+   437→          if (!a.moving) a.st = 1 + ptcRng() * 3;
+   438→        }
+   439→      }
+   440→
+   441→      function updateParticles(dt: number, t: number) {
+   442→        const hour = gameTime % 24;
+   443→        const isDay = hour >= 6 && hour < 19;
+   444→        if (isDay) {
+   445→          if (ptcRng() < 0.012) ptcs.push({ x: camX / ST + ptcRng() * canvas.width / ST, y: camY / ST + ptcRng() * canvas.height / ST, vx: (ptcRng() - 0.5) * 0.6, vy: (ptcRng() - 0.5) * 0.3, life: 0, max: 8 + ptcRng() * 10, type: 'butterfly', color: ['#f9a8d4', '#fbbf24', '#a78bfa', '#34d399'][ptcRng() * 4 | 0], sz: 2 + ptcRng() * 2, ph: ptcRng() * 6.28 });
+   446→          if (ptcRng() < 0.006) ptcs.push({ x: camX / ST + ptcRng() * canvas.width / ST, y: camY / ST + ptcRng() * canvas.height / ST, vx: 0.3 + ptcRng() * 0.5, vy: 0.1 + ptcRng() * 0.2, life: 0, max: 5 + ptcRng() * 8, type: 'seed', color: '#fef3c7', sz: 1 + ptcRng(), ph: ptcRng() * 6.28 });
+   447→        } else {
+   448→          if (ptcRng() < 0.025) ptcs.push({ x: camX / ST + ptcRng() * canvas.width / ST, y: camY / ST + ptcRng() * canvas.height / ST, vx: (ptcRng() - 0.5) * 0.2, vy: (ptcRng() - 0.5) * 0.2, life: 0, max: 3 + ptcRng() * 5, type: 'firefly', color: '#fde047', sz: 2 + ptcRng() * 2, ph: ptcRng() * 6.28 });
+   449→        }
+   450→        for (let i = ptcs.length - 1; i >= 0; i--) {
+   451→          const p = ptcs[i];
+   452→          p.life += dt;
+   453→          if (p.life > p.max) { ptcs.splice(i, 1); continue; }
+   454→          p.x += (p.vx + (p.type === 'butterfly' ? Math.sin(t * 2 + p.ph) * 0.3 : 0)) * dt;
+   455→          p.y += (p.vy + (p.type === 'firefly' ? Math.cos(t * 2.5 + p.ph) * 0.1 : 0)) * dt;
+   456→        }
+   457→      }
+   458→
+   459→      // ── RENDER ──
+   460→      function render(t: number) {
+   461→        const w = canvas.width, h = canvas.height;
+   462→        ctx.imageSmoothingEnabled = false;
+   463→
+   464→        // Visible tile range
+   465→        const sx = Math.max(0, Math.floor(camX / ST) - 1);
+   466→        const sy = Math.max(0, Math.floor(camY / ST) - 1);
+   467→        const ex = Math.min(MW, Math.ceil((camX + w) / ST) + 1);
+   468→        const ey = Math.min(MH, Math.ceil((camY + h) / ST) + 1);
+   469→
+   470→        // ── Sky color based on time ──
+   471→        const hour = gameTime % 24;
+   472→        let skyR = 135, skyG = 206, skyB = 235; // day sky
+   473→        if (hour >= 5 && hour < 7) {
+   474→          const f = (hour - 5) / 2;
+   475→          skyR = 40 + f * 95; skyG = 30 + f * 176; skyB = 80 + f * 155;
+   476→        } else if (hour >= 17 && hour < 19) {
+   477→          const f = (hour - 17) / 2;
+   478→          skyR = 135 + f * 80; skyG = 206 - f * 100; skyB = 235 - f * 100;
+   479→        } else if (hour >= 19 && hour < 20) {
+   480→          const f = hour - 19;
+   481→          skyR = 215 - f * 195; skyG = 106 - f * 86; skyB = 135 - f * 95;
+   482→        } else if (hour >= 20 || hour < 5) {
+   483→          skyR = 20; skyG = 20; skyB = 40;
+   484→        }
+   485→        ctx.fillStyle = `rgb(${skyR | 0},${skyG | 0},${skyB | 0})`;
+   486→        ctx.fillRect(0, 0, w, h);
+   487→
+   488→        // ── Ground tiles (using tileset sprites) ──
+   489→        for (let y = sy; y < ey; y++) {
+   490→          for (let x = sx; x < ex; x++) {
+   491→            const px = x * ST - camX;
+   492→            const py = y * ST - camY;
+   493→            const terrain = map[y][x];
+   494→
+   495→            if (terrain === 5) {
+   496→              // Water: animated color + tileset tile
+   497→              const wp = Math.floor(t * 1.5) % 4;
+   498→              const wb = wp === 0 ? 10 : wp === 1 ? 0 : wp === 2 ? -10 : 0;
+   499→              ctx.fillStyle = `rgb(${74 + wb | 0},${144 + wb | 0},${217 + wb | 0})`;
+   500→              ctx.fillRect(px, py, ST + 1, ST + 1);
+   501→              // Overlay with tileset water tile
+   502→              drawTile(tiles[y][x], px, py);
+   503→            } else {
+   504→              // All other terrain: draw tileset tile directly
+   505→              drawTile(tiles[y][x], px, py);
+   506→            }
+   507→          }
+   508→        }
+   509→
+   510→        // ── Farmland row lines ──
+   511→        for (let y = sy; y < ey; y++) {
+   512→          for (let x = sx; x < ex; x++) {
+   513→            if (map[y][x] !== 2) continue;
+   514→            const px = x * ST - camX;
+   515→            const py = y * ST - camY;
+   516→            ctx.fillStyle = 'rgba(80,50,10,0.3)';
+   517→            ctx.fillRect(px, py + ST / 2 - 1, ST + 1, 2);
+   518→          }
+   519→        }
+   520→
+   521→        // ── Water shimmer ──
+   522→        for (let y = sy; y < ey; y++) {
+   523→          for (let x = sx; x < ex; x++) {
+   524→            if (map[y][x] !== 5) continue;
+   525→            const px = x * ST - camX;
+   526→            const py = y * ST - camY;
+   527→            const sh = Math.sin(t * 3 + x * 2 + y * 1.5) * 0.5 + 0.5;
+   528→            ctx.fillStyle = `rgba(200,230,255,${sh * 0.25})`;
+   529→            ctx.fillRect(px, py, ST, ST);
+   530→          }
+   531→        }
+   532→
+   533→        // ── Collect Y-sorted drawables ──
+   534→        interface Draw { sortY: number; fn: () => void; }
+   535→        const draws: Draw[] = [];
+   536→
+   537→        // -- House (224x112 = 14x7 tiles, placed at top center) --
+   538→        if (houseImg && houseImg.width) {
+   539→          draws.push({
+   540→            sortY: 9,
+   541→            fn: () => {
+   542→              const px = 18 * ST - camX;
+   543→              const py = 3 * ST - camY;
+   544→              // House shadow
+   545→              ctx.fillStyle = 'rgba(0,0,0,0.15)';
+   546→              ctx.beginPath();
+   547→              ctx.ellipse(px + houseImg.width * S / 2, py + houseImg.height * S - 10, houseImg.width * S * 0.4, 12, 0, 0, 6.28);
+   548→              ctx.fill();
+   549→              ctx.drawImage(houseImg, 0, 0, houseImg.width, houseImg.height, px, py, houseImg.width * S, houseImg.height * S);
+   550→            },
+   551→          });
+   552→        }
+   553→
+   554→        // -- Fences using fence sprite --
+   555→        const drawFenceSprite = (x: number, y: number, col: number, row: number) => {
+   556→          draws.push({
+   557→            sortY: y + 0.7,
+   558→            fn: () => {
+   559→              const px = x * ST - camX;
+   560→              const py = y * ST - camY;
+   561→              if (fenceImg && fenceImg.width) {
+   562→                ctx.drawImage(fenceImg, col * T, row * T, T, T, px, py, ST, ST);
+   563→              } else {
+   564→                // Fallback
+   565→                ctx.fillStyle = '#8B7355';
+   566→                ctx.fillRect(px + 2, py + 6, ST - 4, ST - 6);
+   567→                ctx.fillStyle = '#6b5540';
+   568→                ctx.fillRect(px + 4, py + 2, 4, ST - 2);
+   569→                ctx.fillRect(px + ST - 8, py + 2, 4, ST - 2);
+   570→              }
+   571→            },
+   572→          });
+   573→        };
+   574→
+   575→        // Farm fences (west side)
+   576→        for (let x = 4; x <= 18; x++) { drawFenceSprite(x, 22, 1, 0); drawFenceSprite(x, 33, 1, 2); }
+   577→        for (let y = 22; y <= 33; y++) { drawFenceSprite(4, y, 0, 1); drawFenceSprite(18, y, 2, 1); }
+   578→        // Gate gaps in farm fence
+   579→        // (path goes through at x=11, y=22 and x=11, y=33 - those tiles are paths so fences skip them)
+   580→
+   581→        // Animal fences (east side)
+   582→        for (let x = 36; x <= 45; x++) { drawFenceSprite(x, 22, 1, 0); drawFenceSprite(x, 32, 1, 2); }
+   583→        for (let y = 22; y <= 32; y++) { drawFenceSprite(36, y, 0, 1); drawFenceSprite(45, y, 2, 1); }
+   584→
+   585→        // -- Trees using Maple Tree sprite --
+   586→        for (const obj of objects) {
+   587→          if (obj.type !== 'tree') continue;
+   588→          draws.push({
+   589→            sortY: obj.sortY,
+   590→            fn: () => {
+   591→              const px = obj.x * ST - camX;
+   592→              const py = obj.y * ST - camY;
+   593→              if (treeImg && treeImg.width) {
+   594→                // Each tree is 32x48 (2x3 tiles), 5 variants across 160px width
+   595→                const tv = obj.v % 5;
+   596→                const srcX = tv * 32;
+   597→                ctx.drawImage(treeImg, srcX, 0, 32, 48, px - ST * 0.5, py - ST * 1.5, 32 * S, 48 * S);
+   598→              } else {
+   599→                // Fallback
+   600→                const sway = Math.sin(t * 0.8 + obj.x * 2 + obj.y) * 1.5;
+   601→                ctx.fillStyle = '#6b4226';
+   602→                ctx.fillRect(px + ST * 0.4, py + ST * 0.5, ST * 0.2, ST * 1.2);
+   603→                ctx.fillStyle = obj.v % 2 === 0 ? '#2d8a2d' : '#3aa03a';
+   604→                ctx.beginPath();
+   605→                ctx.arc(px + ST * 0.5 + sway, py, ST * 0.7, 0, Math.PI * 2);
+   606→                ctx.fill();
+   607→              }
+   608→            },
+   609→          });
+   610→        }
+   611→
+   612→        // -- Crops using crop sprite --
+   613→        if (cropImg && cropImg.width) {
+   614→          for (let cy = 23; cy <= 32; cy++) {
+   615→            for (let cx = 5; cx <= 17; cx++) {
+   616→              if (map[cy]?.[cx] !== 2) continue;
+   617→              // Skip path gaps
+   618→              if ((cx === 11 || cx === 12) && cy >= 24 && cy <= 31) continue;
+   619→              const key = `${cx},${cy}`;
+   620→              let stage = cropStages.get(key) || 0;
+   621→              stage = Math.min(stage, 4);
+   622→              draws.push({
+   623→                sortY: cy + 0.5,
+   624→                fn: () => {
+   625→                  const px = cx * ST - camX;
+   626→                  const py = cy * ST - camY;
+   627→                  // Spring Crops: 224x128 = 14 cols x 8 rows
+   628→                  // 4 crop types (rows 0-3), stages across columns (0,3,6,9,12)
+   629→                  const typeRow = (cx + cy) % 4;
+   630→                  const stageCol = [0, 3, 6, 9, 12][Math.floor(stage)];
+   631→                  ctx.drawImage(cropImg, stageCol * T, typeRow * T, T, T, px, py, ST, ST);
+   632→                },
+   633→              });
+   634→            }
+   635→          }
+   636→        }
+   637→
+   638→        // -- Flowers --
+   639→        for (const obj of objects) {
+   640→          if (obj.type !== 'flower') continue;
+   641→          const flowerColors = ['#e04040', '#e0d040', '#d060d0', '#60a0e0'];
+   642→          draws.push({
+   643→            sortY: obj.sortY,
+   644→            fn: () => {
+   645→              const px = obj.x * ST - camX;
+   646→              const py = obj.y * ST - camY;
+   647→              // Stem
+   648→              ctx.fillStyle = '#40a030';
+   649→              ctx.fillRect(px + 7 * S, py + 9 * S, 2 * S, 5 * S);
+   650→              // Petals
+   651→              ctx.fillStyle = flowerColors[obj.v % 4];
+   652→              ctx.fillRect(px + 5 * S, py + 6 * S, 6 * S, 4 * S);
+   653→              // Center
+   654→              ctx.fillStyle = '#f0f060';
+   655→              ctx.fillRect(px + 7 * S, py + 7 * S, 2 * S, 2 * S);
+   656→            },
+   657→          });
+   658→        }
+   659→
+   660→        // -- Rocks --
+   661→        for (const obj of objects) {
+   662→          if (obj.type !== 'rock') continue;
+   663→          draws.push({
+   664→            sortY: obj.sortY,
+   665→            fn: () => {
+   666→              const px = obj.x * ST - camX;
+   667→              const py = obj.y * ST - camY;
+   668→              const shade = obj.v === 0 ? '#888' : obj.v === 1 ? '#777' : '#999';
+   669→              const hi = obj.v === 0 ? '#aaa' : obj.v === 1 ? '#999' : '#bbb';
+   670→              ctx.fillStyle = shade;
+   671→              ctx.fillRect(px + 3 * S, py + 7 * S, 10 * S, 7 * S);
+   672→              ctx.fillRect(px + 5 * S, py + 5 * S, 6 * S, 2 * S);
+   673→              ctx.fillStyle = hi;
+   674→              ctx.fillRect(px + 4 * S, py + 7 * S, 4 * S, 3 * S);
+   675→            },
+   676→          });
+   677→        }
+   678→
+   679→        // -- Chest --
+   680→        for (const obj of objects) {
+   681→          if (obj.type !== 'chest') continue;
+   682→          draws.push({
+   683→            sortY: obj.sortY,
+   684→            fn: () => {
+   685→              const px = obj.x * ST - camX;
+   686→              const py = obj.y * ST - camY;
+   687→              if (chestImg && chestImg.width) {
+   688→                ctx.drawImage(chestImg, 0, 0, chestImg.width, chestImg.height, px, py, chestImg.width * S, chestImg.height * S);
+   689→              } else {
+   690→                ctx.fillStyle = '#8B6914';
+   691→                ctx.fillRect(px + 2 * S, py + 4 * S, 12 * S, 8 * S);
+   692→                ctx.fillStyle = '#c49a6c';
+   693→                ctx.fillRect(px + 2 * S, py + 4 * S, 12 * S, 2 * S);
+   694→                ctx.fillStyle = '#f0c040';
+   695→                ctx.fillRect(px + 7 * S, py + 6 * S, 2 * S, 2 * S);
+   696→              }
+   697→            },
+   698→          });
+   699→        }
+   700→
+   701→        // -- Animals using their sprite sheets --
+   702→        for (const a of animals) {
+   703→          draws.push({
+   704→            sortY: a.y + 0.8,
+   705→            fn: () => {
+   706→              const px = a.x * ST - camX;
+   707→              const py = a.y * ST - camY;
+   708→              // Shadow
+   709→              ctx.fillStyle = 'rgba(0,0,0,0.1)';
+   710→              if (a.type === 'cow') {
+   711→                ctx.beginPath();
+   712→                ctx.ellipse(px + ST * 0.5, py + ST * 1.6, ST * 0.5, ST * 0.12, 0, 0, 6.28);
+   713→                ctx.fill();
+   714→              } else {
+   715→                ctx.beginPath();
+   716→                ctx.ellipse(px + ST * 0.5, py + ST * 0.8, ST * 0.25, ST * 0.08, 0, 0, 6.28);
+   717→                ctx.fill();
+   718→              }
+   719→              // Draw sprite
+   720→              if (!drawAnimalSprite(a, px, py)) {
+   721→                // Fallback if sprite fails
+   722→                if (a.type === 'cow') {
+   723→                  ctx.fillStyle = '#8B6340';
+   724→                  ctx.fillRect(px + 2 * S, py + 4 * S, 12 * S, 8 * S);
+   725→                  ctx.fillStyle = '#fff';
+   726→                  ctx.fillRect(px + 10 * S, py + 6 * S, 3 * S, 2 * S);
+   727→                } else {
+   728→                  ctx.fillStyle = '#e04040';
+   729→                  ctx.fillRect(px + 4 * S, py + 6 * S, 8 * S, 6 * S);
+   730→                  ctx.fillStyle = '#e0a020';
+   731→                  ctx.fillRect(px + 10 * S, py + 7 * S, 2 * S, 2 * S);
+   732→                }
+   733→              }
+   734→            },
+   735→          });
+   736→        }
+   737→
+   738→        // -- Farmer --
+   739→        draws.push({
+   740→          sortY: farmer.y + 0.8,
+   741→          fn: () => {
+   742→            const px = farmer.x * ST - camX;
+   743→            const py = farmer.y * ST - camY;
+   744→            // Shadow
+   745→            ctx.fillStyle = 'rgba(0,0,0,0.15)';
+   746→            ctx.beginPath();
+   747→            ctx.ellipse(px + ST * 0.5, py + ST * 1.8, ST * 0.35, ST * 0.1, 0, 0, 6.28);
+   748→            ctx.fill();
+   749→            if (!drawFarmerSprite(px, py)) {
+   750→              // Fallback farmer
+   751→              ctx.fillStyle = '#604020';
+   752→              ctx.fillRect(px + 4 * S, py + 10 * S, 8 * S, 6 * S);
+   753→              ctx.fillStyle = '#4060c0';
+   754→              ctx.fillRect(px + 3 * S, py + 5 * S, 10 * S, 6 * S);
+   755→              ctx.fillStyle = '#f0c090';
+   756→              ctx.fillRect(px + 5 * S, py + 1 * S, 6 * S, 5 * S);
+   757→              ctx.fillStyle = '#2a2a2a';
+   758→              ctx.fillRect(px + 6 * S, py + 3 * S, S, S);
+   759→              ctx.fillRect(px + 9 * S, py + 3 * S, S, S);
+   760→              ctx.fillStyle = '#6b3a1a';
+   761→              ctx.fillRect(px + 5 * S, py, 6 * S, 2 * S);
+   762→            }
+   763→          },
+   764→        });
+   765→
+   766→        // Sort and draw all objects
+   767→        draws.sort((a, b) => a.sortY - b.sortY);
+   768→        for (const d of draws) d.fn();
+   769→
+   770→        // ── Day/Night overlay ──
+   771→        let overlayAlpha = 0;
+   772→        if (hour >= 5 && hour < 7) {
+   773→          overlayAlpha = 0.2 * (1 - (hour - 5) / 2);
+   774→        } else if (hour >= 17 && hour < 19) {
+   775→          overlayAlpha = 0.15 * ((hour - 17) / 2);
+   776→        } else if (hour >= 19 && hour < 20) {
+   777→          overlayAlpha = 0.4 * (hour - 19);
+   778→        } else if (hour >= 20 || hour < 5) {
+   779→          overlayAlpha = 0.4;
+   780→        }
+   781→        if (overlayAlpha > 0) {
+   782→          ctx.fillStyle = hour >= 19 ? `rgba(10,10,50,${overlayAlpha.toFixed(3)})` : `rgba(255,180,80,${overlayAlpha.toFixed(3)})`;
+   783→          ctx.fillRect(0, 0, w, h);
+   784→        }
+   785→
+   786→        // ── Stars ──
+   787→        if (hour >= 19.5 || hour < 5) {
+   788→          let sa = 1;
+   789→          if (hour >= 19.5) sa = Math.min(1, (hour - 19.5) * 2);
+   790→          else sa = Math.min(1, (5 - hour) * 2);
+   791→          for (const s of stars) {
+   792→            const stx = s.x - camX, sty = s.y - camY;
+   793→            if (stx < -10 || stx > w + 10 || sty < -10 || sty > h + 10) continue;
+   794→            const tw = 0.5 + 0.5 * Math.sin(t * s.sp + s.x);
+   795→            ctx.fillStyle = `rgba(255,255,230,${s.b * tw * sa})`;
+   796→            ctx.fillRect(stx, sty, 2, 2);
+   797→          }
+   798→        }
+   799→
+   800→        // ── Particles ──
+   801→        for (const p of ptcs) {
+   802→          const px = p.x * ST - camX;
+   803→          const py = p.y * ST - camY;
+   804→          if (px < -20 || px > w + 20 || py < -20 || py > h + 20) continue;
+   805→          const lr = p.life / p.max;
+   806→          const al = lr < 0.1 ? lr * 10 : lr > 0.8 ? (1 - lr) * 5 : 1;
+   807→          if (p.type === 'butterfly') {
+   808→            const wf = Math.sin(t * 12 + p.ph) * 3;
+   809→            ctx.fillStyle = p.color;
+   810→            ctx.globalAlpha = al;
+   811→            ctx.fillRect(px - wf - p.sz, py - p.sz * 0.5, p.sz, p.sz);
+   812→            ctx.fillRect(px + wf, py - p.sz * 0.5, p.sz, p.sz);
+   813→            ctx.globalAlpha = 1;
+   814→          } else if (p.type === 'firefly') {
+   815→            const gl = 0.5 + 0.5 * Math.sin(t * 5 + p.ph);
+   816→            const r = p.sz * (0.8 + gl * 0.4);
+   817→            ctx.fillStyle = `rgba(253,224,71,${al * gl * 0.8})`;
+   818→            ctx.beginPath();
+   819→            ctx.arc(px, py, r, 0, 6.28);
+   820→            ctx.fill();
+   821→            ctx.fillStyle = `rgba(253,224,71,${al * gl * 0.2})`;
+   822→            ctx.beginPath();
+   823→            ctx.arc(px, py, r * 2.5, 0, 6.28);
+   824→            ctx.fill();
+   825→          } else if (p.type === 'seed') {
+   826→            ctx.fillStyle = `rgba(254,243,199,${al * 0.7})`;
+   827→            ctx.fillRect(px, py, p.sz, p.sz);
+   828→          } else if (p.type === 'dust') {
+   829→            ctx.fillStyle = `rgba(196,167,106,${al * 0.5})`;
+   830→            ctx.fillRect(px, py, p.sz, p.sz);
+   831→          }
+   832→        }
+   833→
+   834→        // ── UI ──
+   835→        drawUI(w, h);
+   836→      }
+   837→
+   838→      function drawUI(w: number, h: number) {
+   839→        const hour = gameTime % 24;
+   840→        const h12 = hour % 12 || 12;
+   841→        const mm = Math.floor((hour % 1) * 60);
+   842→        const ampm = hour < 12 ? 'AM' : 'PM';
+   843→        const timeStr = `${h12}:${mm.toString().padStart(2, '0')} ${ampm}`;
+   844→
+   845→        // Panel background
+   846→        const pw = 160, ph = 80, px = w - pw - 16, py = 16;
+   847→        ctx.fillStyle = 'rgba(20,15,10,0.75)';
+   848→        ctx.beginPath();
+   849→        ctx.roundRect(px, py, pw, ph, 8);
+   850→        ctx.fill();
+   851→        ctx.strokeStyle = 'rgba(180,150,100,0.5)';
+   852→        ctx.lineWidth = 1.5;
+   853→        ctx.stroke();
+   854→
+   855→        // Sun/moon icon
+   856→        const ix = px + 22, iy = py + 22;
+   857→        if (hour >= 6 && hour < 19) {
+   858→          // Sun
+   859→          ctx.fillStyle = '#fbbf24';
+   860→          ctx.beginPath();
+   861→          ctx.arc(ix, iy, 7, 0, 6.28);
+   862→          ctx.fill();
+   863→          ctx.strokeStyle = '#fbbf24';
+   864→          ctx.lineWidth = 1.5;
+   865→          const gt = performance.now() / 1000;
+   866→          for (let a = 0; a < 8; a++) {
+   867→            const ang = (a / 8) * 6.28 + gt * 0.3;
+   868→            ctx.beginPath();
+   869→            ctx.moveTo(ix + Math.cos(ang) * 9, iy + Math.sin(ang) * 9);
+   870→            ctx.lineTo(ix + Math.cos(ang) * 12, iy + Math.sin(ang) * 12);
+   871→            ctx.stroke();
+   872→          }
+   873→        } else {
+   874→          // Moon
+   875→          ctx.fillStyle = '#e2e8f0';
+   876→          ctx.beginPath();
+   877→          ctx.arc(ix, iy, 7, 0, 6.28);
+   878→          ctx.fill();
+   879→          ctx.fillStyle = 'rgba(20,15,10,0.85)';
+   880→          ctx.beginPath();
+   881→          ctx.arc(ix + 2, iy - 1, 6, 0, 6.28);
+   882→          ctx.fill();
+   883→        }
+   884→
+   885→        // Time text
+   886→        ctx.fillStyle = '#e8d5b7';
+   887→        ctx.font = 'bold 15px monospace';
+   888→        ctx.textAlign = 'left';
+   889→        ctx.fillText(timeStr, px + 36, py + 26);
+   890→
+   891→        // Day + Season
+   892→        ctx.fillStyle = '#a89070';
+   893→        ctx.font = '12px monospace';
+   894→        ctx.fillText(`Day ${dayCount}`, px + 14, py + 48);
+   895→
+   896→        ctx.fillStyle = '#7cba5c';
+   897→        ctx.font = 'bold 12px monospace';
+   898→        ctx.fillText('Spring', px + 80, py + 48);
+   899→
+   900→        // Activity text
+   901→        const stateText = farmer.state === 'farm' ? 'Tending crops' : farmer.state === 'animals' ? 'Checking animals' : farmer.state === 'pond' ? 'Admiring pond' : farmer.state === 'sleep' ? 'Sleeping...' : farmer.moving ? 'Walking...' : 'Idle';
+   902→        ctx.fillStyle = 'rgba(168,144,112,0.7)';
+   903→        ctx.font = '10px monospace';
+   904→        ctx.fillText(stateText, px + 14, py + 68);
+   905→
+   906→        // ── Mini-map ──
+   907→        const mmSize = 6; // mini-map tile size
+   908→        const mmW = MW * mmSize;
+   909→        const mmH = MH * mmSize;
+   910→        const mmX = 16, mmY = h - mmH - 16;
+   911→
+   912→        ctx.fillStyle = 'rgba(20,15,10,0.6)';
+   913→        ctx.beginPath();
+   914→        ctx.roundRect(mmX - 4, mmY - 4, mmW + 8, mmH + 8, 4);
+   915→        ctx.fill();
+   916→
+   917→        const terrainColors: Record<number, string> = {
+   918→          0: '#4a8c3f', 1: '#c49a6c', 2: '#8B6914', 4: '#d4b896', 5: '#4a90d9',
+   919→        };
+   920→
+   921→        for (let y = 0; y < MH; y++) {
+   922→          for (let x = 0; x < MW; x++) {
+   923→            ctx.fillStyle = terrainColors[map[y][x]] || '#4a8c3f';
+   924→            ctx.fillRect(mmX + x * mmSize, mmY + y * mmSize, mmSize, mmSize);
+   925→          }
+   926→        }
+   927→
+   928→        // Camera view rectangle
+   929→        const cvx = mmX + (camX / ST) * mmSize;
+   930→        const cvy = mmY + (camY / ST) * mmSize;
+   931→        const cvw = (canvas.width / ST) * mmSize;
+   932→        const cvh = (canvas.height / ST) * mmSize;
+   933→        ctx.strokeStyle = 'rgba(255,255,255,0.6)';
+   934→        ctx.lineWidth = 1;
+   935→        ctx.strokeRect(cvx, cvy, cvw, cvh);
+   936→
+   937→        // Farmer dot on mini-map
+   938→        ctx.fillStyle = '#ff4444';
+   939→        ctx.fillRect(mmX + farmer.x * mmSize - 1, mmY + farmer.y * mmSize - 1, 3, 3);
+   940→      }
+   941→
+   942→      // ── GAME LOOP ──
+   943→      let last = performance.now();
+   944→
+   945→      function loop(ts: number) {
+   946→        if (!running) return;
+   947→        const dt = Math.min((ts - last) / 1000, 0.1);
+   948→        last = ts;
+   949→
+   950→        // Update time
+   951→        gameTime += (24 / DAY_SEC) * dt;
+   952→        if (gameTime >= 24) {
+   953→          gameTime -= 24;
+   954→          dayCount++;
+   955→          cropStages.clear();
+   956→        }
+   957→
+   958→        // Grow crops slowly
+   959→        for (let cy = 23; cy <= 32; cy++)
+   960→          for (let cx = 5; cx <= 17; cx++) {
+   961→            if (map[cy]?.[cx] !== 2) continue;
+   962→            const key = `${cx},${cy}`;
+   963→            let st = cropStages.get(key) || 0;
+   964→            if (st < 4) {
+   965→              st += dt * 0.012;
+   966→              const newFloor = Math.floor(st);
+   967→              if (newFloor > Math.floor(cropStages.get(key) || 0)) {
+   968→                cropStages.set(key, newFloor);
+   969→              }
+   970→            }
+   971→            cropStages.set(key, Math.min(st, 4));
+   972→          }
+   973→
+   974→        // Update entities
+   975→        updateFarmer(dt);
+   976→        for (const a of animals) updateAnimal(a, dt);
+   977→        updateParticles(dt, ts / 1000);
+   978→
+   979→        // Camera: smooth follow farmer
+   980→        const tx = farmer.x * ST - canvas.width / 2 + ST / 2;
+   981→        const ty = farmer.y * ST - canvas.height / 2 + ST / 2;
+   982→        const lf = 1 - Math.pow(0.015, dt);
+   983→        camX += (tx - camX) * lf;
+   984→        camY += (ty - camY) * lf;
+   985→        camX = Math.max(0, Math.min(MW * ST - canvas.width, camX));
+   986→        camY = Math.max(0, Math.min(MH * ST - canvas.height, camY));
+   987→
+   988→        render(ts / 1000);
+   989→        rafId = requestAnimationFrame(loop);
+   990→      }
+   991→
+   992→      rafId = requestAnimationFrame(loop);
+   993→      return () => { running = false; cancelAnimationFrame(rafId); window.removeEventListener('resize', resize); };
+   994→    }
+   995→
+   996→    init();
+   997→    return () => { running = false; };
+   998→  }, []);
+   999→
+  1000→  return (
+  1001→    <canvas
+  1002→      ref={canvasRef}
+  1003→      style={{ display: 'block', width: '100vw', height: '100vh', imageRendering: 'pixelated' }}
+  1004→    />
+  1005→  );
+  1006→}
