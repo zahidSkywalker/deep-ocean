@@ -13,8 +13,8 @@ const geistMono = Geist_Mono({
 });
 
 export const metadata: Metadata = {
-  title: "Echo Bridge — Discord-to-Web Chat",
-  description: "Chat with Echo through a web interface. Messages are bridged through Discord.",
+  title: "Echo Bridge — Agentic AI Chat",
+  description: "Chat with Echo through a web interface with agentic capabilities. Messages are bridged through Discord.",
 };
 
 export default function RootLayout({
@@ -27,7 +27,7 @@ export default function RootLayout({
       lang="en"
       className={`${geistSans.variable} ${geistMono.variable} h-full antialiased dark`}
     >
-      <body className="min-h-full flex flex-col">{children}</body>
+      <body className="h-full">{children}</body>
     </html>
   );
 }

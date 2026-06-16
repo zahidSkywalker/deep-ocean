@@ -1,18 +1,8 @@
 import { NextRequest, NextResponse } from 'next/server';
-import { config, getDiscordHeaders } from '@/lib/config';
+import { config } from '@/lib/config';
 
 export async function POST(request: NextRequest) {
   try {
-    const body = await request.json();
-    const { message } = body;
-
-    if (!message || typeof message !== 'string' || message.trim().length === 0) {
-      return NextResponse.json(
-        { success: false, error: 'Message is required' },
-        { status: 400 }
-      );
-    }
-
     const token = config.discord.userToken;
     const channelId = config.discord.channelId;
     const echoUserId = config.discord.echoUserId;
@@ -26,14 +16,61 @@ export async function POST(request: NextRequest) {
       );
     }
 
-    // Post message to Discord channel, tagging Echo
-    const discordRes = await fetch(`${apiBase}/channels/${channelId}/messages`, {
-      method: 'POST',
-      headers: getDiscordHeaders(),
-      body: JSON.stringify({
-        content: `<@${echoUserId}> ${message.trim()}`,
-      }),
-    });
+    const contentType = request.headers.get('content-type') || '';
+    let message: string;
+    let imageFile: File | null = null;
+
+    if (contentType.includes('multipart/form-data')) {
+      // Handle multipart form-data with potential image
+      const formData = await request.formData();
+      message = (formData.get('message') as string) || '';
+      imageFile = formData.get('file') as File | null;
+    } else {
+      // Handle JSON
+      const body = await request.json();
+      message = body.message || '';
+    }
+
+    if (!message || typeof message !== 'string' || message.trim().length === 0) {
+      return NextResponse.json(
+        { success: false, error: 'Message is required' },
+        { status: 400 }
+      );
+    }
+
+    const headers: HeadersInit = {
+      Authorization: token,
+    };
+
+    let discordRes: Response;
+
+    if (imageFile && imageFile.size > 0) {
+      // Send as multipart/form-data to Discord with attachment
+      const discordFormData = new FormData();
+      discordFormData.append(
+        'payload_json',
+        JSON.stringify({
+          content: `<@${echoUserId}> ${message.trim()}`,
+        })
+      );
+      discordFormData.append('files[0]', imageFile, imageFile.name || 'image.png');
+
+      discordRes = await fetch(`${apiBase}/channels/${channelId}/messages`, {
+        method: 'POST',
+        headers,
+        body: discordFormData,
+      });
+    } else {
+      // Send as JSON
+      headers['Content-Type'] = 'application/json';
+      discordRes = await fetch(`${apiBase}/channels/${channelId}/messages`, {
+        method: 'POST',
+        headers,
+        body: JSON.stringify({
+          content: `<@${echoUserId}> ${message.trim()}`,
+        }),
+      });
+    }
 
     if (!discordRes.ok) {
       const errorText = await discordRes.text();

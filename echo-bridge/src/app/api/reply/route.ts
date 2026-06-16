@@ -1,15 +1,19 @@
 import { NextRequest, NextResponse } from 'next/server';
-import { config, getDiscordHeaders } from '@/lib/config';
+import { config } from '@/lib/config';
+
+interface DiscordMessage {
+  id: string;
+  author: { id: string };
+  content: string;
+  timestamp: string;
+  attachments: Array<{ url: string; filename: string; id: string; size: number }>;
+  mentions: Array<{ id: string }>;
+}
 
 export async function GET(request: NextRequest) {
   try {
     const { searchParams } = new URL(request.url);
     const after = searchParams.get('after');
-
-    if (!after || after === '0') {
-      // Just a connectivity check — return empty
-      return NextResponse.json({ reply: null });
-    }
 
     const token = config.discord.userToken;
     const channelId = config.discord.channelId;
@@ -19,53 +23,66 @@ export async function GET(request: NextRequest) {
     // Validate token is configured
     if (!token || token === 'placeholder_your_discord_user_token_here') {
       return NextResponse.json(
-        { reply: null, error: 'Discord token is not configured' },
+        { messages: [], error: 'Discord token is not configured' },
         { status: 500 }
       );
     }
 
+    // Connectivity check
+    if (!after || after === '0') {
+      return NextResponse.json({ messages: [] });
+    }
+
     // Fetch recent messages from Discord channel after the given message ID
     const discordRes = await fetch(
-      `${apiBase}/channels/${channelId}/messages?after=${after}&limit=10`,
+      `${apiBase}/channels/${channelId}/messages?after=${after}&limit=50`,
       {
         method: 'GET',
-        headers: getDiscordHeaders(),
+        headers: {
+          Authorization: token,
+        },
       }
     );
 
     if (!discordRes.ok) {
       console.error(`Discord API error (${discordRes.status}): ${await discordRes.text()}`);
       return NextResponse.json(
-        { reply: null, error: `Discord API returned ${discordRes.status}` },
+        { messages: [], error: `Discord API returned ${discordRes.status}` },
         { status: 502 }
       );
     }
 
-    const messages: Array<{
-      id: string;
-      author: { id: string };
-      content: string;
-      timestamp: string;
-    }> = await discordRes.json();
+    const messages: DiscordMessage[] = await discordRes.json();
 
-    // Discord returns messages in descending order (newest first).
-    // We need to find the earliest message from Echo (oldest first).
-    const echoMessages = messages
-      .filter((msg) => msg.author.id === echoUserId)
-      .sort((a, b) => new Date(a.timestamp).getTime() - new Date(b.timestamp).getTime());
+    // Filter: messages from Echo user OR messages that mention Echo
+    const relevantMessages = messages.filter((msg) => {
+      const isFromEcho = msg.author.id === echoUserId;
+      const mentionsEcho = msg.mentions?.some((m) => m.id === echoUserId);
+      return isFromEcho || mentionsEcho;
+    });
 
-    if (echoMessages.length > 0) {
-      return NextResponse.json({
-        reply: echoMessages[0].content,
-        messageId: echoMessages[0].id,
-      });
-    }
+    // Sort by timestamp ascending (oldest first)
+    relevantMessages.sort(
+      (a, b) => new Date(a.timestamp).getTime() - new Date(b.timestamp).getTime()
+    );
 
-    return NextResponse.json({ reply: null });
+    // Map to response format
+    const mapped = relevantMessages.map((msg) => ({
+      id: msg.id,
+      authorId: msg.author.id,
+      content: msg.content,
+      timestamp: msg.timestamp,
+      attachments: msg.attachments?.map((a) => ({
+        url: a.url,
+        filename: a.filename,
+      })) || [],
+    }));
+
+    return NextResponse.json({ messages: mapped });
   } catch (error) {
     console.error('Reply API error:', error);
     return NextResponse.json(
-      { reply: null, error: 'Internal server error' },
+      { messages: [], error: 'Internal server error' },
       { status: 500 }
     );
   }
