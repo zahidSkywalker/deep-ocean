@@ -12,3 +12,10 @@ export {
 } from './checkout';
 export { vendorAnalytics, vendorNavItems, vendorReviews } from './vendor-dashboard';
 export type { VendorReview } from './vendor-dashboard';
+export {
+  adminNavItems,
+  platformAnalytics,
+  adminUsers,
+  defaultPlatformSettings,
+} from './admin-dashboard';
+export type { AdminUser, PlatformSettings } from './admin-dashboard';
