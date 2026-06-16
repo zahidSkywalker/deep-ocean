@@ -75,18 +75,19 @@ export default function AdminOrdersPage() {
       </div>
 
       {/* Search + Tabs */}
-      <div className="flex flex-col gap-4">
-        <div className="relative max-w-md">
-          <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-ag-400 pointer-events-none" />
-          <Input
-            placeholder="Search by order ID or customer..."
-            value={search}
-            onChange={(e) => setSearch(e.target.value)}
-            className="pl-10 font-body"
-          />
-        </div>
-        <div className="flex flex-wrap gap-2">
-        {tabs.map((tab) => (
+      <div className="bg-white rounded-2xl shadow-soft p-4 md:p-5">
+        <div className="flex flex-col gap-4">
+          <div className="relative max-w-md">
+            <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-ag-400 pointer-events-none" />
+            <Input
+              placeholder="Search by order ID or customer..."
+              value={search}
+              onChange={(e) => setSearch(e.target.value)}
+              className="pl-10 font-body"
+            />
+          </div>
+          <div className="flex flex-wrap gap-2">
+          {tabs.map((tab) => (
           <Button
             key={tab.value}
             variant={activeTab === tab.value ? 'default' : 'outline'}
@@ -109,7 +110,8 @@ export default function AdminOrdersPage() {
             )}
           </Button>
         ))}
-      </div>
+          </div>
+        </div>
       </div>
 
       {/* Orders List */}
