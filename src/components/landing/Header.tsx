@@ -3,7 +3,7 @@
 import { useState, useEffect } from 'react';
 import { useRouter } from 'next/navigation';
 import Link from 'next/link';
-import { Search, ShoppingCart, User, Menu } from 'lucide-react';
+import { Search, ShoppingCart, User, Menu, Store } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Badge } from '@/components/ui/badge';
@@ -44,6 +44,13 @@ function DesktopNav() {
           {link.label}
         </a>
       ))}
+      <Link
+        href="/vendor"
+        className="px-4 py-2 text-sm font-medium text-fw-200 hover:text-fw-300 hover:bg-fw-300/10 rounded-lg transition-colors font-heading flex items-center gap-1.5"
+      >
+        <Store className="w-4 h-4" />
+        Sell on ArtisanMarket
+      </Link>
     </nav>
   );
 }
@@ -73,6 +80,15 @@ function MobileNav() {
               </a>
             </SheetClose>
           ))}
+          <SheetClose asChild>
+            <Link
+              href="/vendor"
+              className="px-4 py-3 text-base font-medium text-fw-200 hover:text-fw-300 hover:bg-fw-300/10 rounded-xl transition-colors font-heading flex items-center gap-2"
+            >
+              <Store className="w-5 h-5" />
+              Sell on ArtisanMarket
+            </Link>
+          </SheetClose>
           <MobileAuthButtons />
         </nav>
       </SheetContent>

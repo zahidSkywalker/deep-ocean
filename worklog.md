@@ -220,3 +220,28 @@ Files Modified:
 
 ### Build Status
 ✅ Build successful — all 34 pages generated, no errors
+
+## Task s4-1: Vendor Dashboard
+
+### Files Created
+- `src/data/vendor-dashboard.ts` — Mock analytics data (monthly revenue, top products, recent orders, notifications, 15 vendor reviews, nav items)
+- `src/store/useVendorStore.ts` — Zustand store with persist: currentVendor, vendorProducts, vendorOrders (20 mock), vendorSettings, notifications; actions for CRUD on products, order status updates, notification read state
+- `src/components/vendor/StatsCard.tsx` — Reusable stat card with icon, value, label, % change indicator
+- `src/components/vendor/VendorSidebar.tsx` — Dark sidebar (bg-ag-100) with logo, nav items (active state), user info, logout
+- `src/components/vendor/VendorTopBar.tsx` — Top bar with page title, store name, notification bell, mobile hamburger
+- `src/components/vendor/NotificationDropdown.tsx` — Popover with notification list, unread dot, mark all read
+- `src/components/vendor/OrdersTable.tsx` — Reusable orders table with status badges, optional status change dropdown, view details
+- `src/components/vendor/ProductFormDialog.tsx` — Sheet form with RHF+Zod validation for add/edit product (name, description, category, price, stock, SKU, tags, image URLs)
+- `src/app/vendor/layout.tsx` — Sidebar layout: desktop 256px fixed sidebar, mobile Sheet drawer, top bar, main content area
+- `src/app/vendor/page.tsx` — Overview dashboard: 4 stats cards, Recharts bar chart (monthly revenue), recent orders table, top products list, notifications panel
+- `src/app/vendor/products/page.tsx` — Product management: search/filter bar, desktop table + mobile cards, edit/delete with confirmation dialog, add product sheet
+- `src/app/vendor/orders/page.tsx` — Order management: tab filters (All/Pending/Processing/Shipped/Delivered), search, status change dropdown, order detail dialog with items/address/total breakdown
+- `src/app/vendor/reviews/page.tsx` — Reviews page: average rating summary, 5-star distribution bars, 15 review cards with avatars, stars, product name, text
+- `src/app/vendor/settings/page.tsx` — Store settings: store info (name, description, logo/cover URLs), contact (email, phone, location), business hours, shipping/return policies; RHF+Zod validation, save to Zustand
+
+### Files Modified
+- `src/data/index.ts` — Added re-exports for vendor-dashboard data
+- `src/components/landing/Header.tsx` — Added "Sell on ArtisanMarket" link (Store icon) to desktop nav and mobile nav
+
+### Build Status
+✅ Build successful — 39 pages generated (4 new vendor routes: /vendor, /vendor/products, /vendor/orders, /vendor/reviews, /vendor/settings)

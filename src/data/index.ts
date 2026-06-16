@@ -10,3 +10,5 @@ export {
   orderStatusConfig,
   checkoutSteps,
 } from './checkout';
+export { vendorAnalytics, vendorNavItems, vendorReviews } from './vendor-dashboard';
+export type { VendorReview } from './vendor-dashboard';
