@@ -74,8 +74,18 @@ export default function AdminOrdersPage() {
         </p>
       </div>
 
-      {/* Tabs */}
-      <div className="flex flex-wrap gap-2">
+      {/* Search + Tabs */}
+      <div className="flex flex-col gap-4">
+        <div className="relative max-w-md">
+          <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-ag-400 pointer-events-none" />
+          <Input
+            placeholder="Search by order ID or customer..."
+            value={search}
+            onChange={(e) => setSearch(e.target.value)}
+            className="pl-10 font-body"
+          />
+        </div>
+        <div className="flex flex-wrap gap-2">
         {tabs.map((tab) => (
           <Button
             key={tab.value}
@@ -100,84 +110,112 @@ export default function AdminOrdersPage() {
           </Button>
         ))}
       </div>
-
-      {/* Search */}
-      <div className="relative max-w-md">
-        <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-ag-400 pointer-events-none" />
-        <Input
-          placeholder="Search by order ID or customer..."
-          value={search}
-          onChange={(e) => setSearch(e.target.value)}
-          className="pl-10 font-body"
-        />
       </div>
 
-      {/* Orders Table */}
-      <div className="bg-white rounded-2xl shadow-soft p-4 md:p-6">
-        {filteredOrders.length === 0 ? (
-          <div className="py-12 text-center">
-            <p className="text-lg font-medium text-ag-200 font-body">No orders found</p>
-            <p className="text-sm text-ag-300 font-body mt-1">Try adjusting your filters</p>
-          </div>
-        ) : (
-          <div className="overflow-x-auto">
-            <table className="w-full text-sm">
-              <thead>
-                <tr className="border-b border-ag-500/20">
-                  <th className="text-left py-3 px-3 font-heading font-semibold text-ag-200 text-xs uppercase tracking-wider">Order ID</th>
-                  <th className="text-left py-3 px-3 font-heading font-semibold text-ag-200 text-xs uppercase tracking-wider">Customer</th>
-                  <th className="text-left py-3 px-3 font-heading font-semibold text-ag-200 text-xs uppercase tracking-wider hidden sm:table-cell">Vendor</th>
-                  <th className="text-left py-3 px-3 font-heading font-semibold text-ag-200 text-xs uppercase tracking-wider hidden md:table-cell">Items</th>
-                  <th className="text-left py-3 px-3 font-heading font-semibold text-ag-200 text-xs uppercase tracking-wider">Total</th>
-                  <th className="text-left py-3 px-3 font-heading font-semibold text-ag-200 text-xs uppercase tracking-wider hidden lg:table-cell">Payment</th>
-                  <th className="text-left py-3 px-3 font-heading font-semibold text-ag-200 text-xs uppercase tracking-wider">Status</th>
-                  <th className="text-left py-3 px-3 font-heading font-semibold text-ag-200 text-xs uppercase tracking-wider hidden md:table-cell">Date</th>
-                </tr>
-              </thead>
-              <tbody className="divide-y divide-ag-500/10">
-                {filteredOrders.map((order) => (
-                  <tr key={order.orderId} className="hover:bg-ag-800/30 transition-colors">
-                    <td className="py-3 px-3">
-                      <button
-                        onClick={() => setSelectedOrder(order)}
-                        className="font-heading font-medium text-ag-100 text-xs hover:text-fw-300 transition-colors"
-                      >
-                        {order.orderId}
-                      </button>
-                    </td>
-                    <td className="py-3 px-3">
-                      <div>
-                        <p className="text-ag-100 font-body text-xs font-medium">{order.customerName}</p>
-                        <p className="text-ag-300 text-xs hidden xl:block">{order.customerEmail}</p>
-                      </div>
-                    </td>
-                    <td className="py-3 px-3 text-ag-200 font-body text-xs hidden sm:table-cell">{order.vendorName}</td>
-                    <td className="py-3 px-3 text-ag-200 font-body text-xs hidden md:table-cell">{order.items.length}</td>
-                    <td className="py-3 px-3 font-heading font-semibold text-ag-100 text-xs">${order.total.toFixed(2)}</td>
-                    <td className="py-3 px-3 text-ag-200 font-body text-xs hidden lg:table-cell">{getPayMethodLabel(order.paymentMethod)}</td>
-                    <td className="py-3 px-3">
-                      <Select
-                        value={order.status}
-                        onValueChange={(val) => handleStatusChange(order.orderId, val as OrderStatus)}
-                      >
-                        <SelectTrigger className={`h-7 w-auto min-w-[100px] text-xs border-0 p-0 pr-6 ${orderStatusConfig[order.status].color} font-heading font-medium`}>
-                          <SelectValue />
-                        </SelectTrigger>
-                        <SelectContent>
-                          {Object.entries(orderStatusConfig).map(([key, cfg]) => (
-                            <SelectItem key={key} value={key} className="text-xs">{cfg.label}</SelectItem>
-                          ))}
-                        </SelectContent>
-                      </Select>
-                    </td>
-                    <td className="py-3 px-3 text-ag-300 font-body text-xs hidden md:table-cell">{order.date}</td>
+      {/* Orders List */}
+      {filteredOrders.length === 0 ? (
+        <div className="bg-white rounded-2xl shadow-soft p-12 text-center">
+          <p className="text-lg font-medium text-ag-200 font-body">No orders found</p>
+          <p className="text-sm text-ag-300 font-body mt-1">Try adjusting your filters</p>
+        </div>
+      ) : (
+        <>
+          {/* Desktop Table */}
+          <div className="hidden md:block bg-white rounded-2xl shadow-soft p-4 md:p-6">
+            <div className="overflow-x-auto">
+              <table className="w-full text-sm">
+                <thead>
+                  <tr className="border-b border-ag-500/20">
+                    <th className="text-left py-3 px-3 font-heading font-semibold text-ag-200 text-xs uppercase tracking-wider">Order ID</th>
+                    <th className="text-left py-3 px-3 font-heading font-semibold text-ag-200 text-xs uppercase tracking-wider">Customer</th>
+                    <th className="text-left py-3 px-3 font-heading font-semibold text-ag-200 text-xs uppercase tracking-wider">Vendor</th>
+                    <th className="text-left py-3 px-3 font-heading font-semibold text-ag-200 text-xs uppercase tracking-wider hidden lg:table-cell">Items</th>
+                    <th className="text-left py-3 px-3 font-heading font-semibold text-ag-200 text-xs uppercase tracking-wider">Total</th>
+                    <th className="text-left py-3 px-3 font-heading font-semibold text-ag-200 text-xs uppercase tracking-wider hidden lg:table-cell">Payment</th>
+                    <th className="text-left py-3 px-3 font-heading font-semibold text-ag-200 text-xs uppercase tracking-wider">Status</th>
+                    <th className="text-left py-3 px-3 font-heading font-semibold text-ag-200 text-xs uppercase tracking-wider">Date</th>
                   </tr>
-                ))}
-              </tbody>
-            </table>
+                </thead>
+                <tbody className="divide-y divide-ag-500/10">
+                  {filteredOrders.map((order) => (
+                    <tr key={order.orderId} className="hover:bg-ag-800/30 transition-colors">
+                      <td className="py-3 px-3">
+                        <button
+                          onClick={() => setSelectedOrder(order)}
+                          className="font-heading font-medium text-ag-100 text-xs hover:text-fw-300 transition-colors"
+                        >
+                          {order.orderId}
+                        </button>
+                      </td>
+                      <td className="py-3 px-3">
+                        <div>
+                          <p className="text-ag-100 font-body text-xs font-medium">{order.customerName}</p>
+                          <p className="text-ag-300 text-xs hidden xl:block">{order.customerEmail}</p>
+                        </div>
+                      </td>
+                      <td className="py-3 px-3 text-ag-200 font-body text-xs">{order.vendorName}</td>
+                      <td className="py-3 px-3 text-ag-200 font-body text-xs hidden lg:table-cell">{order.items.length}</td>
+                      <td className="py-3 px-3 font-heading font-semibold text-ag-100 text-xs">${order.total.toFixed(2)}</td>
+                      <td className="py-3 px-3 text-ag-200 font-body text-xs hidden lg:table-cell">{getPayMethodLabel(order.paymentMethod)}</td>
+                      <td className="py-3 px-3">
+                        <Select
+                          value={order.status}
+                          onValueChange={(val) => handleStatusChange(order.orderId, val as OrderStatus)}
+                        >
+                          <SelectTrigger className={`h-7 w-auto min-w-[100px] text-xs border-0 p-0 pr-6 ${orderStatusConfig[order.status].color} font-heading font-medium`}>
+                            <SelectValue />
+                          </SelectTrigger>
+                          <SelectContent>
+                            {Object.entries(orderStatusConfig).map(([key, cfg]) => (
+                              <SelectItem key={key} value={key} className="text-xs">{cfg.label}</SelectItem>
+                            ))}
+                          </SelectContent>
+                        </Select>
+                      </td>
+                      <td className="py-3 px-3 text-ag-300 font-body text-xs">{order.date}</td>
+                    </tr>
+                  ))}
+                </tbody>
+              </table>
+            </div>
           </div>
-        )}
-      </div>
+
+          {/* Mobile Cards */}
+          <div className="md:hidden grid gap-3">
+            {filteredOrders.map((order) => (
+              <div key={order.orderId} className="bg-white rounded-2xl shadow-soft p-4">
+                <div className="flex items-center justify-between mb-2">
+                  <button
+                    onClick={() => setSelectedOrder(order)}
+                    className="font-heading font-semibold text-ag-100 text-sm hover:text-fw-300 transition-colors"
+                  >
+                    {order.orderId}
+                  </button>
+                  <Select
+                    value={order.status}
+                    onValueChange={(val) => handleStatusChange(order.orderId, val as OrderStatus)}
+                  >
+                    <SelectTrigger className={`h-7 w-auto min-w-[90px] text-[11px] border-0 p-0 pr-6 ${orderStatusConfig[order.status].color} font-heading font-medium`}>
+                      <SelectValue />
+                    </SelectTrigger>
+                    <SelectContent>
+                      {Object.entries(orderStatusConfig).map(([key, cfg]) => (
+                        <SelectItem key={key} value={key} className="text-xs">{cfg.label}</SelectItem>
+                      ))}
+                    </SelectContent>
+                  </Select>
+                </div>
+                <p className="text-sm text-ag-100 font-body font-medium">{order.customerName}</p>
+                <p className="text-xs text-ag-300 font-body mt-0.5">{order.vendorName} &middot; {order.items.length} item{order.items.length !== 1 ? 's' : ''}</p>
+                <div className="flex items-center justify-between mt-3 pt-3 border-t border-ag-500/10">
+                  <span className="text-xs text-ag-300 font-body">{order.date}</span>
+                  <span className="font-heading font-semibold text-ag-100 text-sm">${order.total.toFixed(2)}</span>
+                </div>
+              </div>
+            ))}
+          </div>
+        </>
+      )}
 
       {/* Order Detail Dialog */}
       <Dialog open={!!selectedOrder} onOpenChange={(open) => !open && setSelectedOrder(null)}>
